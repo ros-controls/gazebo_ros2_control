@@ -238,7 +238,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
             // TODO(ddengster): Do stricter typing for set_parameter value types.
             // (ie. Numbers should be converted to int/double/etc instead of strings)
-            //RCLCPP_ERROR(rclcpp::get_logger("load"),"key: %s val: %s", key.c_str(), val_str.c_str());
             if (!node->has_parameter(key))
               node->declare_parameter(key);
 
@@ -262,12 +261,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
           } else if (yaml_node.Type() == YAML::NodeType::Map) {
             for (auto yaml_node_it : yaml_node) {
               std::string newkey = yaml_node_it.first.as<std::string>();
-              //RCLCPP_ERROR(rclcpp::get_logger("load"), "newkey: %s", newkey.c_str());
               if (newkey == prefix || newkey == "ros__parameters")
                 newkey = "";
               else if (!key.empty())
                 newkey = key + separator + newkey;
-              //RCLCPP_ERROR(rclcpp::get_logger("load"),"newkey (map): %s", newkey.c_str());
               feed_yaml_to_node_rec(yaml_node_it.second, newkey, node, prefix);
             }
           } else if (yaml_node.Type() == YAML::NodeType::Sequence) {
@@ -281,14 +278,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
                 for (auto yaml_node_it : yaml_node) {
                   std::string name = yaml_node_it.as<std::string>();
                   val.push_back(name);
-                  //RCLCPP_ERROR(rclcpp::get_logger("load"),"n: %s", name.c_str());
                 }
-                //RCLCPP_ERROR(rclcpp::get_logger("load")," %s array_param: %s", node->get_name(), key.c_str());
                 if (!node->has_parameter(key))
                   node->declare_parameter(key);
                 node->set_parameter({rclcpp::Parameter(key, val)});
-
-                //node->get_parameter(key).as_string_array();
 
                 if (key == "joints")
                 {
@@ -304,12 +297,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
                   std::string newkey = std::to_string((index++));
                   if (!key.empty())
                     newkey = key + separator + newkey;
-                  //RCLCPP_ERROR(rclcpp::get_logger("load"),"prefix_seq: %s newkey: %s", prefix.c_str(), newkey.c_str());
                   feed_yaml_to_node_rec(yaml_node_it, newkey, node, prefix);
                 }
               }
             }
-            //RCLCPP_ERROR(rclcpp::get_logger("load")," exit");
           }
         };
         if (lc_node->get_name() != prefix)
@@ -358,8 +349,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         executor_->spin_once();
     };
     thread_executor_spin_ = std::thread(spin);
-    // there is no async spinner in ROS 2, so we have to put the spin() in its own thread
-    // auto future_handle = std::async(std::launch::async, spin, executor_);
 
     if (controller_manager_->configure() != controller_interface::CONTROLLER_INTERFACE_RET_SUCCESS) {
       RCLCPP_ERROR(rclcpp::get_logger("cm"), "failed to configure");
@@ -403,7 +392,6 @@ void GazeboRosControlPlugin::Update()
   rclcpp::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   robot_hw_sim_->eStopActive(e_stop_active_);
-  //executor_->spin_once();
 
   // Check if we should update the controllers
   if(sim_period >= control_period_) {
@@ -484,7 +472,6 @@ std::string GazeboRosControlPlugin::getURDF(std::string param_name) const
     usleep(100000);
   }
   RCLCPP_ERROR(rclcpp::get_logger("gazebo_ros2_control"), "Recieved urdf from param server, parsing...");
-  // RCLCPP_ERROR(rclcpp::get_logger("gazebo_ros2_control"), "urdf_string %s", urdf_string.c_str());
 
   return urdf_string;
 }
