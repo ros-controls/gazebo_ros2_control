@@ -57,9 +57,6 @@ void common_feedback(rclcpp_action::ClientGoalHandle<control_msgs::action::Follo
   for (auto & x: feedback->desired.velocities)
     std::cout << x << "\t";
   std::cout << std::endl;
-  // std::cout << "feedback->desired.error :";
-  // for (auto & x: feedback->desired.error)
-  //   std::cout << x << "\t";
   std::cout << std::endl;
 }
 
@@ -128,15 +125,6 @@ int main(int argc, char* argv[])
   opt.goal_response_callback = std::bind(common_goal_response, std::placeholders::_1);
   opt.result_callback = std::bind(common_result_response, std::placeholders::_1);
   opt.feedback_callback = std::bind(common_feedback, std::placeholders::_1, std::placeholders::_2);
-  // [&](
-  //   rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr,
-  //   const std::shared_ptr<const control_msgs::action::FollowJointTrajectory::Feedback> feedback)
-  //   {
-  //     std::cout << "feedback->desired :";
-  //     for (auto & x: feedback->desired.positions)
-  //       std::cout << x << "\t";
-  //     std::cout << std::endl;
-  //   };
 
   control_msgs::action::FollowJointTrajectory_Goal goal_msg;
   goal_msg.goal_time_tolerance = rclcpp::Duration::from_seconds(1.0);
@@ -169,8 +157,6 @@ int main(int argc, char* argv[])
     RCLCPP_ERROR(node->get_logger(), "get result call failed :(");
     return 1;
   }
-
-  // while(true){}
 
   std::cout << "async_send_goal" << std::endl;
   rclcpp::shutdown();
