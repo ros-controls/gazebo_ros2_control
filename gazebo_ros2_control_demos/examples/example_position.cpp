@@ -56,10 +56,6 @@ void common_feedback(rclcpp_action::ClientGoalHandle<control_msgs::action::Follo
   std::cout << "feedback->desired.velocities :";
   for (auto & x: feedback->desired.velocities)
     std::cout << x << "\t";
-  // for (auto & x: feedback->desired.error)
-  //   std::cout << x << "\t";
-  // for (auto & x: feedback->desired.velocities)
-  //   std::cout << x << "\t";
   std::cout << std::endl;
 }
 
@@ -93,31 +89,23 @@ int main(int argc, char* argv[])
   trajectory_msgs::msg::JointTrajectoryPoint point;
   point.time_from_start = rclcpp::Duration::from_seconds(0.0);  // start asap
   point.positions.resize(joint_names.size());
-  // point.velocities.resize(joint_names.size());
 
   point.positions[0] = 0.0;
-  // point.velocities[0] = 0.0;
 
   trajectory_msgs::msg::JointTrajectoryPoint point2;
   point2.time_from_start = rclcpp::Duration::from_seconds(1.0);
   point2.positions.resize(joint_names.size());
-  // point2.velocities.resize(joint_names.size());
   point2.positions[0] = -1.0;
-  // point2.velocities[0] = -1.0;
 
   trajectory_msgs::msg::JointTrajectoryPoint point3;
   point3.time_from_start = rclcpp::Duration::from_seconds(2.0);
   point3.positions.resize(joint_names.size());
-  // point3.velocities.resize(joint_names.size());
   point3.positions[0] = 1.0;
-  // point3.velocities[0] = 0.0;
 
   trajectory_msgs::msg::JointTrajectoryPoint point4;
   point4.time_from_start = rclcpp::Duration::from_seconds(3.0);
   point4.positions.resize(joint_names.size());
-  // point4.velocities.resize(joint_names.size());
   point4.positions[0] = 0.0;
-  // point4.velocities[0] = 0.0;
 
   points.push_back(point);
   points.push_back(point2);
@@ -128,15 +116,6 @@ int main(int argc, char* argv[])
   opt.goal_response_callback = std::bind(common_goal_response, std::placeholders::_1);
   opt.result_callback = std::bind(common_result_response, std::placeholders::_1);
   opt.feedback_callback = std::bind(common_feedback, std::placeholders::_1, std::placeholders::_2);
-  // [&](
-  //   rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr,
-  //   const std::shared_ptr<const control_msgs::action::FollowJointTrajectory::Feedback> feedback)
-  //   {
-  //     std::cout << "feedback->desired :";
-  //     for (auto & x: feedback->desired.positions)
-  //       std::cout << x << "\t";
-  //     std::cout << std::endl;
-  //   };
 
   control_msgs::action::FollowJointTrajectory_Goal goal_msg;
   goal_msg.goal_time_tolerance = rclcpp::Duration::from_seconds(1.0);
@@ -169,8 +148,6 @@ int main(int argc, char* argv[])
     RCLCPP_ERROR(node->get_logger(), "get result call failed :(");
     return 1;
   }
-
-  // while(true){}
 
   std::cout << "async_send_goal" << std::endl;
   rclcpp::shutdown();
