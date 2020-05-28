@@ -42,16 +42,6 @@
 #include <gazebo_ros2_control/default_robot_hw_sim.h>
 #include <urdf/model.h>
 
-namespace
-{
-
-double clamp(const double val, const double min_val, const double max_val)
-{
-  return std::min(std::max(val, min_val), max_val);
-}
-
-}
-
 namespace gazebo_ros2_control
 {
 static const rclcpp::Logger LOGGER = rclcpp::get_logger("default_robot_hw_sim");
@@ -447,19 +437,16 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
           }
 
           const double effort_limit = joint_effort_limits_[j];
-#if 0 //@todo
-          const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
-                                      -effort_limit, effort_limit);
-#else
+          //TODO(anyone): Restored this when PID controllers is available
+          // const double effort = std::clamp(pid_controllers_[j].computeCommand(error, period),
+          //                             -effort_limit, effort_limit);
           const double effort = 0.0;
-#endif
           sim_joints_[j]->SetForce(0, effort);
         }
         break;
 
       case VELOCITY:
 #if GAZEBO_MAJOR_VERSION > 2
-// std::cout << "joint_velocity_command_[j]: " << joint_velocity_command_[j] << std::endl;
         if (physics_type_.compare("ode") == 0)
         {
           sim_joints_[j]->SetParam("vel", 0, e_stop_active_ ? 0 : joint_velocity_command_[j]);
@@ -480,12 +467,10 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
         else
           error = joint_velocity_command_[j] - joint_velocity_[j];
         const double effort_limit = joint_effort_limits_[j];
-#if 0 //@todo
-        const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
-                                    -effort_limit, effort_limit);
-#else
+        //TODO(anyone): Restored this when PID controllers is available
+        // const double effort = std::clamp(pid_controllers_[j].computeCommand(error, period),
+        //                             -effort_limit, effort_limit);
         const double effort = 0.0;
-#endif
         sim_joints_[j]->SetForce(0, effort);
         break;
     }
