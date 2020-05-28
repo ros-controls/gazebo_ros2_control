@@ -1,4 +1,20 @@
-#include <rclcpp/rclcpp.hpp>
+// Copyright 2020 Open Source Robotics Foundation, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
@@ -10,7 +26,9 @@ bool common_goal_accepted = false;
 rclcpp_action::ResultCode common_resultcode = rclcpp_action::ResultCode::UNKNOWN;
 int common_action_result_code = control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL;
 
-void common_goal_response(std::shared_future<rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr> future)
+void common_goal_response(
+  std::shared_future<rclcpp_action::ClientGoalHandle
+  <control_msgs::action::FollowJointTrajectory>::SharedPtr> future)
 {
   RCLCPP_DEBUG(
     node->get_logger(), "common_goal_response time: %f",
@@ -25,7 +43,9 @@ void common_goal_response(std::shared_future<rclcpp_action::ClientGoalHandle<con
   }
 }
 
-void common_result_response(const rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::WrappedResult & result)
+void common_result_response(
+  const rclcpp_action::ClientGoalHandle
+  <control_msgs::action::FollowJointTrajectory>::WrappedResult & result)
 {
   printf("common_result_response time: %f\n", rclcpp::Clock().now().seconds());
   common_resultcode = result.code;
@@ -46,23 +66,25 @@ void common_result_response(const rclcpp_action::ClientGoalHandle<control_msgs::
   }
 }
 
-void common_feedback(rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr,
+void common_feedback(
+  rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr,
   const std::shared_ptr<const control_msgs::action::FollowJointTrajectory::Feedback> feedback)
 {
   std::cout << "feedback->desired.positions :";
-  for (auto & x: feedback->desired.positions)
+  for (auto & x : feedback->desired.positions) {
     std::cout << x << "\t";
+  }
   std::cout << std::endl;
   std::cout << "feedback->desired.velocities :";
-  for (auto & x: feedback->desired.velocities)
+  for (auto & x : feedback->desired.velocities) {
     std::cout << x << "\t";
+  }
   std::cout << std::endl;
   std::cout << std::endl;
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char * argv[])
 {
-
   rclcpp::init(argc, argv);
 
   node = std::make_shared<rclcpp::Node>("trajectory_test_node");
@@ -141,7 +163,8 @@ int main(int argc, char* argv[])
   }
   RCLCPP_ERROR(node->get_logger(), "send goal call ok :)");
 
-  rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr goal_handle = goal_handle_future.get();
+  rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr
+    goal_handle = goal_handle_future.get();
   if (!goal_handle) {
     RCLCPP_ERROR(node->get_logger(), "Goal was rejected by server");
     return 1;

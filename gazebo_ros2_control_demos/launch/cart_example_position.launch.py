@@ -35,8 +35,9 @@ def generate_launch_description():
     gazebo_ros2_control_demos_path = os.path.join(
         get_package_share_directory('gazebo_ros2_control_demos'))
 
-    xacro_file = os.path.join(gazebo_ros2_control_demos_path, 'urdf', 'test_cart_position.xacro.urdf')
-    config_file = os.path.join(gazebo_ros2_control_demos_path, 'config', 'cartpole_controller.yaml')
+    xacro_file = os.path.join(gazebo_ros2_control_demos_path,
+                              'urdf',
+                              'test_cart_position.xacro.urdf')
 
     robot_desc = Command('xacro %s' % xacro_file)
     params = {'robot_description': robot_desc}
