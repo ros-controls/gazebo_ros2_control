@@ -28,10 +28,8 @@ ament_target_dependencies(example_velocity
 )
 
 ## Install
-install(TARGETS example_position
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
+install(TARGETS example_position example_velocity
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
