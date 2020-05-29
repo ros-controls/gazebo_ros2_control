@@ -320,9 +320,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
             static constexpr char separator = '.';
             if (yaml_node.Type() == YAML::NodeType::Scalar) {
               std::string val_str = yaml_node.as<std::string>();
-              // const char* val_str = yaml_node.as<const char*>();
-              // std::string val_str;
-              // YAML::convert<std::string>::decode(yaml_node, val_str);
 
               // TODO(ddengster): Do stricter typing for set_parameter value types.
               // (ie. Numbers should be converted to int/double/etc instead of strings)
