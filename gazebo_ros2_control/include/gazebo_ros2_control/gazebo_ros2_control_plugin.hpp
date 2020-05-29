@@ -63,7 +63,7 @@ public:
   virtual ~GazeboRosControlPlugin();
 
   // Overloaded Gazebo entry point
-  virtual void Load(gazebo::physics::ModelPtr parent, sdf::ElementPtr sdf);
+  void Load(gazebo::physics::ModelPtr parent, sdf::ElementPtr sdf) override;
 
   // Called by the world update start event
   void Update();

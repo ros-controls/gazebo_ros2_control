@@ -39,8 +39,8 @@
 #include <vector>
 
 #include "gazebo/physics/physics.hh"
-#include "rclcpp/rclcpp.hpp"
 #include "hardware_interface/robot_hardware.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "transmission_interface/transmission_info.hpp"
 #include "urdf/model.h"
 

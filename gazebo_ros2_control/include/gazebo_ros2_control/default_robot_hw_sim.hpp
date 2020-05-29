@@ -52,9 +52,8 @@
 #include "joint_limits_interface/joint_limits_urdf.hpp"
 
 // Gazebo
-#include "gazebo/common/common.hh"
-#include "gazebo/physics/physics.hh"
-#include "gazebo/gazebo.hh"
+#include "gazebo/physics/Model.hh"
+#include "gazebo/physics/Joint.hh"
 
 // ROS
 #include "rclcpp/rclcpp.hpp"

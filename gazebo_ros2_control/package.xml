@@ -4,13 +4,13 @@
   <version>0.0.1</version>
   <description>gazebo_ros2_control</description>
 
-  <maintainer email="jrivero@osrfoundation.org">Jose Luis Rivero</maintainer>
+  <maintainer email="ahcorde@osrfoundation.org">Alejandro Hernandez</maintainer>
 
   <license>BSD</license>
 
   <url type="website">http://ros.org/wiki/gazebo_ros_control</url>
-  <url type="bugtracker">https://github.com/ros-simulation/gazebo_ros_pkgs/issues</url>
-  <url type="repository">https://github.com/ros-simulation/gazebo_ros_pkgs</url>
+  <url type="bugtracker">https://github.com/ros-simulation/gazebo_ros2_control/issues</url>
+  <url type="repository">https://github.com/ros-simulation/gazebo_ros2_control/</url>
 
   <author>Jonathan Bohren</author>
   <author>Dave Coleman</author>

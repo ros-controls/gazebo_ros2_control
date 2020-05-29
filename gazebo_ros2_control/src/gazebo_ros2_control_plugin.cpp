@@ -57,7 +57,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     rclcpp::get_logger("gazebo_ros2_control"),
     "Loading gazebo_ros2_control plugin");
 
-
   // Save pointers to the model
   parent_model_ = parent;
   sdf_ = sdf;

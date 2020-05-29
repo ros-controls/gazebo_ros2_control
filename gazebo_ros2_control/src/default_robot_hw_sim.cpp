@@ -49,8 +49,6 @@ bool DefaultRobotHWSim::initSim(
   const urdf::Model * const urdf_model,
   std::vector<transmission_interface::TransmissionInfo> transmissions)
 {
-  std::cerr << "DefaultRobotHWSim::InitSim " << std::endl;
-
   // getJointLimits() searches joint_limit_nh for joint limit parameters. The format of each
   // parameter's name is "joint_limits/<joint name>". An example is "joint_limits/axle_joint".
   rclcpp::Node::SharedPtr & joint_limit_nh = model_nh;
