@@ -56,76 +56,21 @@
 
 namespace gazebo_ros2_control
 {
+class GazeboRosControlPrivate;
 
 class GazeboRosControlPlugin : public gazebo::ModelPlugin
 {
 public:
-  virtual ~GazeboRosControlPlugin();
+  GazeboRosControlPlugin();
+
+  ~GazeboRosControlPlugin();
 
   // Overloaded Gazebo entry point
   void Load(gazebo::physics::ModelPtr parent, sdf::ElementPtr sdf) override;
 
-  // Called by the world update start event
-  void Update();
-
-  // Called on world reset
-  virtual void Reset();
-
-  // Get the URDF XML from the parameter server
-  std::string getURDF(std::string param_name) const;
-
-  // Get Transmissions from the URDF
-  bool parseTransmissionsFromURDF(const std::string & urdf_string);
-
-protected:
-  void eStopCB(const std::shared_ptr<std_msgs::msg::Bool> e_stop_active);
-
-  // Node Handles
-  rclcpp::Node::SharedPtr model_nh_;   // namespaces to robot name
-
-  // Pointer to the model
-  gazebo::physics::ModelPtr parent_model_;
-  sdf::ElementPtr sdf_;
-
-  // deferred load in case ros is blocking
-  boost::thread deferred_load_thread_;
-
-  // Pointer to the update event connection
-  gazebo::event::ConnectionPtr update_connection_;
-
-  // Interface loader
-  boost::shared_ptr<pluginlib::ClassLoader<
-      gazebo_ros2_control::RobotHWSim>> robot_hw_sim_loader_;
-  void load_robot_hw_sim_srv();
-
-  // Strings
-  std::string robot_namespace_;
-  std::string robot_description_;
-  std::string param_file;
-
-  // Transmissions in this plugin's scope
-  std::vector<transmission_interface::TransmissionInfo> transmissions_;
-
-  // Robot simulator interface
-  std::string robot_hw_sim_type_str_;
-  std::shared_ptr<gazebo_ros2_control::RobotHWSim> robot_hw_sim_;
-  rclcpp::executors::MultiThreadedExecutor::SharedPtr executor_;
-  // executor_->spin causes lockups, us ethis alternative for now
-  std::thread thread_executor_spin_;
-
-  // Controller manager
-  std::shared_ptr<controller_manager::ControllerManager> controller_manager_;
-  std::vector<std::shared_ptr<controller_interface::ControllerInterface>> controllers_;
-
-  // Timing
-  rclcpp::Duration control_period_ = rclcpp::Duration(0);
-  rclcpp::Time last_update_sim_time_ros_;
-  rclcpp::Time last_write_sim_time_ros_;
-
-  // e_stop_active_ is true if the emergency stop is active.
-  bool e_stop_active_, last_e_stop_active_;
-  // Emergency stop subscriber
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr e_stop_sub_;
+private:
+  /// Private data pointer
+  std::unique_ptr<GazeboRosControlPrivate> impl_;
 };
 }  // namespace gazebo_ros2_control
 
