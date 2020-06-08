@@ -17,8 +17,6 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>gazebo_dev</build_depend>
-
   <depend>angles</depend>
   <depend>gazebo_dev</depend>
   <depend>controller_manager</depend>
