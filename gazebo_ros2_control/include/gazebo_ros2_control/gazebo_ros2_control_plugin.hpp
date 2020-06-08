@@ -46,7 +46,6 @@
 
 // Gazebo
 #include "gazebo/common/common.hh"
-#include "gazebo/gazebo.hh"
 #include "gazebo/physics/physics.hh"
 
 // ros_control
