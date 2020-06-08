@@ -32,8 +32,8 @@
 */
 
 #include <limits>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "gazebo_ros2_control/default_robot_hw_sim.hpp"
 #include "urdf/model.h"
