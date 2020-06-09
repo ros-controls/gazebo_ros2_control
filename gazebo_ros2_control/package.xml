@@ -19,6 +19,7 @@
 
   <depend>angles</depend>
   <depend>gazebo_dev</depend>
+  <depend>gazebo_ros</depend>
   <depend>controller_manager</depend>
   <depend>hardware_interface</depend>
   <depend>joint_limits_interface</depend>
