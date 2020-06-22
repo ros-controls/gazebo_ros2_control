@@ -5,9 +5,6 @@ cart_pole_controller:
        - slider_to_cart
     write_op_modes:
        - slider_to_cart
-    gains:
-      cart_to_pole: {p: 0.0, d: 0, i: 0, i_clamp: 0}
-    stop_trajectory_duration: 0.5
     state_publish_rate: 25
     action_monitor_rate: 20
     constraints:
