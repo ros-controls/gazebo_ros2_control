@@ -29,7 +29,6 @@ robot hardware interfaces between `ros2_control` and Gazebo.
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       <robotSimType>gazebo_ros2_control/DefaultRobotHWSim</robotSimType>
       <robotParamNode>robot_state_publisher</robotParamNode>
-      <legacyModeNS>True</legacyModeNS>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
     </plugin>
 </gazebo>
