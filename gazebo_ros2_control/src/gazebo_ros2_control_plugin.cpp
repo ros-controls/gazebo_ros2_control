@@ -36,6 +36,8 @@
 #include <memory>
 #include <vector>
 
+#include "gazebo_ros/node.hpp"
+
 #include "gazebo_ros2_control/gazebo_ros2_control_plugin.hpp"
 
 #include "urdf/model.h"

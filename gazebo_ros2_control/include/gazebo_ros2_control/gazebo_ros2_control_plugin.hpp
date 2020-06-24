@@ -48,8 +48,6 @@
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/physics.hh"
 
-#include "gazebo_ros/node.hpp"
-
 // ros_control
 #include "controller_manager/controller_manager.hpp"
 #include "gazebo_ros2_control/robot_hw_sim.h"
