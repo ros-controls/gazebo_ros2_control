@@ -184,27 +184,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         impl_->robot_hw_sim_type_str_ << "\"");
   }
 
-  // temporary fix to bug regarding the robotNamespace in default_robot_hw_sim.cpp (see #637)
-  std::string robot_ns = impl_->model_nh_->get_namespace();
-  if (impl_->robot_hw_sim_type_str_ == "gazebo_ros2_control/DefaultRobotHWSim") {
-    if (impl_->sdf_->HasElement("legacyModeNS")) {
-      if (impl_->sdf_->GetElement("legacyModeNS")->Get<bool>() ) {
-        robot_ns = "";
-      }
-    } else {
-      robot_ns = "";
-      RCLCPP_ERROR(
-        rclcpp::get_logger(
-          "loadThread"),
-        "GazeboRosControlPlugin missing <legacyModeNS> while using DefaultRobotHWSim, defaults to"
-        " true.\nThis setting assumes you have an old package with an old implementation of "
-        "DefaultRobotHWSim, where the robotNamespace is disregarded and absolute paths are used "
-        "instead.\n If you do not want to fix this issue in an old package just set <legacyModeNS> "
-        "to true.\n"
-      );
-    }
-  }
-
   if (impl_->sdf_->HasElement("parameters")) {
     impl_->param_file_ = impl_->sdf_->GetElement("parameters")->Get<std::string>();
   } else {
@@ -286,7 +265,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
     rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
     if (!impl_->robot_hw_sim_->initSim(
-        robot_ns, node_ros2, impl_->parent_model_, urdf_model_ptr,
+        impl_->model_nh_->get_namespace(), node_ros2, impl_->parent_model_, urdf_model_ptr,
         impl_->transmissions_))
     {
       RCLCPP_FATAL(
