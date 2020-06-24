@@ -558,8 +558,8 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
       auto f = parameters_client->get_parameters({param_name});
       f.wait();
       std::vector<rclcpp::Parameter> values = f.get();
-      urdf_string = values[0].as_string();// parameters_client->get_parameter<std::string>(param_name, "");
-    } catch (const std::exception& e) {
+      urdf_string = values[0].as_string();
+    } catch (const std::exception & e) {
       RCLCPP_ERROR(rclcpp::get_logger("gazebo_ros2_control"), "%s", e.what());
     }
 
