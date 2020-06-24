@@ -50,7 +50,7 @@
 
 // ros_control
 #include "controller_manager/controller_manager.hpp"
-#include "gazebo_ros2_control/robot_hw_sim.h"
+#include "gazebo_ros2_control/robot_hw_sim.hpp"
 #include "transmission_interface/transmission_parser.hpp"
 
 namespace gazebo_ros2_control
