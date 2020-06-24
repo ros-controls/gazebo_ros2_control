@@ -54,3 +54,4 @@ jobs:
       run: |
         cd /home/ros2_ws/
         colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control
+        colcon test-result
