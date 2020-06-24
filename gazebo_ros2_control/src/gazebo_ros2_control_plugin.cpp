@@ -193,12 +193,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   }
 
   // Get the Gazebo simulation period
-#if GAZEBO_MAJOR_VERSION >= 8
   rclcpp::Duration gazebo_period(impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize());
-#else
-  rclcpp::Duration gazebo_period(
-    impl_->parent_model_->GetWorld()->GetPhysicsEngine()->GetMaxStepSize());
-#endif
 
   // Decide the plugin control period
   if (impl_->sdf_->HasElement("controlPeriod")) {
@@ -455,11 +450,7 @@ spin(std::shared_ptr<rclcpp::executors::MultiThreadedExecutor> exe)
 void GazeboRosControlPrivate::Update()
 {
   // Get the simulation time and period
-#if GAZEBO_MAJOR_VERSION >= 8
   gazebo::common::Time gz_time_now = parent_model_->GetWorld()->SimTime();
-#else
-  gazebo::common::Time gz_time_now = parent_model_->GetWorld()->GetSimTime();
-#endif
   rclcpp::Time sim_time_ros(gz_time_now.sec, gz_time_now.nsec);
   rclcpp::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
