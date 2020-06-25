@@ -265,7 +265,8 @@ bool DefaultRobotHWSim::initSim(
     joint_cmds_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_position_command_[j]);
     if (hardware_interface == "PositionJointInterface" ||
-      hardware_interface == "hardware_interface/PositionJointInterface") {
+      hardware_interface == "hardware_interface/PositionJointInterface")
+    {
       if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::HW_RET_OK) {
         RCLCPP_WARN_ONCE(LOGGER, "cant register joint_cmds_");
       }
@@ -293,8 +294,11 @@ bool DefaultRobotHWSim::initSim(
       joint_names_[j], &joint_effort_command_[j]);
     // should be register_joint_effort_command_handle, but there's only 1 buffer for now
     if (hardware_interface == "EffortJointInterface" ||
-      hardware_interface == "hardware_interface/EffortJointInterface") {
-      if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) != hardware_interface::HW_RET_OK) {
+      hardware_interface == "hardware_interface/EffortJointInterface")
+    {
+      if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) !=
+        hardware_interface::HW_RET_OK)
+      {
         RCLCPP_WARN_ONCE(LOGGER, "cant register joint_eff_cmdhandle_");
       }
     }
@@ -305,8 +309,11 @@ bool DefaultRobotHWSim::initSim(
     joint_vel_cmdhandle_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_velocity_command_[j]);
     if (hardware_interface == "VelocityJointInterface" ||
-      hardware_interface == "hardware_interface/VelocityJointInterface") {
-      if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) != hardware_interface::HW_RET_OK) {
+      hardware_interface == "hardware_interface/VelocityJointInterface")
+    {
+      if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) !=
+        hardware_interface::HW_RET_OK)
+      {
         std::cerr << "cant register joint_vel_cmdhandle_" << std::endl;
       }
     }
