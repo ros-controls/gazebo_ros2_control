@@ -533,16 +533,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
   while (urdf_string.empty()) {
     std::string search_param_name;
     RCLCPP_ERROR(rclcpp::get_logger("gazebo_ros2_control"), "param_name %s", param_name.c_str());
-
-    try {
-      auto f = parameters_client->get_parameters({param_name});
-      f.wait();
-      std::vector<rclcpp::Parameter> values = f.get();
-      urdf_string = values[0].as_string();
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(rclcpp::get_logger("gazebo_ros2_control"), "%s", e.what());
-    }
-
+    urdf_string = parameters_client->get_parameter<std::string>(param_name, "");
     if (!urdf_string.empty()) {
       break;
     } else {
