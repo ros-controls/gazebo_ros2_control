@@ -52,13 +52,13 @@
 #include "joint_limits_interface/joint_limits_urdf.hpp"
 
 // Gazebo
-#include "gazebo/physics/Model.hh"
 #include "gazebo/physics/Joint.hh"
+#include "gazebo/physics/Model.hh"
 
 // ROS
-#include "rclcpp/rclcpp.hpp"
 #include "angles/angles.h"
 #include "pluginlib/class_list_macros.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 // gazebo_ros_control
 #include "gazebo_ros2_control/robot_hw_sim.hpp"

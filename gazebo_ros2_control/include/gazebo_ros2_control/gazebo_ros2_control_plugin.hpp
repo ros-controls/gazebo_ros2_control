@@ -35,23 +35,22 @@
 #ifndef GAZEBO_ROS2_CONTROL__GAZEBO_ROS2_CONTROL_PLUGIN_HPP_
 #define GAZEBO_ROS2_CONTROL__GAZEBO_ROS2_CONTROL_PLUGIN_HPP_
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 // ROS
-#include "rclcpp/rclcpp.hpp"
 #include "pluginlib/class_loader.hpp"
+#include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/bool.hpp"
 
 // Gazebo
-#include "gazebo/gazebo.hh"
-#include "gazebo/physics/physics.hh"
 #include "gazebo/common/common.hh"
+#include "gazebo/physics/physics.hh"
 
 // ros_control
-#include "gazebo_ros2_control/robot_hw_sim.h"
 #include "controller_manager/controller_manager.hpp"
+#include "gazebo_ros2_control/robot_hw_sim.hpp"
 #include "transmission_interface/transmission_parser.hpp"
 
 namespace gazebo_ros2_control
