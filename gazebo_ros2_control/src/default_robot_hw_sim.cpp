@@ -32,8 +32,8 @@
 */
 
 #include <limits>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "gazebo_ros2_control/default_robot_hw_sim.hpp"
 #include "urdf/model.h"
@@ -218,11 +218,8 @@ bool DefaultRobotHWSim::initSim(
     joint_velocity_[j] = joint->GetVelocity(0);
 
     // get physics engine type
-#if GAZEBO_MAJOR_VERSION >= 8
     gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->Physics();
-#else
-    gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->GetPhysicsEngine();
-#endif
+
     physics_type_ = physics->GetType();
     if (physics_type_.empty()) {
       std::cerr << "No physics type found." << std::endl;
@@ -256,11 +253,7 @@ bool DefaultRobotHWSim::initSim(
         // joint->SetParam("fmax") must be called if joint->SetAngle() or joint->SetParam("vel") are
         // going to be called. joint->SetParam("fmax") must *not* be called if joint->SetForce() is
         // going to be called.
-#if GAZEBO_MAJOR_VERSION > 2
         joint->SetParam("fmax", 0, joint_effort_limits_[j]);
-#else
-        joint->SetMaxForce(0, joint_effort_limits_[j]);
-#endif
       }
     }
     joint_states_[j] = hardware_interface::JointStateHandle(
@@ -331,11 +324,7 @@ void DefaultRobotHWSim::readSim(rclcpp::Time time, rclcpp::Duration period)
 {
   for (unsigned int j = 0; j < n_dof_; j++) {
     // Gazebo has an interesting API...
-#if GAZEBO_MAJOR_VERSION >= 8
     double position = sim_joints_[j]->Position(0);
-#else
-    double position = sim_joints_[j]->GetAngle(0).Radian();
-#endif
     if (joint_types_[j] == urdf::Joint::PRISMATIC) {
       joint_position_[j] = position;
     } else {
@@ -389,25 +378,7 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
         break;
 
       case POSITION:
-#if GAZEBO_MAJOR_VERSION >= 9
         sim_joints_[j]->SetPosition(0, joint_position_command_[j], true);
-#else
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "The default_robot_hw_sim plugin is using the Joint::SetPosition method without "
-          "preserving the link velocity.");
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "As a result, gravity will not be simulated correctly for your model.");
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "Please set gazebo_pid parameters, switch to the VelocityJointInterface or "
-          "EffortJointInterface, or upgrade to Gazebo 9.");
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "For details, see https://github.com/ros-simulation/gazebo_ros_pkgs/issues/612");
-        sim_joints_[j]->SetPosition(0, joint_position_command_[j]);
-#endif
         break;
 
       case POSITION_PID:
@@ -441,15 +412,11 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
         break;
 
       case VELOCITY:
-#if GAZEBO_MAJOR_VERSION > 2
         if (physics_type_.compare("ode") == 0) {
           sim_joints_[j]->SetParam("vel", 0, e_stop_active_ ? 0 : joint_velocity_command_[j]);
         } else {
           sim_joints_[j]->SetVelocity(0, e_stop_active_ ? 0 : joint_velocity_command_[j]);
         }
-#else
-        sim_joints_[j]->SetVelocity(0, e_stop_active_ ? 0 : joint_velocity_command_[j]);
-#endif
         break;
 
       case VELOCITY_PID:
