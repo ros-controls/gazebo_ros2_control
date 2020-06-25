@@ -1,0 +1,59 @@
+name: Gazebo ros2 control CI
+
+on:
+  pull_request:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:foxy-desktop
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup colcon workspace
+      id: configure
+      run: |
+        cd ..
+        mkdir -p /home/ros2_ws/src
+        cp -r gazebo_ros2_control /home/ros2_ws/src/
+        apt-get update && apt-get install -q -y --no-install-recommends \
+          dirmngr \
+          gnupg2 \
+          lsb-release \
+          ros-foxy-test-msgs \
+          python3-colcon-ros \
+          ros-foxy-control-msgs \
+          ros-foxy-camera-info-manager \
+          ros-foxy-cv-bridge \
+          ros-foxy-image-transport \
+          ros-foxy-ament-cmake-test
+        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D2486D2DD83DB69272AFE98867170598AF249743
+        . /etc/os-release \
+          && echo "deb http://packages.osrfoundation.org/gazebo/$ID-stable `lsb_release -sc` main" > /etc/apt/sources.list.d/gazebo-latest.list
+        apt-get update && apt-get install -q -y --no-install-recommends \
+          gazebo9 libgazebo9-dev
+        cd /home/ros2_ws/src/
+        git clone https://github.com/ros-simulation/gazebo_ros_pkgs -b ros2
+        git clone https://github.com/ros-controls/realtime_tools -b ros2_devel
+        git clone https://github.com/ros-controls/ros2_control
+        git clone https://github.com/ros-controls/ros2_controllers
+        git clone https://github.com/ddengster/ros2_control/ -b coffeebot_deps ros2_control_ddengster
+        touch ros2_control_ddengster/COLCON_IGNORE
+        cp -r ros2_control_ddengster/joint_limits_interface ros2_control_ddengster/transmission_interface  ros2_control
+        git clone https://github.com/ros/xacro -b dashing-devel
+        sed -i '/rclcpp/d' ros2_control/joint_limits_interface/CMakeLists.txt
+    - name: Build project
+      id: build
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/foxy/local_setup.sh
+        colcon build
+    - name: Run tests
+      id: test
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/foxy/local_setup.sh
+        colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control
+        colcon test-result
