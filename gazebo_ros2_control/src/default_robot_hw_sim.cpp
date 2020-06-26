@@ -259,19 +259,23 @@ bool DefaultRobotHWSim::initSim(
     joint_states_[j] = hardware_interface::JointStateHandle(
       joint_names_[j], &joint_position_[j], &joint_velocity_[j], &joint_effort_[j]);
     if (register_joint_state_handle(&joint_states_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointstatehandle");
+      RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint state handle.");
     }
 
     joint_cmds_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_position_command_[j]);
-    if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointcommandhandle");
+    if (hardware_interface == "PositionJointInterface" ||
+      hardware_interface == "hardware_interface/PositionJointInterface")
+    {
+      if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::HW_RET_OK) {
+        RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint commands.");
+      }
     }
 
     joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
       joint_names_[j], &joint_opmodes_[j]);
     if (register_operation_mode_handle(&joint_opmodehandles_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointopmodehandle");
+      RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint_opm ode handles.");
     }
 
     joint_limits_interface::JointLimits limits;  // hack, refactor registerjointhandle
@@ -289,8 +293,14 @@ bool DefaultRobotHWSim::initSim(
     joint_eff_cmdhandle_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_effort_command_[j]);
     // should be register_joint_effort_command_handle, but there's only 1 buffer for now
-    if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointcommandhandle");
+    if (hardware_interface == "EffortJointInterface" ||
+      hardware_interface == "hardware_interface/EffortJointInterface")
+    {
+      if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) !=
+        hardware_interface::HW_RET_OK)
+      {
+        RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint effort command handle.");
+      }
     }
 
     joint_eff_limit_handles_[j] = joint_limits_interface::EffortJointSaturationHandle(
@@ -298,8 +308,14 @@ bool DefaultRobotHWSim::initSim(
 
     joint_vel_cmdhandle_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_velocity_command_[j]);
-    if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) != hardware_interface::HW_RET_OK) {
-      std::cerr << "cant register jointcommandhandle" << std::endl;
+    if (hardware_interface == "VelocityJointInterface" ||
+      hardware_interface == "hardware_interface/VelocityJointInterface")
+    {
+      if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) !=
+        hardware_interface::HW_RET_OK)
+      {
+        std::cerr << "Failed to register joint velocity command handle." << std::endl;
+      }
     }
 
     joint_vel_limit_handles_[j] = joint_limits_interface::VelocityJointSaturationHandle(
