@@ -86,6 +86,7 @@ public:
   // Strings
   std::string robot_namespace_;
   std::string robot_description_;
+  std::string robot_description_node_;
   std::string param_file_;
 
   // Transmissions in this plugin's scope
@@ -167,6 +168,13 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     impl_->robot_description_ = impl_->sdf_->GetElement("robotParam")->Get<std::string>();
   } else {
     impl_->robot_description_ = "robot_description";  // default
+  }
+
+  // Get robot_description ROS param name
+  if (impl_->sdf_->HasElement("robotParamNode")) {
+    impl_->robot_description_node_ = impl_->sdf_->GetElement("robotParamNode")->Get<std::string>();
+  } else {
+    impl_->robot_description_node_ = "robot_state_publisher";  // default
   }
 
   // Get the robot simulation interface type
@@ -487,21 +495,23 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
 {
   std::string urdf_string;
 
+  using namespace std::chrono_literals;
   auto parameters_client = std::make_shared<rclcpp::AsyncParametersClient>(
-    model_nh_,
-    "robot_state_publisher");
+    model_nh_, robot_description_node_);
   while (!parameters_client->wait_for_service(0.5s)) {
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(
-        model_nh_->get_logger(), "Interrupted while waiting for the service. Exiting.");
+        model_nh_->get_logger(), "Interrupted while waiting for %s service. Exiting.",
+        robot_description_node_.c_str());
       return 0;
     }
     RCLCPP_ERROR(
-      model_nh_->get_logger(), "service not available, waiting again...");
+      model_nh_->get_logger(), "%s service not available, waiting again...",
+      robot_description_node_.c_str());
   }
 
   RCLCPP_ERROR(
-    model_nh_->get_logger(), "connected to service!! /robot_state_publisher");
+    model_nh_->get_logger(), "connected to service!! %s", robot_description_node_.c_str());
 
   // search and wait for robot_description on param server
   while (urdf_string.empty()) {
