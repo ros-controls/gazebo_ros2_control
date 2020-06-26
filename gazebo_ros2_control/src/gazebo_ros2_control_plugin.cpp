@@ -164,22 +164,22 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   }
 
   // Get robot_description ROS param name
-  if (impl_->sdf_->HasElement("robotParam")) {
-    impl_->robot_description_ = impl_->sdf_->GetElement("robotParam")->Get<std::string>();
+  if (impl_->sdf_->HasElement("robot_param")) {
+    impl_->robot_description_ = impl_->sdf_->GetElement("robot_param")->Get<std::string>();
   } else {
     impl_->robot_description_ = "robot_description";  // default
   }
 
   // Get robot_description ROS param name
-  if (impl_->sdf_->HasElement("robotParamNode")) {
-    impl_->robot_description_node_ = impl_->sdf_->GetElement("robotParamNode")->Get<std::string>();
+  if (impl_->sdf_->HasElement("robot_param_node")) {
+    impl_->robot_description_node_ = impl_->sdf_->GetElement("robot_param_node")->Get<std::string>();
   } else {
     impl_->robot_description_node_ = "robot_state_publisher";  // default
   }
 
   // Get the robot simulation interface type
-  if (impl_->sdf_->HasElement("robotSimType")) {
-    impl_->robot_hw_sim_type_str_ = impl_->sdf_->Get<std::string>("robotSimType");
+  if (impl_->sdf_->HasElement("robot_sim_type")) {
+    impl_->robot_hw_sim_type_str_ = impl_->sdf_->Get<std::string>("robot_sim_type");
   } else {
     impl_->robot_hw_sim_type_str_ = "gazebo_ros2_control/DefaultRobotHWSim";
     RCLCPP_DEBUG_STREAM(
@@ -199,8 +199,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   rclcpp::Duration gazebo_period(impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize());
 
   // Decide the plugin control period
-  if (impl_->sdf_->HasElement("controlPeriod")) {
-    impl_->control_period_ = rclcpp::Duration(impl_->sdf_->Get<double>("controlPeriod"));
+  if (impl_->sdf_->HasElement("control_period")) {
+    impl_->control_period_ = rclcpp::Duration(impl_->sdf_->Get<double>("control_period"));
 
     // Check the period against the simulation period
     if (impl_->control_period_ < gazebo_period) {
@@ -225,8 +225,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // Initialize the emergency stop code.
   impl_->e_stop_active_ = false;
   impl_->last_e_stop_active_ = false;
-  if (impl_->sdf_->HasElement("eStopTopic")) {
-    const std::string e_stop_topic = impl_->sdf_->GetElement("eStopTopic")->Get<std::string>();
+  if (impl_->sdf_->HasElement("e_stop_topic")) {
+    const std::string e_stop_topic = impl_->sdf_->GetElement("e_stop_topic")->Get<std::string>();
     impl_->e_stop_sub_ = impl_->model_nh_->create_subscription<std_msgs::msg::Bool>(
       e_stop_topic, 1,
       std::bind(&GazeboRosControlPrivate::eStopCB, impl_.get(), std::placeholders::_1));
