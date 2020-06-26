@@ -172,7 +172,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
   // Get robot_description ROS param name
   if (impl_->sdf_->HasElement("robot_param_node")) {
-    impl_->robot_description_node_ = impl_->sdf_->GetElement("robot_param_node")->Get<std::string>();
+    impl_->robot_description_node_ =
+      impl_->sdf_->GetElement("robot_param_node")->Get<std::string>();
   } else {
     impl_->robot_description_node_ = "robot_state_publisher";  // default
   }
