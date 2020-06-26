@@ -60,9 +60,7 @@
   </transmission>
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <robotNamespace>/</robotNamespace>
-      <robotSimType>gazebo_ros2_control/DefaultRobotHWSim</robotSimType>
-      <legacyModeNS>True</legacyModeNS>
+      <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
     </plugin>
   </gazebo>
