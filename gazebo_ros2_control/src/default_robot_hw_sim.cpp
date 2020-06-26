@@ -259,7 +259,7 @@ bool DefaultRobotHWSim::initSim(
     joint_states_[j] = hardware_interface::JointStateHandle(
       joint_names_[j], &joint_position_[j], &joint_velocity_[j], &joint_effort_[j]);
     if (register_joint_state_handle(&joint_states_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register joint_states_");
+      RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint state handle.");
     }
 
     joint_cmds_[j] = hardware_interface::JointCommandHandle(
@@ -268,14 +268,14 @@ bool DefaultRobotHWSim::initSim(
       hardware_interface == "hardware_interface/PositionJointInterface")
     {
       if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::HW_RET_OK) {
-        RCLCPP_WARN_ONCE(LOGGER, "cant register joint_cmds_");
+        RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint commands.");
       }
     }
 
     joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
       joint_names_[j], &joint_opmodes_[j]);
     if (register_operation_mode_handle(&joint_opmodehandles_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register joint_opmodehandles_");
+      RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint_opm ode handles.");
     }
 
     joint_limits_interface::JointLimits limits;  // hack, refactor registerjointhandle
@@ -299,7 +299,7 @@ bool DefaultRobotHWSim::initSim(
       if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) !=
         hardware_interface::HW_RET_OK)
       {
-        RCLCPP_WARN_ONCE(LOGGER, "cant register joint_eff_cmdhandle_");
+        RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint effort command handle.");
       }
     }
 
@@ -314,7 +314,7 @@ bool DefaultRobotHWSim::initSim(
       if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) !=
         hardware_interface::HW_RET_OK)
       {
-        std::cerr << "cant register joint_vel_cmdhandle_" << std::endl;
+        std::cerr << "Failed to register joint velocity command handle." << std::endl;
       }
     }
 
