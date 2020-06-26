@@ -502,12 +502,12 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
     if (!rclcpp::ok()) {
       RCLCPP_ERROR(
         model_nh_->get_logger(), "Interrupted while waiting for %s service. Exiting.",
-        robot_description_node_);
+        robot_description_node_.c_str());
       return 0;
     }
     RCLCPP_ERROR(
       model_nh_->get_logger(), "%s service not available, waiting again...",
-      robot_description_node_);
+      robot_description_node_.c_str());
   }
 
   RCLCPP_ERROR(
