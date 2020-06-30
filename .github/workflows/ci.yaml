@@ -29,6 +29,7 @@ jobs:
           --skip-keys=controller_manager \
           --skip-keys=controller_parameter_server \
           --skip-keys=hardware_interface \
+          --skip-keys=joint_limits_interface \
           --skip-keys=joint_state_controller \
           --skip-keys=joint_trajectory_controller \
           --skip-keys=realtime_tools \
