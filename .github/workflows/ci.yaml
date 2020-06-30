@@ -23,6 +23,7 @@ jobs:
           gnupg2 \
           lsb-release \
           python3-colcon-ros
+        rosdep update
         rosdep install --from-paths ./ -i -y --rosdistro foxy \
           --skip-keys=controller_interface \
           --skip-keys=controller_manager \
