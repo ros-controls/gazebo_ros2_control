@@ -18,6 +18,7 @@ jobs:
         cd ..
         mkdir -p /home/ros2_ws/src
         cp -r gazebo_ros2_control /home/ros2_ws/src/
+        apt-get upgrade -q -y
         apt-get update && apt-get install -q -y --no-install-recommends \
           dirmngr \
           gnupg2 \
