@@ -22,20 +22,8 @@ jobs:
           dirmngr \
           gnupg2 \
           lsb-release \
-          ros-foxy-test-msgs \
-          python3-colcon-ros \
-          ros-foxy-control-msgs \
-          ros-foxy-camera-info-manager \
-          ros-foxy-cv-bridge \
-          ros-foxy-image-transport \
-          ros-foxy-ament-cmake-test
-        apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys D2486D2DD83DB69272AFE98867170598AF249743
-        . /etc/os-release \
-          && echo "deb http://packages.osrfoundation.org/gazebo/$ID-stable `lsb_release -sc` main" > /etc/apt/sources.list.d/gazebo-latest.list
-        apt-get update && apt-get install -q -y --no-install-recommends \
-          gazebo9 libgazebo9-dev
+          python3-colcon-ros
         cd /home/ros2_ws/src/
-        git clone https://github.com/ros-simulation/gazebo_ros_pkgs -b ros2
         git clone https://github.com/ros-controls/realtime_tools -b ros2_devel
         git clone https://github.com/ros-controls/ros2_control
         git clone https://github.com/ros-controls/ros2_controllers
@@ -45,6 +33,18 @@ jobs:
         cp -r ros2_control_ddengster/joint_limits_interface ros2_control_ddengster/transmission_interface  ros2_control
         git clone https://github.com/ros/xacro -b dashing-devel
         sed -i '/rclcpp/d' ros2_control/joint_limits_interface/CMakeLists.txt
+        rosdep update
+        rosdep install --from-paths ./ -i -y --rosdistro foxy \
+          --skip-keys=controller_interface \
+          --skip-keys=controller_manager \
+          --skip-keys=controller_parameter_server \
+          --skip-keys=hardware_interface \
+          --skip-keys=joint_limits_interface \
+          --skip-keys=joint_state_controller \
+          --skip-keys=joint_trajectory_controller \
+          --skip-keys=realtime_tools \
+          --skip-keys=transmission_interface \
+          --skip-keys=xacro
     - name: Build project
       id: build
       run: |
