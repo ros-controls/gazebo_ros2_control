@@ -50,6 +50,7 @@ jobs:
       run: |
         cd /home/ros2_ws/
         . /opt/ros/foxy/local_setup.sh
+        export CMAKE_PREFIX_PATH=$AMENT_PREFIX_PATH:$CMAKE_PREFIX_PATH
         colcon build
     - name: Run tests
       id: test
