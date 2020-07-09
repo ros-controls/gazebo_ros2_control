@@ -274,7 +274,9 @@ bool DefaultRobotHWSim::initSim(
 
     joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
       joint_names_[j], &joint_opmodes_[j]);
-    if (register_operation_mode_handle(&joint_opmodehandles_[j]) != hardware_interface::return_type::OK) {
+    if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
+      hardware_interface::return_type::OK)
+    {
       RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint_opm ode handles.");
     }
 
