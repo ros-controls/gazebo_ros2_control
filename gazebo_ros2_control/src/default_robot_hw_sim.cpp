@@ -275,7 +275,7 @@ bool DefaultRobotHWSim::initSim(
     }
     joint_states_[j] = hardware_interface::JointStateHandle(
       joint_names_[j], &joint_position_[j], &joint_velocity_[j], &joint_effort_[j]);
-    if (register_joint_state_handle(&joint_states_[j]) != hardware_interface::HW_RET_OK) {
+    if (register_joint_state_handle(&joint_states_[j]) != hardware_interface::return_type::OK) {
       RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint state handle.");
     }
 
@@ -284,14 +284,16 @@ bool DefaultRobotHWSim::initSim(
     if (hardware_interface == "PositionJointInterface" ||
       hardware_interface == "hardware_interface/PositionJointInterface")
     {
-      if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::HW_RET_OK) {
+      if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::return_type::OK) {
         RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint commands.");
       }
     }
 
     joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
       joint_names_[j], &joint_opmodes_[j]);
-    if (register_operation_mode_handle(&joint_opmodehandles_[j]) != hardware_interface::HW_RET_OK) {
+    if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
+      hardware_interface::return_type::OK)
+    {
       RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint_opm ode handles.");
     }
 
@@ -314,7 +316,7 @@ bool DefaultRobotHWSim::initSim(
       hardware_interface == "hardware_interface/EffortJointInterface")
     {
       if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) !=
-        hardware_interface::HW_RET_OK)
+        hardware_interface::return_type::OK)
       {
         RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint effort command handle.");
       }
@@ -329,7 +331,7 @@ bool DefaultRobotHWSim::initSim(
       hardware_interface == "hardware_interface/VelocityJointInterface")
     {
       if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) !=
-        hardware_interface::HW_RET_OK)
+        hardware_interface::return_type::OK)
       {
         std::cerr << "Failed to register joint velocity command handle." << std::endl;
       }
