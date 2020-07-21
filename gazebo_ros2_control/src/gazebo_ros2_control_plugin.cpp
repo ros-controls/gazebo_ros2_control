@@ -411,12 +411,12 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     impl_->thread_executor_spin_ = std::thread(spin);
 
     if (impl_->controller_manager_->configure() !=
-      controller_interface::CONTROLLER_INTERFACE_RET_SUCCESS)
+      controller_interface::return_type::SUCCESS)
     {
       RCLCPP_ERROR(impl_->model_nh_->get_logger(), "cm failed to configure");
     }
     if (impl_->controller_manager_->activate() !=
-      controller_interface::CONTROLLER_INTERFACE_RET_SUCCESS)
+      controller_interface::return_type::SUCCESS)
     {
       RCLCPP_ERROR(impl_->model_nh_->get_logger(), "cm failed to activate");
     }
