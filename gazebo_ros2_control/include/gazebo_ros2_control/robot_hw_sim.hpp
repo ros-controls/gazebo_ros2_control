@@ -116,17 +116,17 @@ public:
   // in mind, keep to using readSim and writeSim so we don't have to update the documents for now
   virtual hardware_interface::hardware_interface_ret_t init()
   {
-    return hardware_interface::HW_RET_ERROR;
+    return hardware_interface::return_type::ERROR;
   }
 
   virtual hardware_interface::hardware_interface_ret_t read()
   {
-    return hardware_interface::HW_RET_ERROR;
+    return hardware_interface::return_type::ERROR;
   }
 
   virtual hardware_interface::hardware_interface_ret_t write()
   {
-    return hardware_interface::HW_RET_ERROR;
+    return hardware_interface::return_type::ERROR;
   }
 };
 
