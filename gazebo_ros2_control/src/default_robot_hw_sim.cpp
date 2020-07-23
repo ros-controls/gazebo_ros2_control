@@ -218,11 +218,8 @@ bool DefaultRobotHWSim::initSim(
     joint_velocity_[j] = joint->GetVelocity(0);
 
     // get physics engine type
-#if GAZEBO_MAJOR_VERSION >= 8
     gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->Physics();
-#else
-    gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->GetPhysicsEngine();
-#endif
+
     physics_type_ = physics->GetType();
     if (physics_type_.empty()) {
       std::cerr << "No physics type found." << std::endl;
@@ -256,29 +253,31 @@ bool DefaultRobotHWSim::initSim(
         // joint->SetParam("fmax") must be called if joint->SetAngle() or joint->SetParam("vel") are
         // going to be called. joint->SetParam("fmax") must *not* be called if joint->SetForce() is
         // going to be called.
-#if GAZEBO_MAJOR_VERSION > 2
         joint->SetParam("fmax", 0, joint_effort_limits_[j]);
-#else
-        joint->SetMaxForce(0, joint_effort_limits_[j]);
-#endif
       }
     }
     joint_states_[j] = hardware_interface::JointStateHandle(
       joint_names_[j], &joint_position_[j], &joint_velocity_[j], &joint_effort_[j]);
-    if (register_joint_state_handle(&joint_states_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointstatehandle");
+    if (register_joint_state_handle(&joint_states_[j]) != hardware_interface::return_type::OK) {
+      RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint state handle.");
     }
 
     joint_cmds_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_position_command_[j]);
-    if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointcommandhandle");
+    if (hardware_interface == "PositionJointInterface" ||
+      hardware_interface == "hardware_interface/PositionJointInterface")
+    {
+      if (register_joint_command_handle(&joint_cmds_[j]) != hardware_interface::return_type::OK) {
+        RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint commands.");
+      }
     }
 
     joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
       joint_names_[j], &joint_opmodes_[j]);
-    if (register_operation_mode_handle(&joint_opmodehandles_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointopmodehandle");
+    if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
+      hardware_interface::return_type::OK)
+    {
+      RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint_opm ode handles.");
     }
 
     joint_limits_interface::JointLimits limits;  // hack, refactor registerjointhandle
@@ -296,8 +295,14 @@ bool DefaultRobotHWSim::initSim(
     joint_eff_cmdhandle_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_effort_command_[j]);
     // should be register_joint_effort_command_handle, but there's only 1 buffer for now
-    if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) != hardware_interface::HW_RET_OK) {
-      RCLCPP_WARN_ONCE(LOGGER, "cant register jointcommandhandle");
+    if (hardware_interface == "EffortJointInterface" ||
+      hardware_interface == "hardware_interface/EffortJointInterface")
+    {
+      if (register_joint_command_handle(&joint_eff_cmdhandle_[j]) !=
+        hardware_interface::return_type::OK)
+      {
+        RCLCPP_WARN_ONCE(LOGGER, "Failed to register joint effort command handle.");
+      }
     }
 
     joint_eff_limit_handles_[j] = joint_limits_interface::EffortJointSaturationHandle(
@@ -305,8 +310,14 @@ bool DefaultRobotHWSim::initSim(
 
     joint_vel_cmdhandle_[j] = hardware_interface::JointCommandHandle(
       joint_names_[j], &joint_velocity_command_[j]);
-    if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) != hardware_interface::HW_RET_OK) {
-      std::cerr << "cant register jointcommandhandle" << std::endl;
+    if (hardware_interface == "VelocityJointInterface" ||
+      hardware_interface == "hardware_interface/VelocityJointInterface")
+    {
+      if (register_joint_command_handle(&joint_vel_cmdhandle_[j]) !=
+        hardware_interface::return_type::OK)
+      {
+        std::cerr << "Failed to register joint velocity command handle." << std::endl;
+      }
     }
 
     joint_vel_limit_handles_[j] = joint_limits_interface::VelocityJointSaturationHandle(
@@ -331,11 +342,7 @@ void DefaultRobotHWSim::readSim(rclcpp::Time time, rclcpp::Duration period)
 {
   for (unsigned int j = 0; j < n_dof_; j++) {
     // Gazebo has an interesting API...
-#if GAZEBO_MAJOR_VERSION >= 8
     double position = sim_joints_[j]->Position(0);
-#else
-    double position = sim_joints_[j]->GetAngle(0).Radian();
-#endif
     if (joint_types_[j] == urdf::Joint::PRISMATIC) {
       joint_position_[j] = position;
     } else {
@@ -389,25 +396,7 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
         break;
 
       case POSITION:
-#if GAZEBO_MAJOR_VERSION >= 9
         sim_joints_[j]->SetPosition(0, joint_position_command_[j], true);
-#else
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "The default_robot_hw_sim plugin is using the Joint::SetPosition method without "
-          "preserving the link velocity.");
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "As a result, gravity will not be simulated correctly for your model.");
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "Please set gazebo_pid parameters, switch to the VelocityJointInterface or "
-          "EffortJointInterface, or upgrade to Gazebo 9.");
-        RCLCPP_WARN_ONCE(
-          LOGGER,
-          "For details, see https://github.com/ros-simulation/gazebo_ros_pkgs/issues/612");
-        sim_joints_[j]->SetPosition(0, joint_position_command_[j]);
-#endif
         break;
 
       case POSITION_PID:
@@ -441,15 +430,11 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
         break;
 
       case VELOCITY:
-#if GAZEBO_MAJOR_VERSION > 2
         if (physics_type_.compare("ode") == 0) {
           sim_joints_[j]->SetParam("vel", 0, e_stop_active_ ? 0 : joint_velocity_command_[j]);
         } else {
           sim_joints_[j]->SetVelocity(0, e_stop_active_ ? 0 : joint_velocity_command_[j]);
         }
-#else
-        sim_joints_[j]->SetVelocity(0, e_stop_active_ ? 0 : joint_velocity_command_[j]);
-#endif
         break;
 
       case VELOCITY_PID:
