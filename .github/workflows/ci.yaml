@@ -24,6 +24,7 @@ jobs:
           gnupg2 \
           lsb-release \
           python3-colcon-ros
+        apt-get upgrade -y
         cd /home/ros2_ws/src/
         git clone https://github.com/ros-controls/realtime_tools -b ros2_devel
         git clone https://github.com/ros-controls/ros2_control
@@ -52,7 +53,7 @@ jobs:
         cd /home/ros2_ws/
         . /opt/ros/foxy/local_setup.sh
         export CMAKE_PREFIX_PATH=$AMENT_PREFIX_PATH:$CMAKE_PREFIX_PATH
-        colcon build
+        colcon build --packages-up-to gazebo_ros2_control
     - name: Run tests
       id: test
       run: |
