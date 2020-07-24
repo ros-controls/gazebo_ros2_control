@@ -19,15 +19,17 @@ docker build -t gazebo_ros2_control_docker .
 
 ### To run the demo
 
-The following command will launch Gazebo
+To run the demo we are going to use [rocker](https://github.com/osrf/rocker/) which is a tool to run docker images with customized local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions. You can install this tool with the following [instructions](https://github.com/osrf/rocker/#installation).
+
+The following command will launch Gazebo:
 
 ```bash
-rocker --x11 --nvidia gazebo_ros2_control:latest
+rocker --x11 --nvidia --name gazebo_ros2_control_demo gazebo_ros2_control:latest
 ```
 
 The following commands allow to move the cart in the rail:
 
 ```bash
-docker exec <rocker name container> bash
+docker exec gazebo_ros2_control_demo bash
 ros2 run gazebo_ros2_control_demos example_position
 ```
