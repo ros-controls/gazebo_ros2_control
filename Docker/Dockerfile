@@ -17,13 +17,11 @@ RUN mkdir -p /home/ros2_ws/src \
     && git clone https://github.com/ros-simulation/gazebo_ros2_control \
     && git clone https://github.com/ros-simulation/gazebo_ros2_control -b ahcorde/initial/demos gazebo_ros2_control_demos \
     && touch gazebo_ros2_control_demos/gazebo_ros2_control/COLCON_IGNORE \
-    && git clone https://github.com/ros-controls/realtime_tools -b ros2_devel \
     && git clone https://github.com/ros-controls/ros2_control \
     && git clone https://github.com/ros-controls/ros2_controllers \
     && git clone https://github.com/ddengster/ros2_control/ -b coffeebot_deps ros2_control_ddengster \
     && touch ros2_control_ddengster/COLCON_IGNORE \
     && cp -r ros2_control_ddengster/joint_limits_interface ros2_control_ddengster/transmission_interface ros2_control \
-    && git clone https://github.com/ros/xacro -b dashing-devel \
     && sed -i '/rclcpp/d' ros2_control/joint_limits_interface/CMakeLists.txt \
     && sed -i '/rclcpp/d' ros2_control/joint_limits_interface/package.xml \
     && rosdep update \
