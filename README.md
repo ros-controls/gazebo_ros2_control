@@ -14,7 +14,7 @@ It is running Gazebo and some other ROS 2 nodes.
 
 ```bash
 cd Docker
-docker build -t gazebo_ros2_control_docker .
+docker build -t gazebo_ros2_control .
 ```
 
 ### To run the demo
@@ -30,6 +30,7 @@ rocker --x11 --nvidia --name gazebo_ros2_control_demo gazebo_ros2_control:latest
 The following commands allow to move the cart in the rail:
 
 ```bash
-docker exec gazebo_ros2_control_demo bash
+docker exec -it gazebo_ros2_control_demo bash
+source /home/ros2_ws/install/setup.bash
 ros2 run gazebo_ros2_control_demos example_position
 ```

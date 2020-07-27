@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 
 RUN mkdir -p /home/ros2_ws/src \
     && cd /home/ros2_ws/src/ \
-    && git clone https://github.com/ros-simulation/gazebo_ros2_control -b ahcorde/update/ros2_control \
+    && git clone https://github.com/ros-simulation/gazebo_ros2_control \
     && git clone https://github.com/ros-simulation/gazebo_ros2_control -b ahcorde/initial/demos gazebo_ros2_control_demos \
     && touch gazebo_ros2_control_demos/gazebo_ros2_control/COLCON_IGNORE \
     && git clone https://github.com/ros-controls/realtime_tools -b ros2_devel \
@@ -28,16 +28,7 @@ RUN mkdir -p /home/ros2_ws/src \
     && sed -i '/rclcpp/d' ros2_control/joint_limits_interface/package.xml \
     && rosdep update \
     && rosdep install --from-paths ./ -i -y --rosdistro foxy \
-      --skip-keys=controller_interface \
-      --skip-keys=controller_manager \
-      --skip-keys=controller_parameter_server \
-      --skip-keys=hardware_interface \
-      --skip-keys=joint_limits_interface \
-      --skip-keys=joint_state_controller \
-      --skip-keys=joint_trajectory_controller \
-      --skip-keys=realtime_tools \
-      --skip-keys=transmission_interface \
-      --skip-keys=xacro
+      --ignore-src
 
 RUN cd /home/ros2_ws/ \
   && . /opt/ros/foxy/setup.sh \
