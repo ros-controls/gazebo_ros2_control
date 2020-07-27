@@ -154,6 +154,9 @@ bool DefaultRobotHWSim::initSim(
     if (hardware_interface == "EffortJointInterface" ||
       hardware_interface == "hardware_interface/EffortJointInterface")
     {
+      RCLCPP_INFO(
+        joint_limit_nh->get_logger(), "joint %s is configured in EFFORT mode",
+        transmissions[j].joints_[0].name_.c_str());
       // Create effort joint interface
       joint_control_methods_[j] = EFFORT;
 #if 0  // @todo
@@ -169,6 +172,9 @@ bool DefaultRobotHWSim::initSim(
       {
         // Create position joint interface
         joint_control_methods_[j] = POSITION;
+        RCLCPP_INFO(
+          joint_limit_nh->get_logger(), "joint %s is configured in POSITION mode",
+          transmissions[j].joints_[0].name_.c_str());
 #if 0  // @todo
         joint_handle = hardware_interface::JointHandle(
           js_interface_.getHandle(joint_names_[j]),
@@ -181,7 +187,9 @@ bool DefaultRobotHWSim::initSim(
         {
           // Create velocity joint interface
           joint_control_methods_[j] = VELOCITY;
-
+          RCLCPP_INFO(
+            joint_limit_nh->get_logger(), "joint %s is configured in VELOCITY mode",
+            transmissions[j].joints_[0].name_.c_str());
 #if 0  // @todo
           joint_handle = hardware_interface::JointHandle(
             js_interface_.getHandle(joint_names_[j]),
@@ -233,28 +241,37 @@ bool DefaultRobotHWSim::initSim(
     if (joint_control_methods_[j] != EFFORT) {
       // Initialize the PID controller. If no PID gain values are found, use joint->SetAngle() or
       // joint->SetParam("vel") to control the joint.
-#if 0
-      const ros::NodeHandle nh(robot_namespace + "//pid_gains/" +
-        joint_names_[j]);
-#endif
-#if 0
-      if (pid_controllers_[j].init(nh)) {
-        switch (joint_control_methods_[j]) {
-          case POSITION:
-            joint_control_methods_[j] = POSITION_PID;
-            break;
-          case VELOCITY:
-            joint_control_methods_[j] = VELOCITY_PID;
-            break;
+      try {
+        pid_controllers_.push_back(
+          control_toolbox::PidROS(
+            joint_limit_nh,
+            transmissions[j].joints_[0].name_));
+        joint_limit_nh->declare_parameter(transmissions[j].joints_[0].name_ + ".p");
+        joint_limit_nh->declare_parameter(transmissions[j].joints_[0].name_ + ".i");
+        joint_limit_nh->declare_parameter(transmissions[j].joints_[0].name_ + ".d");
+        joint_limit_nh->declare_parameter(transmissions[j].joints_[0].name_ + ".i_clamp_max");
+        joint_limit_nh->declare_parameter(transmissions[j].joints_[0].name_ + ".i_clamp_min");
+        joint_limit_nh->declare_parameter(transmissions[j].joints_[0].name_ + ".antiwindup");
+        if (pid_controllers_[j].initPid()) {
+          switch (joint_control_methods_[j]) {
+            case POSITION:
+              joint_control_methods_[j] = POSITION_PID;
+              RCLCPP_INFO(
+                joint_limit_nh->get_logger(), "joint %s is configured in POSITION_PID mode",
+                transmissions[j].joints_[0].name_.c_str());
+              break;
+            case VELOCITY:
+              joint_control_methods_[j] = VELOCITY_PID;
+              RCLCPP_INFO(
+                joint_limit_nh->get_logger(), "joint %s is configured in VELOCITY_PID mode",
+                transmissions[j].joints_[0].name_.c_str());
+              break;
+          }
         }
-      } else {}
-#endif
-      {
-        // joint->SetParam("fmax") must be called if joint->SetAngle() or joint->SetParam("vel") are
-        // going to be called. joint->SetParam("fmax") must *not* be called if joint->SetForce() is
-        // going to be called.
-        joint->SetParam("fmax", 0, joint_effort_limits_[j]);
+      } catch (const std::exception & e) {
+        RCLCPP_ERROR(rclcpp::get_logger("gazebo_ros2_control"), "%s", e.what());
       }
+      joint->SetParam("fmax", 0, joint_effort_limits_[j]);
     }
     joint_states_[j] = hardware_interface::JointStateHandle(
       joint_names_[j], &joint_position_[j], &joint_velocity_[j], &joint_effort_[j]);
@@ -421,11 +438,11 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
           }
 
           const double effort_limit = joint_effort_limits_[j];
-          // TODO(anyone): Restored this when PID controllers is available
-          // const double effort = std::clamp(pid_controllers_[j].computeCommand(error, period),
-          //                             -effort_limit, effort_limit);
-          const double effort = 0.0;
+          double effort = ignition::math::clamp(
+            pid_controllers_[j].computeCommand(error, period),
+            -effort_limit, effort_limit);
           sim_joints_[j]->SetForce(0, effort);
+          sim_joints_[j]->SetParam("friction", 0, 0.0);
         }
         break;
 
@@ -445,10 +462,9 @@ void DefaultRobotHWSim::writeSim(rclcpp::Time time, rclcpp::Duration period)
           error = joint_velocity_command_[j] - joint_velocity_[j];
         }
         const double effort_limit = joint_effort_limits_[j];
-        // TODO(anyone): Restored this when PID controllers is available
-        // const double effort = std::clamp(pid_controllers_[j].computeCommand(error, period),
-        //                             -effort_limit, effort_limit);
-        const double effort = 0.0;
+        double effort = ignition::math::clamp(
+          pid_controllers_[j].computeCommand(error, period),
+          -effort_limit, effort_limit);
         sim_joints_[j]->SetForce(0, effort);
         break;
     }

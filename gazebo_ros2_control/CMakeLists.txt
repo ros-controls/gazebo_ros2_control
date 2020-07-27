@@ -3,6 +3,7 @@ project(gazebo_ros2_control)
 
 find_package(ament_cmake REQUIRED)
 find_package(angles REQUIRED)
+find_package(control_toolbox REQUIRED)
 find_package(controller_manager REQUIRED)
 find_package(gazebo_dev REQUIRED)
 find_package(gazebo_ros REQUIRED)
@@ -38,6 +39,7 @@ ament_target_dependencies(${PROJECT_NAME}
 add_library(default_robot_hw_sim SHARED src/default_robot_hw_sim.cpp)
 ament_target_dependencies(default_robot_hw_sim
   angles
+  control_toolbox
   gazebo_dev
   hardware_interface
   joint_limits_interface
