@@ -15,9 +15,8 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 RUN mkdir -p /home/ros2_ws/src \
     && cd /home/ros2_ws/src/ \
     && git clone https://github.com/ros-simulation/gazebo_ros2_control \
-    && git clone https://github.com/ros-simulation/gazebo_ros2_control -b ahcorde/initial/demos gazebo_ros2_control_demos \
-    && touch gazebo_ros2_control_demos/gazebo_ros2_control/COLCON_IGNORE \
     && git clone https://github.com/ros-controls/ros2_control \
+    && git clone https://github.com/ros-controls/control_toolbox -b ros2-master \
     && git clone https://github.com/ros-controls/ros2_controllers \
     && git clone https://github.com/ddengster/ros2_control/ -b coffeebot_deps ros2_control_ddengster \
     && touch ros2_control_ddengster/COLCON_IGNORE \
