@@ -42,11 +42,11 @@ jobs:
         cd /home/ros2_ws/
         . /opt/ros/foxy/local_setup.sh
         export CMAKE_PREFIX_PATH=$AMENT_PREFIX_PATH:$CMAKE_PREFIX_PATH
-        colcon build --packages-up-to gazebo_ros2_control
+        colcon build --packages-up-to gazebo_ros2_control_demos
     - name: Run tests
       id: test
       run: |
         cd /home/ros2_ws/
         . /opt/ros/foxy/local_setup.sh
-        colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control
+        colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
         colcon test-result
