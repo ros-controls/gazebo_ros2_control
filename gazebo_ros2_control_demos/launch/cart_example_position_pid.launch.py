@@ -25,6 +25,8 @@ from launch.substitutions import Command
 
 from launch_ros.actions import Node
 
+import xacro
+
 
 def generate_launch_description():
     gazebo = IncludeLaunchDescription(
@@ -39,12 +41,9 @@ def generate_launch_description():
                               'urdf',
                               'test_cart_position_pid.xacro.urdf')
 
-    robot_desc = Command('xacro %s' % xacro_file)
-    params = {'robot_description': robot_desc}
-
-    context = LaunchContext()
-    command = Command('xacro %s -o /tmp/test_cart_position_pid.urdf' % xacro_file)
-    command.perform(context)
+    doc = xacro.parse(open(xacro_file))
+    xacro.process_doc(doc)
+    params = {'robot_description': doc.toxml()}
 
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -53,7 +52,6 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    # GAZEBO_MODEL_PATH has to be correctly set for Gazebo to be able to find the model
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-file', '/tmp/test_cart_position_pid.urdf',
                                    '-entity', 'cartpole'],
