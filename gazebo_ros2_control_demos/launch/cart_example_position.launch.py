@@ -51,7 +51,8 @@ def generate_launch_description():
     )
 
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
-                        arguments=['-file', '/tmp/test_cart_position.urdf', '-entity', 'cartpole'],
+                        arguments=['-topic', 'robot_description',
+                                   '-entity', 'cartpole'],
                         output='screen')
 
     return LaunchDescription([
