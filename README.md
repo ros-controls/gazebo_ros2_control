@@ -172,3 +172,11 @@ ros2 param set /gazebo_ros2_control slider_to_cart.d 15.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_max 3.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_min -3.0
 ```
+
+# NOTES
+
+`ros2_control` and `ros2_controllers` are in a redesign phase. Some of the packages are unofficial.
+In the following links you can track some of the missing features.
+
+ - https://github.com/ros-controls/ros2_control/issues/26
+ - https://github.com/ros-controls/ros2_control/issues/32
