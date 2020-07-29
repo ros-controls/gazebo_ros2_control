@@ -117,13 +117,14 @@ To set the PID gains for a specific joint you need to define them inside `<plugi
 <gazebo>
   <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
     <ros>
-      <namespace>/</namespace>
+      <namespace>/my_robot</namespace>
       <parameter name="slider_to_cart.p" type="double">50.0</parameter>
       <parameter name="slider_to_cart.i" type="double">10.0</parameter>
       <parameter name="slider_to_cart.d" type="double">15.0</parameter>
       <parameter name="slider_to_cart.i_clamp_max" type="double">3.0</parameter>
       <parameter name="slider_to_cart.i_clamp_min" type="double">-3.0</parameter>
       <parameter name="slider_to_cart.antiwindup" type="bool">false</parameter>
+      <remapping>e_stop_topic:=emergency_stop</remapping>
     </ros>
     <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
     <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
