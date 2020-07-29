@@ -8,7 +8,7 @@ This package provides a Gazebo plugin which instantiates a `ros2_control` contro
 
 ## Add transmission elements to a URDF
 
-To use `ros2_control` with your robot, you need to add some additional elements to your URDF. The ``<transmission>`` element is used to link actuators to joints, see the `<transmission>` spec for exact XML format.
+To use `ros2_control` with your robot, you need to add some additional elements to your URDF. The `<transmission>` element is used to link actuators to joints, see the `<transmission>` spec for exact XML format.
 
 For the purposes of `gazebo_ros2_control` in its current implementation, the only important information in these transmission tags are:
 
@@ -27,25 +27,26 @@ robot hardware interfaces between `ros2_control` and Gazebo.
 ```xml
 <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <robotSimType>gazebo_ros2_control/DefaultRobotHWSim</robotSimType>
-      <robotParamNode>robot_state_publisher</robotParamNode>
+      <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+      <robot_param>robot_description</robot_param>
+      <robot_param_node>robot_state_publisher</robot_param_node>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+      <e_stop_topic>False</e_stop_topic>
     </plugin>
 </gazebo>
 ```
 
 The `gazebo_ros2_control` `<plugin>` tag also has the following optional child elements:
 
- - `<robotNamespace>`: The ROS namespace to be used for this instance of the plugin, defaults to robot name in URDF/SDF
- - `<controlPeriod>`: The period of the controller update (in seconds), defaults to Gazebo's period
- - `<robotParam>`: The location of the robot_description (URDF) on the parameter server, defaults to 'robot_description'
- - `<robotParam>`: Name of the node where the robotParam is located, defauls to `robot_state_publisher`
- - `<robotSimType>`: The pluginlib name of a custom robot sim interface to be used, defaults to 'DefaultRobotHWSim'
+ - `<control_period>`: The period of the controller update (in seconds), defaults to Gazebo's period
+ - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
+ - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
+ - `<robot_sim_type>`: The pluginlib name of a custom robot sim interface to be used, defaults to `gazebo_ros2_control/DefaultRobotHWSim`
  - `<parameters>`: YAML file with the configuration of the controllers
 
 #### Default gazebo_ros2_control Behavior
 
-By default, without a `<robotSimType>` tag, `gazebo_ros2_control` will attempt to get all of the information it needs to interface with a ros2_control-based controller out of the URDF. This is sufficient for most cases, and good for at least getting started.
+By default, without a `<robot_sim_type>` tag, `gazebo_ros2_control` will attempt to get all of the information it needs to interface with a ros2_control-based controller out of the URDF. This is sufficient for most cases, and good for at least getting started.
 
 The default behavior provides the following ros2_control interfaces:
 
@@ -59,13 +60,12 @@ The `gazebo_ros2_control` Gazebo plugin also provides a pluginlib-based interfac
 
 These plugins must inherit `gazebo_ros2_control::RobotHWSim` which implements a simulated `ros2_control` `hardware_interface::RobotHW`. RobotHWSim provides API-level access to read and command joint properties in the Gazebo simulator.
 
-The respective RobotHWSim sub-class is specified in a URDF model and is loaded when the robot model is loaded. For example, the following XML will load the default plugin (same behavior as when using no `<robotSimType>` tag):
+The respective RobotHWSim sub-class is specified in a URDF model and is loaded when the robot model is loaded. For example, the following XML will load the default plugin (same behavior as when using no `<robot_sim_type>` tag):
 
 ```xml
 <gazebo>
   <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-    <robotNamespace></robotNamespace>
-    <robotSimType>gazebo_ros2_control/DefaultRobotHWSim</robotSimType>
+    <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
   </plugin>
 </gazebo>
 ```
@@ -83,7 +83,7 @@ Use the tag `<parameters>` inside `<plugin>` to set the YAML file with the contr
 ```
 
 This controller publishes the state of all resources registered to a
-`hardware_interface::JointStateInterface` to a topic of type `sensor_msgs/JointState`. The following is a basic configuration of the controller.
+`hardware_interface::JointStateInterface` to a topic of type `sensor_msgs/msg/JointState`. The following is a basic configuration of the controller.
 
 ```yaml
 joint_state_controller:
@@ -125,6 +125,8 @@ To set the PID gains for a specific joint you need to define them inside `<plugi
       <parameter name="slider_to_cart.i_clamp_min" type="double">-3.0</parameter>
       <parameter name="slider_to_cart.antiwindup" type="bool">false</parameter>
     </ros>
+    <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+    <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
     ...
   </plugins>
 </gazebo>
@@ -169,29 +171,4 @@ ros2 param set /gazebo_ros2_control slider_to_cart.i 10.0
 ros2 param set /gazebo_ros2_control slider_to_cart.d 15.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_max 3.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_min -3.0
-```
-
-#### Dependencies
-
- - gazebo_ros_pkgs
- - realtime_tools
- - ros2_control
- - ros2_controllers
- - xacro
-
-Step to compile `gazebo_ros2_control`
-
-```bash
-mkdir -p ~/ros2_control_ws/src
-cd ~/ros2_control_ws/src
-git clone https://github.com/ros-simulation/gazebo_ros_pkgs -b ros2
-git clone https://github.com/ros-controls/realtime_tools -b ros2_devel
-git clone https://github.com/ros-controls/ros2_control
-git clone https://github.com/ros-controls/ros2_controllers
-git clone https://github.com/ddengster/ros2_control/ -b coffeebot_deps ros2_control_ddengster
-touch ros2_control_ddengster/COLCON_IGNORE
-cp -r ros2_control_ddengster/joint_limits_interface ros2_control_ddengster/transmission_interface  ros2_control
-git clone https://github.com/ros/xacro -b dashing-devel
-cd ~/ros2_control_ws
-colcon build --merge-install
 ```
