@@ -1,10 +1,65 @@
 # gazebo_ros2_control
 
+
 This is a ROS 2 package for integrating the `ros2_control` controller architecture with the [Gazebo](http://gazebosim.org/) simulator.
 
 This package provides a Gazebo plugin which instantiates a `ros2_control` controller manager and connects it to a Gazebo model.
 
 # Usage
+
+This repository contains the contents for testing gazebo_ros2_control
+
+It is running Gazebo and some other ROS 2 nodes.
+
+## Video + Pictures
+
+![](img/gazebo_ros2_control_position_pid.gif)
+
+## Running
+
+### Modifying or building your own
+
+```bash
+cd Docker
+docker build -t gazebo_ros2_control .
+```
+
+### To run the demo
+
+#### Using Docker
+
+Docker allows us to run the demo without GUI if we don't configure it properly. The following command runs the demo without GUI:
+
+```bash
+docker run -it --rm --name gazebo_ros2_control_demo --net host gazebo_ros2_control ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py gui:=false
+```
+
+The in your local machine you can run the Gazebo client:
+
+```bash
+gzclient
+```
+
+#### Using Rocker
+
+To run the demo with GUI we are going to use [rocker](https://github.com/osrf/rocker/) which is a tool to run docker
+images with customized local support injected for things like nvidia support. And user id specific files for cleaner
+mounting file permissions. You can install this tool with the following [instructions](https://github.com/osrf/rocker/#installation).
+
+The following command will launch Gazebo:
+
+```bash
+rocker --x11 --nvidia --name gazebo_ros2_control_demo gazebo_ros2_control:latest
+```
+
+The following commands allow to move the cart in the rail:
+
+```bash
+docker exec -it gazebo_ros2_control_demo bash
+source /home/ros2_ws/install/setup.bash
+ros2 run gazebo_ros2_control_demos example_position
+```
+
 
 ## Add transmission elements to a URDF
 
