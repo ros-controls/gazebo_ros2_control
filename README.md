@@ -26,7 +26,25 @@ docker build -t gazebo_ros2_control .
 
 ### To run the demo
 
-To run the demo we are going to use [rocker](https://github.com/osrf/rocker/) which is a tool to run docker images with customized local support injected for things like nvidia support. And user id specific files for cleaner mounting file permissions. You can install this tool with the following [instructions](https://github.com/osrf/rocker/#installation).
+#### Using Docker
+
+Docker allows us to run the demo without GUI if we don't configure it properly. The following command runs the demo without GUI:
+
+```bash
+docker run -it --rm --name gazebo_ros2_control_demo --net host gazebo_ros2_control ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py gui:=false
+```
+
+The in your local machine you can run the Gazebo client:
+
+```bash
+gzclient
+```
+
+#### Using Rocker
+
+To run the demo with GUI we are going to use [rocker](https://github.com/osrf/rocker/) which is a tool to run docker
+images with customized local support injected for things like nvidia support. And user id specific files for cleaner
+mounting file permissions. You can install this tool with the following [instructions](https://github.com/osrf/rocker/#installation).
 
 The following command will launch Gazebo:
 
