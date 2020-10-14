@@ -40,10 +40,6 @@
 
 // ros_control
 #include "control_toolbox/pid_ros.hpp"
-#if 0  // @todo
-#include <hardware_interface/joint_command_interface.hpp>
-#include <hardware_interface/robot_hw.hpp>
-#endif
 
 #include "joint_limits_interface/joint_limits.hpp"
 #include "joint_limits_interface/joint_limits_interface.hpp"
@@ -93,7 +89,7 @@ protected:
   // Return the joint's type, lower position limit, upper position limit, and effort limit.
   void registerJointLimits(
     const std::string & joint_name,
-    const hardware_interface::JointStateHandle & joint_handle,
+    const std::shared_ptr<hardware_interface::JointHandle> & joint_handle,
     const ControlMethod ctrl_method,
     const rclcpp::Node::SharedPtr & joint_limit_nh,
     const urdf::Model * const urdf_model,
@@ -103,20 +99,6 @@ protected:
 
   unsigned int n_dof_;
 
-#if 0  // @todo
-  hardware_interface::JointStateInterface js_interface_;
-  hardware_interface::EffortJointInterface ej_interface_;
-  hardware_interface::VelocityJointInterface vj_interface_;
-  hardware_interface::PositionJointInterface pj_interface_;
-#endif
-#if 0  // @todo
-  joint_limits_interface::EffortJointSaturationInterface ej_sat_interface_;
-  joint_limits_interface::EffortJointSoftLimitsInterface ej_limits_interface_;
-  joint_limits_interface::PositionJointSaturationInterface pj_sat_interface_;
-  joint_limits_interface::PositionJointSoftLimitsInterface pj_limits_interface_;
-  joint_limits_interface::VelocityJointSaturationInterface vj_sat_interface_;
-  joint_limits_interface::VelocityJointSoftLimitsInterface vj_limits_interface_;
-#endif
   std::vector<std::string> joint_names_;
   std::vector<int> joint_types_;
   std::vector<double> joint_lower_limits_;
@@ -136,21 +118,11 @@ protected:
 
   std::vector<gazebo::physics::JointPtr> sim_joints_;
 
-  std::vector<hardware_interface::JointStateHandle> joint_states_;
-  std::vector<hardware_interface::JointCommandHandle> joint_cmds_;
-  std::vector<hardware_interface::JointCommandHandle> joint_eff_cmdhandle_;
-  std::vector<hardware_interface::JointCommandHandle> joint_vel_cmdhandle_;
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_states_;
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_cmds_;
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_eff_cmdhandle_;
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_vel_cmdhandle_;
   std::vector<hardware_interface::OperationModeHandle> joint_opmodehandles_;
-
-  // limits
-  std::vector<joint_limits_interface::PositionJointSaturationHandle> joint_pos_limit_handles_;
-  std::vector<joint_limits_interface::PositionJointSoftLimitsHandle>
-  joint_pos_soft_limit_handles_;
-  std::vector<joint_limits_interface::EffortJointSaturationHandle> joint_eff_limit_handles_;
-  std::vector<joint_limits_interface::EffortJointSoftLimitsHandle>
-  joint_eff_soft_limit_handles_;
-  std::vector<joint_limits_interface::VelocityJointSaturationHandle> joint_vel_limit_handles_;
-  std::vector<joint_limits_interface::VelocityJointSoftLimitsHandle> joint_vel_soft_limit_handles_;
 
   std::string physics_type_;
 

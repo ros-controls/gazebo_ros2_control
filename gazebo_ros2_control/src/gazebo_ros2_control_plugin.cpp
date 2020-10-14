@@ -276,8 +276,9 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       new controller_manager::ControllerManager(
         impl_->robot_hw_sim_, impl_->executor_,
         "gazebo_controller_manager"));
-#if 1
-    // @todo:Coded example here. should disable when spawn functionality of controller manager is up
+
+    // TODO(anyone): Coded example here. should disable when spawn functionality of
+    // controller manager is up
     auto load_params_from_yaml_node = [](rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node,
         YAML::Node & yaml_node, const std::string & prefix)
       {
@@ -313,7 +314,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
               } else {
                 node->set_parameter(rclcpp::Parameter(key, val_str));
               }
-
               return;
             } else if (yaml_node.Type() == YAML::NodeType::Map) {
               for (auto yaml_node_it : yaml_node) {
@@ -339,7 +339,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
                     node->declare_parameter(key);
                   }
                   node->set_parameter({rclcpp::Parameter(key, val)});
-
                   if (key == "joints") {
                     if (!node->has_parameter("write_op_modes")) {
                       node->declare_parameter("write_op_modes");
@@ -366,20 +365,23 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       };
     auto load_params_from_yaml = [&](rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node,
         const std::string & yaml_config_file, const std::string & prefix)
-      {
-        if (yaml_config_file.empty()) {
-          throw std::runtime_error("yaml config file path is empty");
+    {
+      if (yaml_config_file.empty()) {
+        throw std::runtime_error("yaml config file path is empty");
+      }
+      YAML::Node root_node = YAML::LoadFile(yaml_config_file);
+      for (auto yaml : root_node) {
+        auto nodename = yaml.first.as<std::string>();
+        RCLCPP_ERROR(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
+        if (nodename == prefix) {
+          load_params_from_yaml_node(lc_node, yaml.second, prefix);
         }
+      }
+    };
 
-        YAML::Node root_node = YAML::LoadFile(yaml_config_file);
-        for (auto yaml : root_node) {
-          auto nodename = yaml.first.as<std::string>();
-          RCLCPP_ERROR(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
-          if (nodename == prefix) {
-            load_params_from_yaml_node(lc_node, yaml.second, prefix);
-          }
-        }
-      };
+    // Start controller, will take effect at the end of the update function
+    std::vector<std::string> start_controllers = {};
+    std::vector<std::string> stop_controllers = {};
 
     YAML::Node root_node = YAML::LoadFile(impl_->param_file_);
     for (auto yaml : root_node) {
@@ -397,10 +399,24 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
               controller->get_lifecycle_node(),
               impl_->param_file_,
               controller_name);
+            if(controller_name != "joint_state_controller") {
+              controller->get_lifecycle_node()->configure();
+            }
+            start_controllers.push_back(controller_name);
           }
         }
       }
     }
+    auto switch_future = std::async(
+      std::launch::async,
+      &controller_manager::ControllerManager::switch_controller, impl_->controller_manager_,
+      start_controllers, stop_controllers,
+      2, true, rclcpp::Duration(0, 0));  // STRICT_: 2
+    while (std::future_status::timeout == switch_future.wait_for(std::chrono::milliseconds(100)))
+    {
+      impl_->controller_manager_->update();
+    }
+    switch_future.get();
 
     auto spin = [this]()
       {
@@ -410,17 +426,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       };
     impl_->thread_executor_spin_ = std::thread(spin);
 
-    if (impl_->controller_manager_->configure() !=
-      controller_interface::return_type::SUCCESS)
-    {
-      RCLCPP_ERROR(impl_->model_nh_->get_logger(), "cm failed to configure");
-    }
-    if (impl_->controller_manager_->activate() !=
-      controller_interface::return_type::SUCCESS)
-    {
-      RCLCPP_ERROR(impl_->model_nh_->get_logger(), "cm failed to activate");
-    }
-#endif
     // Listen to the update event. This event is broadcast every simulation iteration.
     impl_->update_connection_ =
       gazebo::event::Events::ConnectWorldUpdateBegin(
