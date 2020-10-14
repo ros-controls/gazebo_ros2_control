@@ -81,11 +81,13 @@ bool DefaultRobotHWSim::initSim(
   for (unsigned int j = 0; j < n_dof_; j++) {
     // Check that this transmission has one joint
     if (transmissions[j].joints_.empty()) {
-      RCLCPP_ERROR(joint_limit_nh->get_logger(), "Transmission %s has no associated joints.",
+      RCLCPP_ERROR(
+        joint_limit_nh->get_logger(), "Transmission %s has no associated joints.",
         transmissions[j].name_.c_str());
       continue;
     } else if (transmissions[j].joints_.size() > 1) {
-      RCLCPP_ERROR(joint_limit_nh->get_logger(), "Transmission "
+      RCLCPP_ERROR(
+        joint_limit_nh->get_logger(), "Transmission "
         " has more than one joint. Currently the default robot hardware simulation "
         " interface only supports one.", transmissions[j].name_.c_str());
       continue;
@@ -98,21 +100,24 @@ bool DefaultRobotHWSim::initSim(
     {
       // TODO(anyone): Deprecate HW interface specification in actuators in ROS J
       joint_interfaces = transmissions[j].actuators_[0].hardware_interfaces_;
-      RCLCPP_ERROR(joint_limit_nh->get_logger(), "The <hardware_interface> element of tranmission "
+      RCLCPP_ERROR(
+        joint_limit_nh->get_logger(), "The <hardware_interface> element of tranmission "
         "%s should be nested inside the <joint> element, not <actuator>. "
         "The transmission will be properly loaded, but please update "
         "your robot model to remain compatible with future versions of the plugin.",
         transmissions[j].name_.c_str());
     }
     if (joint_interfaces.empty()) {
-      RCLCPP_ERROR(joint_limit_nh->get_logger(), "Joint %s of transmission %s"
+      RCLCPP_ERROR(
+        joint_limit_nh->get_logger(), "Joint %s of transmission %s"
         " does not specify any hardware interface. "
         "Not adding it to the robot hardware simulation.",
         transmissions[j].joints_[0].name_.c_str(),
         transmissions[j].name_.c_str());
       continue;
     } else if (joint_interfaces.size() > 1) {
-      RCLCPP_ERROR(joint_limit_nh->get_logger(), "Joint %s of transmission %s"
+      RCLCPP_ERROR(
+        joint_limit_nh->get_logger(), "Joint %s of transmission %s"
         " specifies multiple hardware interfaces. "
         "Currently the default robot hardware simulation interface only supports one. "
         "Using the first entry",
@@ -132,7 +137,8 @@ bool DefaultRobotHWSim::initSim(
     const std::string & hardware_interface = joint_interfaces.front();
 
     // Debug
-    RCLCPP_INFO(joint_limit_nh->get_logger(), "Loading joint '%s' of type '%s'",
+    RCLCPP_INFO(
+      joint_limit_nh->get_logger(), "Loading joint '%s' of type '%s'",
       joint_names_[j].c_str(), hardware_interface.c_str());
 
     register_joint(joint_names_[j], "effort", 0);
@@ -143,8 +149,7 @@ bool DefaultRobotHWSim::initSim(
 
     // Decide what kind of command interface this actuator/joint has
     std::shared_ptr<hardware_interface::JointHandle> joint_handle;
-    if (hardware_interface == "hardware_interface/EffortJointInterface")
-    {
+    if (hardware_interface == "hardware_interface/EffortJointInterface") {
       RCLCPP_INFO(
         joint_limit_nh->get_logger(), "joint %s is configured in EFFORT mode",
         transmissions[j].joints_[0].name_.c_str());
@@ -153,8 +158,7 @@ bool DefaultRobotHWSim::initSim(
       joint_control_methods_[j] = EFFORT;
       joint_handle = std::make_shared<hardware_interface::JointHandle>(
         joint_names_[j], "effort", &joint_effort_command_[j]);
-    } else if (hardware_interface == "hardware_interface/PositionJointInterface")
-    {
+    } else if (hardware_interface == "hardware_interface/PositionJointInterface") {
       // Create position joint interface
       joint_control_methods_[j] = POSITION;
       RCLCPP_INFO(
@@ -162,8 +166,7 @@ bool DefaultRobotHWSim::initSim(
         transmissions[j].joints_[0].name_.c_str());
       joint_handle = std::make_shared<hardware_interface::JointHandle>(
         joint_names_[j], "position", &joint_position_command_[j]);
-    } else if (hardware_interface == "hardware_interface/VelocityJointInterface")
-    {
+    } else if (hardware_interface == "hardware_interface/VelocityJointInterface") {
       // Create velocity joint interface
       joint_control_methods_[j] = VELOCITY;
       RCLCPP_INFO(

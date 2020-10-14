@@ -365,19 +365,19 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       };
     auto load_params_from_yaml = [&](rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node,
         const std::string & yaml_config_file, const std::string & prefix)
-    {
-      if (yaml_config_file.empty()) {
-        throw std::runtime_error("yaml config file path is empty");
-      }
-      YAML::Node root_node = YAML::LoadFile(yaml_config_file);
-      for (auto yaml : root_node) {
-        auto nodename = yaml.first.as<std::string>();
-        RCLCPP_ERROR(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
-        if (nodename == prefix) {
-          load_params_from_yaml_node(lc_node, yaml.second, prefix);
+      {
+        if (yaml_config_file.empty()) {
+          throw std::runtime_error("yaml config file path is empty");
         }
-      }
-    };
+        YAML::Node root_node = YAML::LoadFile(yaml_config_file);
+        for (auto yaml : root_node) {
+          auto nodename = yaml.first.as<std::string>();
+          RCLCPP_ERROR(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
+          if (nodename == prefix) {
+            load_params_from_yaml_node(lc_node, yaml.second, prefix);
+          }
+        }
+      };
 
     // Start controller, will take effect at the end of the update function
     std::vector<std::string> start_controllers = {};
@@ -399,7 +399,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
               controller->get_lifecycle_node(),
               impl_->param_file_,
               controller_name);
-            if(controller_name != "joint_state_controller") {
+            if (controller_name != "joint_state_controller") {
               controller->get_lifecycle_node()->configure();
             }
             start_controllers.push_back(controller_name);
@@ -412,8 +412,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       &controller_manager::ControllerManager::switch_controller, impl_->controller_manager_,
       start_controllers, stop_controllers,
       2, true, rclcpp::Duration(0, 0));  // STRICT_: 2
-    while (std::future_status::timeout == switch_future.wait_for(std::chrono::milliseconds(100)))
-    {
+    while (std::future_status::timeout == switch_future.wait_for(std::chrono::milliseconds(100))) {
       impl_->controller_manager_->update();
     }
     switch_future.get();
