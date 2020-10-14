@@ -35,6 +35,7 @@
 #define GAZEBO_ROS2_CONTROL__DEFAULT_ROBOT_HW_SIM_HPP_
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
