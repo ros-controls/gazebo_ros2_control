@@ -18,6 +18,7 @@ find_package(ament_cmake REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
+find_package(std_msgs REQUIRED)
 
 install(DIRECTORY
   launch
@@ -36,8 +37,7 @@ ament_target_dependencies(example_position
 add_executable(example_velocity examples/example_velocity.cpp)
 ament_target_dependencies(example_velocity
   rclcpp
-  rclcpp_action
-  control_msgs
+  std_msgs
 )
 
 if(BUILD_TESTING)

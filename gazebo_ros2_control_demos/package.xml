@@ -19,6 +19,7 @@
   <build_depend>control_msgs</build_depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>rclcpp_action</build_depend>
+  <build_depend>std_msgs</build_depend>
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>control_msgs</exec_depend>
@@ -31,7 +32,9 @@
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>rclcpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
   <exec_depend>transmission_interface</exec_depend>
+  <exec_depend>velocity_controllers</exec_depend>
   <exec_depend>xacro</exec_depend>
 
   <test_depend>ament_cmake_gtest</test_depend>

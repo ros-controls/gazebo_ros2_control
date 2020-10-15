@@ -61,7 +61,7 @@
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
-      <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+      <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller_velocity.yaml</parameters>
     </plugin>
   </gazebo>
 </robot>
