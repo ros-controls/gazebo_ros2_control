@@ -3,16 +3,16 @@ project(gazebo_ros2_control)
 
 find_package(ament_cmake REQUIRED)
 find_package(angles REQUIRED)
-find_package(controller_manager REQUIRED)
 find_package(gazebo_dev REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(joint_limits_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
-find_package(transmission_interface REQUIRED)
-find_package(urdf REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
+find_package(urdf REQUIRED)
+find_package(hardware_interface REQUIRED)
+find_package(joint_limits_interface REQUIRED)
+find_package(transmission_interface REQUIRED)
+find_package(controller_manager REQUIRED)
 
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
@@ -34,7 +34,10 @@ ament_target_dependencies(${PROJECT_NAME}
   yaml_cpp_vendor
 )
 
-add_library(default_robot_hw_sim SHARED src/default_robot_hw_sim.cpp)
+add_library(default_robot_hw_sim SHARED
+        include/gazebo_ros2_control/default_robot_hw_sim.h
+        include/gazebo_ros2_control/robot_hw_sim.h
+        src/default_robot_hw_sim.cpp)
 ament_target_dependencies(default_robot_hw_sim
   gazebo_dev
   rclcpp
