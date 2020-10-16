@@ -156,24 +156,27 @@ bool DefaultRobotHWSim::initSim(
 
       // Create effort joint interface
       joint_control_methods_[j] = EFFORT;
-      joint_handles_.push_back(std::make_shared<hardware_interface::JointHandle>(
-        joint_names_[j], "effort", &joint_effort_command_[j]));
+      joint_handles_.push_back(
+        std::make_shared<hardware_interface::JointHandle>(
+          joint_names_[j], "effort", &joint_effort_command_[j]));
     } else if (hardware_interface == "hardware_interface/PositionJointInterface") {
       // Create position joint interface
       joint_control_methods_[j] = POSITION;
       RCLCPP_INFO(
         joint_limit_nh->get_logger(), "joint %s is configured in POSITION mode",
         transmissions[j].joints_[0].name_.c_str());
-      joint_handles_.push_back(std::make_shared<hardware_interface::JointHandle>(
-        joint_names_[j], "position", &joint_position_command_[j]));
+      joint_handles_.push_back(
+        std::make_shared<hardware_interface::JointHandle>(
+          joint_names_[j], "position", &joint_position_command_[j]));
     } else if (hardware_interface == "hardware_interface/VelocityJointInterface") {
       // Create velocity joint interface
       joint_control_methods_[j] = VELOCITY;
       RCLCPP_INFO(
         joint_limit_nh->get_logger(), "joint %s is configured in VELOCITY mode",
         transmissions[j].joints_[0].name_.c_str());
-      joint_handles_.push_back(std::make_shared<hardware_interface::JointHandle>(
-        joint_names_[j], "velocity", &joint_velocity_command_[j]));
+      joint_handles_.push_back(
+        std::make_shared<hardware_interface::JointHandle>(
+          joint_names_[j], "velocity", &joint_velocity_command_[j]));
     } else {
       std::cerr << "No matching hardware interface found for '" <<
         hardware_interface << "' while loading interfaces for " << joint_names_[j] << std::endl;
@@ -516,7 +519,7 @@ void DefaultRobotHWSim::registerJointLimits(
       case VELOCITY:
         {
           const joint_limits_interface::VelocityJointSaturationHandle
-            sat_handle(joint_handle, joint_cmd,limits);
+            sat_handle(joint_handle, joint_cmd, limits);
         }
         break;
     }
