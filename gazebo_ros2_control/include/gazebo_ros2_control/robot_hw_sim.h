@@ -114,9 +114,9 @@ namespace gazebo_ros2_control {
 
     //@note: Avoid using these functions! ros2_control was not built with gazebo_ros_control
     //in mind, keep to using readSim and writeSim so we don't have to update the documents for now
-    virtual hardware_interface::hardware_interface_ret_t init() { }
-    virtual hardware_interface::hardware_interface_ret_t read() { }
-    virtual hardware_interface::hardware_interface_ret_t write() { }
+    virtual hardware_interface::hardware_interface_ret_t init() { return hardware_interface::return_type::INTERFACE_NOT_PROVIDED; }
+    virtual hardware_interface::hardware_interface_ret_t read() { return hardware_interface::return_type::INTERFACE_NOT_PROVIDED; }
+    virtual hardware_interface::hardware_interface_ret_t write() { return hardware_interface::return_type::INTERFACE_NOT_PROVIDED; }
   };
 
 }

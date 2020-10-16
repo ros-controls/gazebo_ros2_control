@@ -100,9 +100,7 @@ protected:
   // Register the limits of the joint specified by joint_name and joint_handle. The limits are
   // retrieved from joint_limit_nh. If urdf_model is not NULL, limits are retrieved from it also.
   // Return the joint's type, lower position limit, upper position limit, and effort limit.
-  void registerJointLimits(const std::string& joint_name,
-                           const hardware_interface::JointStateHandle& joint_handle,
-                           const ControlMethod ctrl_method,
+  void registerJointLimits(size_t joint_nr,
                            const rclcpp::Node::SharedPtr& joint_limit_nh,
                            const urdf::Model *const urdf_model,
                            int *const joint_type, double *const lower_limit,
@@ -135,30 +133,37 @@ protected:
 #if 0
   std::vector<control_toolbox::Pid> pid_controllers_;
 #endif
-  std::vector<double> joint_position_;
-  std::vector<double> joint_velocity_;
-  std::vector<double> joint_effort_;
-  std::vector<double> joint_effort_command_;
-  std::vector<double> joint_position_command_;
+  /// \brief stores the joint positions on ESTOP activation
+  /// During ESTOP these positions will override the output position command value.
   std::vector<double> last_joint_position_command_;
-  std::vector<double> joint_velocity_command_;
-  std::vector<hardware_interface::OperationMode> joint_opmodes_;
 
+  /// \brief handles to the joints from within Gazebo
   std::vector<gazebo::physics::JointPtr> sim_joints_;
 
-  std::vector<hardware_interface::JointStateHandle> joint_states_;
-  std::vector<hardware_interface::JointCommandHandle> joint_cmds_;
-  std::vector<hardware_interface::JointCommandHandle> joint_eff_cmdhandle_;
-  std::vector<hardware_interface::JointCommandHandle> joint_vel_cmdhandle_;
+  /// \brief The current positions of the joints
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_pos_stateh_;
+  /// \brief The current velocities of the joints
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_vel_stateh_;
+  /// \brief The current effort forces applied to the joints
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_eff_stateh_;
+
+  /// \brief The current position command value (if control mode is POSITION) of the joints
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_pos_cmdh_;
+  /// \brief The current effort command value (if control mode is EFFORT) of the joints
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_eff_cmdh_;
+  /// \brief The current velocity command value (if control mode is VELOCITY) of the joints
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_vel_cmdh_;
+
+  /// \brief The operational mode (active/inactive) state of the joints
+  std::vector<hardware_interface::OperationMode> joint_opmodes_;
+
+  /// \brief operational mode handles of the joints pointing to values in the joint_opmodes_ collection
   std::vector<hardware_interface::OperationModeHandle> joint_opmodehandles_;
 
-  //limits
-  std::vector<joint_limits_interface::PositionJointSaturationHandle> joint_pos_limit_handles_;
-  std::vector<joint_limits_interface::PositionJointSoftLimitsHandle> joint_pos_soft_limit_handles_;
-  std::vector<joint_limits_interface::EffortJointSaturationHandle> joint_eff_limit_handles_;
-  std::vector<joint_limits_interface::EffortJointSoftLimitsHandle> joint_eff_soft_limit_handles_;
-  std::vector<joint_limits_interface::VelocityJointSaturationHandle> joint_vel_limit_handles_;
-  //std::vector<joint_limits_interface::VelocityJointSoftLimitsHandle> joint_vel_soft_limit_handles_;
+  /// \brief Saturation limits for the joints if defined in the URDF or Node parameters
+  std::vector<std::shared_ptr<joint_limits_interface::JointSaturationLimitHandle>> joint_limit_handles_;
+  /// \brief Soft limits for the joints if defined in the URDF or Node parameters
+  std::vector<std::shared_ptr<joint_limits_interface::JointSoftLimitsHandle>> joint_soft_limit_handles_;
 
   std::string physics_type_;
 

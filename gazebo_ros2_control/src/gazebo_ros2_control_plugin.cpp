@@ -192,10 +192,9 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // Load the RobotHWSim abstraction to interface the controllers with the gazebo model
   try
   {
-    robot_hw_sim_loader_.reset
-      (new pluginlib::ClassLoader<gazebo_ros2_control::RobotHWSim>
+    robot_hw_sim_loader_ = boost::make_shared<pluginlib::ClassLoader<gazebo_ros2_control::RobotHWSim>>
         ("gazebo_ros2_control",
-          "gazebo_ros2_control::RobotHWSim"));
+          "gazebo_ros2_control::RobotHWSim");
 
     robot_hw_sim_ = robot_hw_sim_loader_->createSharedInstance(robot_hw_sim_type_str_);
 
@@ -214,8 +213,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     // Create the controller manager
     RCLCPP_ERROR(rclcpp::get_logger("ros2_control_plugin"),"Loading controller_manager");
 #if 1 //@todo
-    controller_manager_.reset
-      (new controller_manager::ControllerManager(robot_hw_sim_, executor_, "gazebo_controller_manager"));
+    controller_manager_ = std::make_shared<controller_manager::ControllerManager>
+        (robot_hw_sim_, executor_, "gazebo_controller_manager");
+
+    //controller_manager_.reset(new controller_manager::ControllerManager(robot_hw_sim_, executor_, "gazebo_controller_manager"));
 #endif
 #if 1 //@todo: Coded example here. should disable when spawn functionality of controller manager is up
     auto load_params_from_yaml_node = [](rclcpp_lifecycle::LifecycleNode::SharedPtr lc_node,
@@ -350,12 +351,15 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     };
     thread_executor_spin_ = std::thread(spin);
 
-    if (controller_manager_->configure() != controller_interface::CONTROLLER_INTERFACE_RET_SUCCESS) {
+#if 0
+    //@ todo: ControllerManager no longer has configure and activate...was CM previously a Lifecycle node?
+    if (controller_manager_->configure() != controller_interface::return_type::SUCCESS) {
       RCLCPP_ERROR(rclcpp::get_logger("cm"), "failed to configure");
     }
-    if (controller_manager_->activate() != controller_interface::CONTROLLER_INTERFACE_RET_SUCCESS) {
+    if (controller_manager_->activate() != controller_interface::return_type::SUCCESS) {
       RCLCPP_ERROR(rclcpp::get_logger("cm"), "failed to activate");
     }
+#endif
 
 #endif
 
