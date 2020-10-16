@@ -91,6 +91,7 @@ protected:
   void registerJointLimits(
     const std::string & joint_name,
     const std::shared_ptr<hardware_interface::JointHandle> & joint_handle,
+    const std::shared_ptr<hardware_interface::JointHandle> & joint_cmd,
     const ControlMethod ctrl_method,
     const rclcpp::Node::SharedPtr & joint_limit_nh,
     const urdf::Model * const urdf_model,
@@ -121,6 +122,7 @@ protected:
 
   std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_states_;
   std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_cmds_;
+  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_handles_;
   std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_eff_cmdhandle_;
   std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_vel_cmdhandle_;
   std::vector<hardware_interface::OperationModeHandle> joint_opmodehandles_;
