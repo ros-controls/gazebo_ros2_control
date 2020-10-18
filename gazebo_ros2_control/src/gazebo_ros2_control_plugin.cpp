@@ -325,6 +325,9 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       }
     };
 
+    std::vector<std::string> start_controllers = {};
+    std::vector<std::string> stop_controllers = {};
+
     YAML::Node root_node = YAML::LoadFile(param_file);
     for (auto yaml : root_node)
     {
@@ -339,10 +342,26 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
               controller_type);
             controllers_.push_back(controller);
             load_params_from_yaml(controller->get_lifecycle_node(), param_file, controller_name);
+            if(controller_name != "joint_state_controller") {
+              controller->get_lifecycle_node()->configure();
+            }
+            start_controllers.push_back(controller_name);
           }
         }
       }
     }
+
+    auto switch_future = std::async(
+        std::launch::async,
+        &controller_manager::ControllerManager::switch_controller, controller_manager_,
+        start_controllers, stop_controllers,
+        2, true, rclcpp::Duration(0, 0));  // STRICT_: 2
+    while (std::future_status::timeout == switch_future.wait_for(std::chrono::milliseconds(100)))
+    {
+      controller_manager_->update();
+    }
+    switch_future.get();
+
 
     auto spin = [this]()
     {
@@ -350,16 +369,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         executor_->spin_once();
     };
     thread_executor_spin_ = std::thread(spin);
-
-#if 0
-    //@ todo: ControllerManager no longer has configure and activate...was CM previously a Lifecycle node?
-    if (controller_manager_->configure() != controller_interface::return_type::SUCCESS) {
-      RCLCPP_ERROR(rclcpp::get_logger("cm"), "failed to configure");
-    }
-    if (controller_manager_->activate() != controller_interface::return_type::SUCCESS) {
-      RCLCPP_ERROR(rclcpp::get_logger("cm"), "failed to activate");
-    }
-#endif
 
 #endif
 
