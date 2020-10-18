@@ -160,12 +160,13 @@ protected:
   /// \brief operational mode handles of the joints pointing to values in the joint_opmodes_ collection
   std::vector<hardware_interface::OperationModeHandle> joint_opmodehandles_;
 
-  /// \brief Saturation limits for the joints if defined in the URDF or Node parameters
+  /// \brief Limits for the joints if defined in the URDF or Node parameters
+  /// The implementation of the joint limit will be chosen based on the URDF parameters and could be
+  /// one of the hard (saturation) or soft limits based on the control mode (effort, position or velocity)
   std::vector<std::unique_ptr<joint_limits_interface::JointLimitHandle>> joint_limit_handles_;
-  /// \brief Soft limits for the joints if defined in the URDF or Node parameters
-  std::vector<std::unique_ptr<joint_limits_interface::JointSoftLimitsHandle>> joint_soft_limit_handles_;
 
   std::string physics_type_;
+  bool usingODE;
 
   // e_stop_active_ is true if the emergency stop is active.
   bool e_stop_active_, last_e_stop_active_;
