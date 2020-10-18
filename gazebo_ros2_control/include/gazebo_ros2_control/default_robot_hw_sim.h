@@ -141,18 +141,18 @@ protected:
   std::vector<gazebo::physics::JointPtr> sim_joints_;
 
   /// \brief The current positions of the joints
-  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_pos_stateh_;
+  std::vector<hardware_interface::JointHandle> joint_pos_stateh_;
   /// \brief The current velocities of the joints
-  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_vel_stateh_;
+  std::vector<hardware_interface::JointHandle> joint_vel_stateh_;
   /// \brief The current effort forces applied to the joints
-  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_eff_stateh_;
+  std::vector<hardware_interface::JointHandle> joint_eff_stateh_;
 
   /// \brief The current position command value (if control mode is POSITION) of the joints
-  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_pos_cmdh_;
+  std::vector<hardware_interface::JointHandle> joint_pos_cmdh_;
   /// \brief The current effort command value (if control mode is EFFORT) of the joints
-  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_eff_cmdh_;
+  std::vector<hardware_interface::JointHandle> joint_eff_cmdh_;
   /// \brief The current velocity command value (if control mode is VELOCITY) of the joints
-  std::vector<std::shared_ptr<hardware_interface::JointHandle>> joint_vel_cmdh_;
+  std::vector<hardware_interface::JointHandle> joint_vel_cmdh_;
 
   /// \brief The operational mode (active/inactive) state of the joints
   std::vector<hardware_interface::OperationMode> joint_opmodes_;
@@ -161,9 +161,9 @@ protected:
   std::vector<hardware_interface::OperationModeHandle> joint_opmodehandles_;
 
   /// \brief Saturation limits for the joints if defined in the URDF or Node parameters
-  std::vector<std::shared_ptr<joint_limits_interface::JointSaturationLimitHandle>> joint_limit_handles_;
+  std::vector<std::unique_ptr<joint_limits_interface::JointLimitHandle>> joint_limit_handles_;
   /// \brief Soft limits for the joints if defined in the URDF or Node parameters
-  std::vector<std::shared_ptr<joint_limits_interface::JointSoftLimitsHandle>> joint_soft_limit_handles_;
+  std::vector<std::unique_ptr<joint_limits_interface::JointSoftLimitsHandle>> joint_soft_limit_handles_;
 
   std::string physics_type_;
 
