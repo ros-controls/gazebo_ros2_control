@@ -237,10 +237,6 @@ bool DefaultRobotHWSim::initSim(
       case VELOCITY: register_joint_interface("velocity_command", joint_vel_cmdh_); break;
     }
 
-    // get the current state of the sim joint to initialize our ROS control joints
-    // @note(guru-florida): perhaps we dont need this if readSim() is called after init anyway
-    readSim(rclcpp::Time(), rclcpp::Duration(0, 0));
-
     // setup joint limits
     registerJointLimits(
       j,
@@ -289,6 +285,10 @@ bool DefaultRobotHWSim::initSim(
       RCLCPP_WARN_STREAM(nh_->get_logger(), "cant register opmode handle for joint" << joint_name);
     }
   }
+
+  // get the current state of the sim joint to initialize our ROS control joints
+  // @note(guru-florida): perhaps we dont need this if readSim() is called after init anyway
+  readSim(rclcpp::Time(), rclcpp::Duration(0, 0));
 
   // Initialize the emergency stop code.
   e_stop_active_ = false;
