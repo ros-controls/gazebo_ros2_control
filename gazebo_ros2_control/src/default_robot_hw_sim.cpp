@@ -299,20 +299,31 @@ bool DefaultRobotHWSim::initSim(
 
 void DefaultRobotHWSim::readSim(rclcpp::Time, rclcpp::Duration)
 {
-  for (unsigned int j = 0; j < n_dof_; j++) {
-    // Gazebo has an interesting API...
-    double position = sim_joints_[j]->Position(0);
-
-    if (joint_types_[j] == urdf::Joint::PRISMATIC) {
-      joint_pos_stateh_[j].set_value(position);
-    } else {
-      double prev_position = joint_pos_stateh_[j].get_value();
-      joint_pos_stateh_[j].set_value(
-        prev_position +
-        angles::shortest_angular_distance(prev_position, position));
+  for (unsigned int j = 0; j < joint_names_.size(); j++) {
+    auto joint_handle = std::make_shared<hardware_interface::JointHandle>(
+      joint_names_[j], "position");
+    if (get_joint_handle(*joint_handle) == hardware_interface::return_type::OK) {
+      double position = sim_joints_[j]->Position(0);
+      if (joint_types_[j] == urdf::Joint::PRISMATIC) {
+        joint_handle->set_value(position);
+      } else {
+        double prev_position = joint_handle->get_value();
+        joint_handle->set_value(
+          prev_position +
+          angles::shortest_angular_distance(prev_position, position));
+      }
     }
-    joint_vel_stateh_[j].set_value(sim_joints_[j]->GetVelocity(0));
-    joint_eff_stateh_[j].set_value(sim_joints_[j]->GetForce((unsigned int)(0)));
+    joint_handle = std::make_shared<hardware_interface::JointHandle>(
+      joint_names_[j], "velocity");
+    if (get_joint_handle(*joint_handle) == hardware_interface::return_type::OK) {
+      joint_handle->set_value(sim_joints_[j]->GetVelocity(0));
+    }
+
+    joint_handle = std::make_shared<hardware_interface::JointHandle>(
+      joint_names_[j], "effort");
+    if (get_joint_handle(*joint_handle) == hardware_interface::return_type::OK) {
+      joint_handle->set_value(sim_joints_[j]->GetForce((unsigned int)(0)));
+    }
   }
 }
 
