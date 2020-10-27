@@ -60,9 +60,6 @@ public:
   // Get the URDF XML from the parameter server
   std::string getURDF(std::string param_name) const;
 
-  // Get Transmissions from the URDF
-  bool parseTransmissionsFromURDF(const std::string & urdf_string);
-
   void eStopCB(const std::shared_ptr<std_msgs::msg::Bool> e_stop_active);
 
   // Node Handles
@@ -236,11 +233,14 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // Read urdf from ros parameter server then
   // setup actuators and mechanism control node.
   // This call will block if ROS is not properly initialized.
-  const std::string urdf_string = impl_->getURDF(impl_->robot_description_);
-  if (!impl_->parseTransmissionsFromURDF(urdf_string)) {
-    RCLCPP_ERROR(
+  std::string urdf_string;
+  try {
+    urdf_string = impl_->getURDF(impl_->robot_description_);
+    impl_->transmissions_ = transmission_interface::parse_transmissions_from_urdf(urdf_string);
+  } catch (const std::runtime_error & ex) {
+    RCLCPP_ERROR_STREAM(
       impl_->model_nh_->get_logger(),
-      "Error parsing URDF in gazebo_ros2_control plugin, plugin not active.\n");
+      "Error parsing URDF in gazebo_ros2_control plugin, plugin not active : " << ex.what());
     return;
   }
 
@@ -545,13 +545,6 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
     model_nh_->get_logger(), "Recieved urdf from param server, parsing...");
 
   return urdf_string;
-}
-
-// Get Transmissions from the URDF
-bool GazeboRosControlPrivate::parseTransmissionsFromURDF(const std::string & urdf_string)
-{
-  transmission_interface::TransmissionParser::parse(urdf_string, transmissions_);
-  return true;
 }
 
 // Emergency stop callback

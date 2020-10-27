@@ -95,45 +95,45 @@ bool DefaultRobotHWSim::initSim(
     //
 
     // Check that this transmission has one joint
-    if (transmissions[j].joints_.empty()) {
+    if (transmissions[j].joints.empty()) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Transmission " << transmissions[j].name_ <<
+        nh_->get_logger(), "Transmission " << transmissions[j].name <<
           " has no associated joints.");
       continue;
-    } else if (transmissions[j].joints_.size() > 1) {
+    } else if (transmissions[j].joints.size() > 1) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Transmission " << transmissions[j].name_ <<
+        nh_->get_logger(), "Transmission " << transmissions[j].name <<
           " has more than one joint. Currently the default robot hardware simulation " <<
           " interface only supports one.");
       continue;
     }
 
-    std::string joint_name = joint_names_[j] = transmissions[j].joints_[0].name_;
+    std::string joint_name = joint_names_[j] = transmissions[j].joints[0].name;
 
-    std::vector<std::string> joint_interfaces = transmissions[j].joints_[0].hardware_interfaces_;
+    std::vector<std::string> joint_interfaces = transmissions[j].joints[0].interfaces;
     if (joint_interfaces.empty() &&
-      !(transmissions[j].actuators_.empty()) &&
-      !(transmissions[j].actuators_[0].hardware_interfaces_.empty()))
+      !(transmissions[j].actuators.empty()) &&
+      !(transmissions[j].actuators[0].interfaces.empty()))
     {
       // TODO(anyone): Deprecate HW interface specification in actuators in ROS J
-      joint_interfaces = transmissions[j].actuators_[0].hardware_interfaces_;
+      joint_interfaces = transmissions[j].actuators[0].interfaces;
       RCLCPP_WARN_STREAM(
         nh_->get_logger(), "The <hardware_interface> element of transmission " <<
-          transmissions[j].name_ << " should be nested inside the <joint> element," <<
+          transmissions[j].name << " should be nested inside the <joint> element," <<
           " not <actuator>. The transmission will be properly loaded, but please update " <<
           "your robot model to remain compatible with future versions of the plugin.");
     }
     if (joint_interfaces.empty()) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Joint " << transmissions[j].name_ <<
-          " of transmission " << transmissions[j].name_ <<
+        nh_->get_logger(), "Joint " << transmissions[j].name <<
+          " of transmission " << transmissions[j].name <<
           " does not specify any hardware interface. " <<
           "Not adding it to the robot hardware simulation.");
       continue;
     } else if (joint_interfaces.size() > 1) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Joint " << transmissions[j].name_ <<
-          " of transmission " << transmissions[j].name_ <<
+        nh_->get_logger(), "Joint " << transmissions[j].name <<
+          " of transmission " << transmissions[j].name <<
           " specifies multiple hardware interfaces. " <<
           "Currently the default robot hardware simulation interface only supports one." <<
           "Using the first entry");
@@ -237,6 +237,36 @@ bool DefaultRobotHWSim::initSim(
       case VELOCITY: register_joint_interface("velocity_command", joint_vel_cmdh_); break;
     }
 
+    // set joints operation mode to ACTIVE and register handle for controlling opmode
+    joint_opmodes_[j] = hardware_interface::OperationMode::ACTIVE;
+    joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
+      joint_name, &joint_opmodes_[j]);
+    if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
+      hardware_interface::return_type::OK)
+    {
+      RCLCPP_WARN_STREAM(nh_->get_logger(), "cant register opmode handle for joint" << joint_name);
+    }
+  }
+
+  // since handles references may have changed due to underlying DynamicJointState msg
+  // vectors resizing and reallocating we need to get these handles again
+  // any handles not registered are skipped, such as the command handles if they arent
+  // involved in the control method
+  bindJointHandles(joint_pos_stateh_);
+  bindJointHandles(joint_vel_stateh_);
+  bindJointHandles(joint_eff_stateh_);
+  bindJointHandles(joint_pos_cmdh_);
+  bindJointHandles(joint_vel_cmdh_);
+  bindJointHandles(joint_eff_cmdh_);
+
+
+  //
+  // Complete initialization of limits, PID controllers, etc now that registered handles are bound
+  //
+  for (size_t j = 0; j < joint_names_.size(); j++) {
+    auto simjoint = sim_joints_[j];
+    assert(simjoint);
+
     // setup joint limits
     registerJointLimits(
       j,
@@ -245,27 +275,27 @@ bool DefaultRobotHWSim::initSim(
       &joint_effort_limits_[j], &joint_vel_limits_[j]);
     if (joint_control_methods_[j] != EFFORT) {
       try {
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".p", 25.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i", 10.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".d", 5.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_max", 3.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_min", 3.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".antiwindup", false);
         pid_controllers_.push_back(
-          control_toolbox::PidROS(nh_, transmissions[j].joints_[0].name_));
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".p");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".i");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".d");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".i_clamp_max");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".i_clamp_min");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".antiwindup");
+          control_toolbox::PidROS(nh_, transmissions[j].joints[0].name));
         if (pid_controllers_[j].initPid()) {
           switch (joint_control_methods_[j]) {
             case POSITION:
               joint_control_methods_[j] = POSITION_PID;
               RCLCPP_INFO(
                 nh_->get_logger(), "joint %s is configured in POSITION_PID mode",
-                transmissions[j].joints_[0].name_.c_str());
+                transmissions[j].joints[0].name.c_str());
               break;
             case VELOCITY:
               joint_control_methods_[j] = VELOCITY_PID;
               RCLCPP_INFO(
                 nh_->get_logger(), "joint %s is configured in VELOCITY_PID mode",
-                transmissions[j].joints_[0].name_.c_str());
+                transmissions[j].joints[0].name.c_str());
               break;
           }
         }
@@ -278,11 +308,13 @@ bool DefaultRobotHWSim::initSim(
     // set joints operation mode to ACTIVE and register handle for controlling opmode
     joint_opmodes_[j] = hardware_interface::OperationMode::ACTIVE;
     joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
-      joint_name, &joint_opmodes_[j]);
+      joint_names_[j], &joint_opmodes_[j]);
     if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
       hardware_interface::return_type::OK)
     {
-      RCLCPP_WARN_STREAM(nh_->get_logger(), "cant register opmode handle for joint" << joint_name);
+      RCLCPP_WARN_STREAM(
+        nh_->get_logger(),
+        "cant register opmode handle for joint" << joint_names_[j]);
     }
   }
 
@@ -562,6 +594,33 @@ void DefaultRobotHWSim::registerJointLimits(
             joint_vel_stateh_[joint_nr], joint_vel_cmdh_[joint_nr], limits);
         }
         break;
+    }
+  }
+}
+
+void DefaultRobotHWSim::bindJointHandles(
+  std::vector<hardware_interface::JointHandle> & joint_iface_handles)
+{
+  for (auto & jh : joint_iface_handles) {
+    // some handles, especially command handles, may not be registered so skip these
+    if (jh.get_name().empty() || jh.get_interface_name().empty()) {
+      continue;
+    }
+
+    // now retrieve the handle with the bound value reference (bound directly to the
+    // DynamicJointState msg in RobotHardware)
+    if (get_joint_handle(jh) != hardware_interface::return_type::OK) {
+      RCLCPP_ERROR_STREAM(
+        nh_->get_logger(), "state handle " << jh.get_interface_name() << " failure for joint " <<
+          jh.get_name());
+      continue;
+    }
+
+    // verify handle references a target value
+    if (!jh) {
+      RCLCPP_ERROR_STREAM(
+        nh_->get_logger(), jh.get_interface_name() << " handle for joint " << jh.get_name() <<
+          " is null");
     }
   }
 }
