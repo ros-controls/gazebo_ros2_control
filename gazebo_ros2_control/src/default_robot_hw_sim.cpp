@@ -245,14 +245,14 @@ bool DefaultRobotHWSim::initSim(
       &joint_effort_limits_[j], &joint_vel_limits_[j]);
     if (joint_control_methods_[j] != EFFORT) {
       try {
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".p", 25.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i", 10.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".d", 5.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_max", 3.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_min", 3.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".antiwindup", false);
         pid_controllers_.push_back(
-          control_toolbox::PidROS(nh_, transmissions[j].joints_[0].name_));
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".p");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".i");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".d");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".i_clamp_max");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".i_clamp_min");
-        nh_->declare_parameter(transmissions[j].joints_[0].name_ + ".antiwindup");
+          control_toolbox::PidROS(nh_, transmissions[j].joints[0].name));
         if (pid_controllers_[j].initPid()) {
           switch (joint_control_methods_[j]) {
             case POSITION:
