@@ -89,8 +89,9 @@ private:
 
 protected:
   /// \brief Register the limits of the joint specified by joint_name and joint_handle.
-  /// The limits are retrieved from joint_limit_nh. If urdf_model is not NULL, limits are retrieved from
-  /// it also. Return the joint's type, lower position limit, upper position limit, and effort limit.
+  /// The limits are retrieved from joint_limit_nh. If urdf_model is not NULL, limits
+  /// are retrieved from it also. Return the joint's type, lower position limit, upper
+  /// position limit, and effort limit.
   void registerJointLimits(
     size_t joint_nr,
     const urdf::Model * const urdf_model,
@@ -99,10 +100,11 @@ protected:
     double * const vel_limit);
 
   /// \brief Refreshes all valid handle references in a collection.
-  /// Requests from the RobotHardware updated handle references. This is required after any call to
-  /// RobotHardware::register_joint() and before a handle is used or bound to a controller since the
-  /// internal implementation of register_joint binds to doubles inside a std::vector and thus growth of
-  /// that vector invalidates all existing iterators (i.e. handles).
+  /// Requests from the RobotHardware updated handle references. This is required after
+  /// any call to RobotHardware::register_joint() and before a handle is used or bound
+  /// to a controller since the internal implementation of register_joint binds to doubles
+  /// inside a std::vector and thus growth of that vector invalidates all existing
+  /// iterators (i.e. handles).
   /// See https://github.com/ros-controls/ros2_control/issues/212
   /// If a handle in the collection is unset (no joint name or interface name) then it is skipped.
   void bindJointHandles(std::vector<hardware_interface::JointHandle> & joint_iface_handles);

@@ -237,7 +237,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   try {
     urdf_string = impl_->getURDF(impl_->robot_description_);
     impl_->transmissions_ = transmission_interface::parse_transmissions_from_urdf(urdf_string);
-  } catch(const std::runtime_error& ex) {
+  } catch (const std::runtime_error & ex) {
     RCLCPP_ERROR_STREAM(
       impl_->model_nh_->get_logger(),
       "Error parsing URDF in gazebo_ros2_control plugin, plugin not active : " << ex.what());

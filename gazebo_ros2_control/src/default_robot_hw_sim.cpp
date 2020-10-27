@@ -240,9 +240,9 @@ bool DefaultRobotHWSim::initSim(
     // set joints operation mode to ACTIVE and register handle for controlling opmode
     joint_opmodes_[j] = hardware_interface::OperationMode::ACTIVE;
     joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
-        joint_name, &joint_opmodes_[j]);
+      joint_name, &joint_opmodes_[j]);
     if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
-        hardware_interface::return_type::OK)
+      hardware_interface::return_type::OK)
     {
       RCLCPP_WARN_STREAM(nh_->get_logger(), "cant register opmode handle for joint" << joint_name);
     }
@@ -250,7 +250,8 @@ bool DefaultRobotHWSim::initSim(
 
   // since handles references may have changed due to underlying DynamicJointState msg
   // vectors resizing and reallocating we need to get these handles again
-  // any handles not registered are skipped, such as the command handles if they arent involved in the control method
+  // any handles not registered are skipped, such as the command handles if they arent
+  // involved in the control method
   bindJointHandles(joint_pos_stateh_);
   bindJointHandles(joint_vel_stateh_);
   bindJointHandles(joint_eff_stateh_);
@@ -262,7 +263,7 @@ bool DefaultRobotHWSim::initSim(
   //
   // Complete initialization of limits, PID controllers, etc now that registered handles are bound
   //
-  for(size_t j=0; j < joint_names_.size(); j++) {
+  for (size_t j = 0; j < joint_names_.size(); j++) {
     auto simjoint = sim_joints_[j];
     assert(simjoint);
 
@@ -311,7 +312,9 @@ bool DefaultRobotHWSim::initSim(
     if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
       hardware_interface::return_type::OK)
     {
-      RCLCPP_WARN_STREAM(nh_->get_logger(), "cant register opmode handle for joint" << joint_names_[j]);
+      RCLCPP_WARN_STREAM(
+        nh_->get_logger(),
+        "cant register opmode handle for joint" << joint_names_[j]);
     }
   }
 
@@ -595,31 +598,32 @@ void DefaultRobotHWSim::registerJointLimits(
   }
 }
 
-void DefaultRobotHWSim::bindJointHandles(std::vector<hardware_interface::JointHandle> & joint_iface_handles)
+void DefaultRobotHWSim::bindJointHandles(
+  std::vector<hardware_interface::JointHandle> & joint_iface_handles)
 {
-  for(auto& jh: joint_iface_handles)
-  {
+  for (auto & jh : joint_iface_handles) {
     // some handles, especially command handles, may not be registered so skip these
-    if(jh.get_name().empty() || jh.get_interface_name().empty())
+    if (jh.get_name().empty() || jh.get_interface_name().empty()) {
       continue;
+    }
 
     // now retrieve the handle with the bound value reference (bound directly to the
     // DynamicJointState msg in RobotHardware)
     if (get_joint_handle(jh) != hardware_interface::return_type::OK) {
       RCLCPP_ERROR_STREAM(
-          nh_->get_logger(), "state handle " << jh.get_interface_name() << " failure for joint " <<
-                                             jh.get_name());
+        nh_->get_logger(), "state handle " << jh.get_interface_name() << " failure for joint " <<
+          jh.get_name());
       continue;
     }
 
     // verify handle references a target value
     if (!jh) {
       RCLCPP_ERROR_STREAM(
-          nh_->get_logger(), jh.get_interface_name() << " handle for joint " << jh.get_name() <<
-                                                     " is null");
+        nh_->get_logger(), jh.get_interface_name() << " handle for joint " << jh.get_name() <<
+          " is null");
     }
   }
-};
+}
 }  // namespace gazebo_ros2_control
 
 PLUGINLIB_EXPORT_CLASS(gazebo_ros2_control::DefaultRobotHWSim, gazebo_ros2_control::RobotHWSim)
