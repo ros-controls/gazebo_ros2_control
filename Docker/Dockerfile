@@ -17,9 +17,6 @@ RUN mkdir -p /home/ros2_ws/src \
     && git clone https://github.com/ros-simulation/gazebo_ros2_control \
     && git clone https://github.com/ros-controls/ros2_control \
     && git clone https://github.com/ros-controls/ros2_controllers \
-    && git clone https://github.com/ddengster/ros2_control/ -b coffeebot_deps ros2_control_ddengster \
-    && touch ros2_control_ddengster/COLCON_IGNORE \
-    && cp -r ros2_control_ddengster/transmission_interface ros2_control \
     && rosdep update \
     && rosdep install --from-paths ./ -i -y --rosdistro foxy \
       --ignore-src
