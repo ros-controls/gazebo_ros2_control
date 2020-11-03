@@ -275,46 +275,41 @@ bool DefaultRobotHWSim::initSim(
       &joint_effort_limits_[j], &joint_vel_limits_[j]);
     if (joint_control_methods_[j] != EFFORT) {
       try {
-        nh_->declare_parameter(transmissions[j].joints[0].name + ".p", 25.0);
-        nh_->declare_parameter(transmissions[j].joints[0].name + ".i", 10.0);
-        nh_->declare_parameter(transmissions[j].joints[0].name + ".d", 5.0);
-        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_max", 3.0);
-        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_min", 3.0);
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".p");
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i");
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".d");
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_max");
+        nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_min");
         nh_->declare_parameter(transmissions[j].joints[0].name + ".antiwindup", false);
-        pid_controllers_.push_back(
-          control_toolbox::PidROS(nh_, transmissions[j].joints[0].name));
-        if (pid_controllers_[j].initPid()) {
-          switch (joint_control_methods_[j]) {
-            case POSITION:
-              joint_control_methods_[j] = POSITION_PID;
-              RCLCPP_INFO(
-                nh_->get_logger(), "joint %s is configured in POSITION_PID mode",
-                transmissions[j].joints[0].name.c_str());
-              break;
-            case VELOCITY:
-              joint_control_methods_[j] = VELOCITY_PID;
-              RCLCPP_INFO(
-                nh_->get_logger(), "joint %s is configured in VELOCITY_PID mode",
-                transmissions[j].joints[0].name.c_str());
-              break;
+
+        if (nh_->get_parameter(transmissions[j].joints[0].name + ".p").get_type() ==
+          rclcpp::PARAMETER_DOUBLE &&
+          nh_->get_parameter(transmissions[j].joints[0].name + ".i").get_type() ==
+          rclcpp::PARAMETER_DOUBLE &&
+          nh_->get_parameter(transmissions[j].joints[0].name + ".d").get_type() ==
+          rclcpp::PARAMETER_DOUBLE)
+        {
+          pid_controllers_.push_back(
+            control_toolbox::PidROS(nh_, transmissions[j].joints[0].name));
+          if (pid_controllers_[j].initPid()) {
+            switch (joint_control_methods_[j]) {
+              case POSITION: joint_control_methods_[j] = POSITION_PID;
+                RCLCPP_INFO(
+                  nh_->get_logger(), "joint %s is configured in POSITION_PID mode",
+                  transmissions[j].joints[0].name.c_str());
+                break;
+              case VELOCITY: joint_control_methods_[j] = VELOCITY_PID;
+                RCLCPP_INFO(
+                  nh_->get_logger(), "joint %s is configured in VELOCITY_PID mode",
+                  transmissions[j].joints[0].name.c_str());
+                break;
+            }
           }
         }
       } catch (const std::exception & e) {
         RCLCPP_ERROR(rclcpp::get_logger("gazebo_ros2_control"), "%s", e.what());
       }
       simjoint->SetParam("fmax", 0, joint_effort_limits_[j]);
-    }
-
-    // set joints operation mode to ACTIVE and register handle for controlling opmode
-    joint_opmodes_[j] = hardware_interface::OperationMode::ACTIVE;
-    joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
-      joint_names_[j], &joint_opmodes_[j]);
-    if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
-      hardware_interface::return_type::OK)
-    {
-      RCLCPP_WARN_STREAM(
-        nh_->get_logger(),
-        "cant register opmode handle for joint" << joint_names_[j]);
     }
   }
 
