@@ -304,18 +304,6 @@ bool DefaultRobotHWSim::initSim(
       }
       simjoint->SetParam("fmax", 0, joint_effort_limits_[j]);
     }
-
-    // set joints operation mode to ACTIVE and register handle for controlling opmode
-    joint_opmodes_[j] = hardware_interface::OperationMode::ACTIVE;
-    joint_opmodehandles_[j] = hardware_interface::OperationModeHandle(
-      joint_names_[j], &joint_opmodes_[j]);
-    if (register_operation_mode_handle(&joint_opmodehandles_[j]) !=
-      hardware_interface::return_type::OK)
-    {
-      RCLCPP_WARN_STREAM(
-        nh_->get_logger(),
-        "cant register opmode handle for joint" << joint_names_[j]);
-    }
   }
 
   // get the current state of the sim joint to initialize our ROS control joints
