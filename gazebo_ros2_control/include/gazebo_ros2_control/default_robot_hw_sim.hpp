@@ -35,15 +35,12 @@
 #define GAZEBO_ROS2_CONTROL__DEFAULT_ROBOT_HW_SIM_HPP_
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 // ros_control
 #include "control_toolbox/pid_ros.hpp"
-#if 0  // @todo
-#include <hardware_interface/joint_command_interface.hpp>
-#include <hardware_interface/robot_hw.hpp>
-#endif
 
 #include "joint_limits_interface/joint_limits.hpp"
 #include "joint_limits_interface/joint_limits_interface.hpp"
@@ -59,11 +56,11 @@
 #include "pluginlib/class_list_macros.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-// gazebo_ros_control
-#include "gazebo_ros2_control/robot_hw_sim.hpp"
-
 // URDF
 #include "urdf/model.h"
+
+// gazebo_ros_control
+#include "gazebo_ros2_control/robot_hw_sim.hpp"
 
 namespace gazebo_ros2_control
 {
@@ -87,36 +84,32 @@ public:
   // Methods used to control a joint.
   enum ControlMethod {EFFORT, POSITION, POSITION_PID, VELOCITY, VELOCITY_PID};
 
+private:
+  rclcpp::Node::SharedPtr nh_;
+
 protected:
-  // Register the limits of the joint specified by joint_name and joint_handle. The limits are
-  // retrieved from joint_limit_nh. If urdf_model is not NULL, limits are retrieved from it also.
-  // Return the joint's type, lower position limit, upper position limit, and effort limit.
+  /// \brief Register the limits of the joint specified by joint_name and joint_handle.
+  /// The limits are retrieved from joint_limit_nh. If urdf_model is not NULL, limits
+  /// are retrieved from it also. Return the joint's type, lower position limit, upper
+  /// position limit, and effort limit.
   void registerJointLimits(
-    const std::string & joint_name,
-    const hardware_interface::JointStateHandle & joint_handle,
-    const ControlMethod ctrl_method,
-    const rclcpp::Node::SharedPtr & joint_limit_nh,
+    size_t joint_nr,
     const urdf::Model * const urdf_model,
     int * const joint_type, double * const lower_limit,
     double * const upper_limit, double * const effort_limit,
     double * const vel_limit);
 
-  unsigned int n_dof_;
+  /// \brief Refreshes all valid handle references in a collection.
+  /// Requests from the RobotHardware updated handle references. This is required after
+  /// any call to RobotHardware::register_joint() and before a handle is used or bound
+  /// to a controller since the internal implementation of register_joint binds to doubles
+  /// inside a std::vector and thus growth of that vector invalidates all existing
+  /// iterators (i.e. handles).
+  /// See https://github.com/ros-controls/ros2_control/issues/212
+  /// If a handle in the collection is unset (no joint name or interface name) then it is skipped.
+  void bindJointHandles(std::vector<hardware_interface::JointHandle> & joint_iface_handles);
 
-#if 0  // @todo
-  hardware_interface::JointStateInterface js_interface_;
-  hardware_interface::EffortJointInterface ej_interface_;
-  hardware_interface::VelocityJointInterface vj_interface_;
-  hardware_interface::PositionJointInterface pj_interface_;
-#endif
-#if 0  // @todo
-  joint_limits_interface::EffortJointSaturationInterface ej_sat_interface_;
-  joint_limits_interface::EffortJointSoftLimitsInterface ej_limits_interface_;
-  joint_limits_interface::PositionJointSaturationInterface pj_sat_interface_;
-  joint_limits_interface::PositionJointSoftLimitsInterface pj_limits_interface_;
-  joint_limits_interface::VelocityJointSaturationInterface vj_sat_interface_;
-  joint_limits_interface::VelocityJointSoftLimitsInterface vj_limits_interface_;
-#endif
+  unsigned int n_dof_;
   std::vector<std::string> joint_names_;
   std::vector<int> joint_types_;
   std::vector<double> joint_lower_limits_;
@@ -126,33 +119,43 @@ protected:
   std::vector<ControlMethod> joint_control_methods_;
   std::vector<control_toolbox::PidROS> pid_controllers_;
   std::vector<double> joint_position_;
-  std::vector<double> joint_velocity_;
-  std::vector<double> joint_effort_;
-  std::vector<double> joint_effort_command_;
-  std::vector<double> joint_position_command_;
-  std::vector<double> last_joint_position_command_;
-  std::vector<double> joint_velocity_command_;
-  std::vector<hardware_interface::OperationMode> joint_opmodes_;
 
+  /// \brief stores the joint positions on ESTOP activation
+  /// During ESTOP these positions will override the output position command value.
+  std::vector<double> last_joint_position_command_;
+
+  /// \brief handles to the joints from within Gazebo
   std::vector<gazebo::physics::JointPtr> sim_joints_;
 
-  std::vector<hardware_interface::JointStateHandle> joint_states_;
-  std::vector<hardware_interface::JointCommandHandle> joint_cmds_;
-  std::vector<hardware_interface::JointCommandHandle> joint_eff_cmdhandle_;
-  std::vector<hardware_interface::JointCommandHandle> joint_vel_cmdhandle_;
+  /// \brief The current positions of the joints
+  std::vector<hardware_interface::JointHandle> joint_pos_stateh_;
+  /// \brief The current velocities of the joints
+  std::vector<hardware_interface::JointHandle> joint_vel_stateh_;
+  /// \brief The current effort forces applied to the joints
+  std::vector<hardware_interface::JointHandle> joint_eff_stateh_;
+
+  /// \brief The current position command value (if control mode is POSITION) of the joints
+  std::vector<hardware_interface::JointHandle> joint_pos_cmdh_;
+  /// \brief The current effort command value (if control mode is EFFORT) of the joints
+  std::vector<hardware_interface::JointHandle> joint_eff_cmdh_;
+  /// \brief The current velocity command value (if control mode is VELOCITY) of the joints
+  std::vector<hardware_interface::JointHandle> joint_vel_cmdh_;
+
+  /// \brief The operational mode (active/inactive) state of the joints
+  std::vector<hardware_interface::OperationMode> joint_opmodes_;
+
+  /// \brief operational mode handles of the joints pointing to values in the joint_opmodes_
+  /// collection
   std::vector<hardware_interface::OperationModeHandle> joint_opmodehandles_;
 
-  // limits
-  std::vector<joint_limits_interface::PositionJointSaturationHandle> joint_pos_limit_handles_;
-  std::vector<joint_limits_interface::PositionJointSoftLimitsHandle>
-  joint_pos_soft_limit_handles_;
-  std::vector<joint_limits_interface::EffortJointSaturationHandle> joint_eff_limit_handles_;
-  std::vector<joint_limits_interface::EffortJointSoftLimitsHandle>
-  joint_eff_soft_limit_handles_;
-  std::vector<joint_limits_interface::VelocityJointSaturationHandle> joint_vel_limit_handles_;
-  std::vector<joint_limits_interface::VelocityJointSoftLimitsHandle> joint_vel_soft_limit_handles_;
+  /// \brief Limits for the joints if defined in the URDF or Node parameters
+  /// The implementation of the joint limit will be chosen based on the URDF parameters and could be
+  /// one of the hard (saturation) or soft limits based on the control mode (effort, position or
+  /// velocity)
+  std::vector<std::unique_ptr<joint_limits_interface::JointLimitHandle>> joint_limit_handles_;
 
   std::string physics_type_;
+  bool usingODE;
 
   // e_stop_active_ is true if the emergency stop is active.
   bool e_stop_active_, last_e_stop_active_;
