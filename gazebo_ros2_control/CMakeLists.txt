@@ -43,6 +43,7 @@ add_library(gazebo_hardware_plugins SHARED
 ament_target_dependencies(gazebo_hardware_plugins
   hardware_interface
   gazebo_dev
+  transmission_interface
   control_toolbox
   angles
 )
