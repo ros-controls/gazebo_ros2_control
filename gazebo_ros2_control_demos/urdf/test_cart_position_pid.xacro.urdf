@@ -69,8 +69,10 @@
     	  <parameter name="slider_to_cart.i_clamp_min" type="double">-3.0</parameter>
     	  <parameter name="slider_to_cart.antiwindup" type="bool">false</parameter>
       </ros>
-      <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+      <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+      <control_period>0.01</control_period>
+      <e_stop_topic>/cart_pole/estop</e_stop_topic>
     </plugin>
   </gazebo>
 </robot>

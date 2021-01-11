@@ -8,7 +8,6 @@ find_package(controller_manager REQUIRED)
 find_package(gazebo_dev REQUIRED)
 find_package(gazebo_ros REQUIRED)
 find_package(hardware_interface REQUIRED)
-find_package(joint_limits_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(transmission_interface REQUIRED)
@@ -23,7 +22,9 @@ endif()
 include_directories(include)
 
 # Libraries
-add_library(${PROJECT_NAME} SHARED src/gazebo_ros2_control_plugin.cpp)
+add_library(${PROJECT_NAME} SHARED
+  src/gazebo_ros2_control_plugin.cpp
+)
 ament_target_dependencies(${PROJECT_NAME}
   controller_manager
   gazebo_dev
@@ -36,19 +37,20 @@ ament_target_dependencies(${PROJECT_NAME}
   yaml_cpp_vendor
 )
 
-add_library(default_robot_hw_sim SHARED src/default_robot_hw_sim.cpp)
-ament_target_dependencies(default_robot_hw_sim
-  angles
-  control_toolbox
-  gazebo_dev
+add_library(gazebo_hardware_plugins SHARED
+  src/gazebo_system.cpp
+)
+ament_target_dependencies(gazebo_hardware_plugins
   hardware_interface
-  joint_limits_interface
-  rclcpp
-  transmission_interface
+  gazebo_dev
+  control_toolbox
+  angles
 )
 
 ## Install
-install(TARGETS default_robot_hw_sim ${PROJECT_NAME}
+install(TARGETS
+  ${PROJECT_NAME}
+  gazebo_hardware_plugins
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -56,7 +58,10 @@ install(TARGETS default_robot_hw_sim ${PROJECT_NAME}
 
 ament_export_dependencies(ament_cmake)
 ament_export_dependencies(rclcpp)
-ament_export_libraries(${PROJECT_NAME} default_robot_hw_sim)
+ament_export_libraries(
+  ${PROJECT_NAME}
+  gazebo_hardware_plugins
+)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
@@ -68,6 +73,6 @@ install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION include/${PROJECT_NAME}
 )
 
-pluginlib_export_plugin_description_file(gazebo_ros2_control robot_hw_sim_plugins.xml)
+pluginlib_export_plugin_description_file(gazebo_ros2_control gazebo_hardware_plugins.xml)
 
 ament_package()

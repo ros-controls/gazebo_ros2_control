@@ -63,9 +63,11 @@ ros2 run gazebo_ros2_control_demos example_position
 
 ## Add transmission elements to a URDF
 
-To use `ros2_control` with your robot, you need to add some additional elements to your URDF. The `<transmission>` element is used to link actuators to joints, see the `<transmission>` spec for exact XML format.
+To use `ros2_control` with your robot, you need to add some additional elements to your URDF.
+The `<transmission>` element is used to link actuators to joints, see the `<transmission>` spec for exact XML format.
 
-For the purposes of `gazebo_ros2_control` in its current implementation, the only important information in these transmission tags are:
+For the purposes of `gazebo_ros2_control` in its current implementation, the only important information
+in these transmission tags are:
 
  - `<joint name="">` the name must correspond to a joint else where in your URDF
  - `<type>` the type of transmission. Currently only `transmission_interface/SimpleTransmission` is implemented.
@@ -82,11 +84,12 @@ robot hardware interfaces between `ros2_control` and Gazebo.
 ```xml
 <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+      <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
       <robot_param>robot_description</robot_param>
       <robot_param_node>robot_state_publisher</robot_param_node>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
       <e_stop_topic>False</e_stop_topic>
+      <control_period>0.01</control_period>
     </plugin>
 </gazebo>
 ```
@@ -96,8 +99,9 @@ The `gazebo_ros2_control` `<plugin>` tag also has the following optional child e
  - `<control_period>`: The period of the controller update (in seconds), defaults to Gazebo's period
  - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
  - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
- - `<robot_sim_type>`: The pluginlib name of a custom robot sim interface to be used, defaults to `gazebo_ros2_control/DefaultRobotHWSim`
+ - `<robot_sim_type>`: The pluginlib name of a custom robot sim interface to be used, defaults to `gazebo_ros2_control/GazeboSystem`
  - `<parameters>`: YAML file with the configuration of the controllers
+ - `<e_stop_topic>`: Topic to publish the emergency stop
 
 #### Default gazebo_ros2_control Behavior
 
@@ -113,14 +117,17 @@ The default behavior provides the following ros2_control interfaces:
 
 The `gazebo_ros2_control` Gazebo plugin also provides a pluginlib-based interface to implement custom interfaces between Gazebo and `ros2_control` for simulating more complex mechanisms (nonlinear springs, linkages, etc).
 
-These plugins must inherit `gazebo_ros2_control::RobotHWSim` which implements a simulated `ros2_control` `hardware_interface::RobotHW`. RobotHWSim provides API-level access to read and command joint properties in the Gazebo simulator.
+These plugins must inherit `gazebo_ros2_control::GazeboSystemInterface` which implements a simulated `ros2_control`
+`hardware_interface::SystemInterface`. SystemInterface provides API-level access to read and command joint properties.
 
-The respective RobotHWSim sub-class is specified in a URDF model and is loaded when the robot model is loaded. For example, the following XML will load the default plugin (same behavior as when using no `<robot_sim_type>` tag):
+The respective GazeboSystemInterface sub-class is specified in a URDF model and is loaded when the
+robot model is loaded. For example, the following XML will load the default plugin
+(same behavior as when using no `<robot_sim_type>` tag):
 
 ```xml
 <gazebo>
   <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-    <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+    <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
   </plugin>
 </gazebo>
 ```
@@ -138,13 +145,13 @@ Use the tag `<parameters>` inside `<plugin>` to set the YAML file with the contr
 ```
 
 This controller publishes the state of all resources registered to a
-`hardware_interface::JointStateInterface` to a topic of type `sensor_msgs/msg/JointState`. The following is a basic configuration of the controller.
+`hardware_interface::StateInterface` to a topic of type `sensor_msgs/msg/JointState`.
+The following is a basic configuration of the controller.
 
 ```yaml
 joint_state_controller:
   ros__parameters:
     type: joint_state_controller/JointStateController
-    publish_rate: 50
 ```
 
 This controller creates an action called `/cart_pole_controller/follow_joint_trajectory` of type `control_msgs::action::FollowJointTrajectory`.
@@ -166,7 +173,9 @@ cart_pole_controller:
 
 #### Setting PID gains
 
-To set the PID gains for a specific joint you need to define them inside `<plugin><ros></plugin></ros>`. Using the generic way of defining parameters with `gazebo_ros`. The name of the parameter correspond the name of the joint followed by a dot and the name of the parameter: `p`, `i`, `d`, `i_clamp_max`, `i_clamp_min` and `antiwindup`.
+To set the PID gains for a specific joint you need to define them inside `<plugin><ros></plugin></ros>`.
+Using the generic way of defining parameters with `gazebo_ros`. The name of the parameter correspond to
+the name of the joint followed by a dot and the name of the parameter: `p`, `i`, `d`, `i_clamp_max`, `i_clamp_min` and `antiwindup`.
 
 ```xml
 <gazebo>
@@ -181,7 +190,7 @@ To set the PID gains for a specific joint you need to define them inside `<plugi
       <parameter name="slider_to_cart.antiwindup" type="bool">false</parameter>
       <remapping>e_stop_topic:=emergency_stop</remapping>
     </ros>
-    <robot_sim_type>gazebo_ros2_control/DefaultRobotHWSim</robot_sim_type>
+    <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
     <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
     ...
   </plugins>
@@ -228,11 +237,3 @@ ros2 param set /gazebo_ros2_control slider_to_cart.d 15.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_max 3.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_min -3.0
 ```
-
-# NOTES
-
-`ros2_control` and `ros2_controllers` are in a redesign phase. Some of the packages are unofficial.
-In the following links you can track some of the missing features.
-
- - https://github.com/ros-controls/ros2_control/issues/26
- - https://github.com/ros-controls/ros2_control/issues/32

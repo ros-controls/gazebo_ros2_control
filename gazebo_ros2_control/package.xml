@@ -23,7 +23,6 @@
   <depend>gazebo_ros</depend>
   <depend>controller_manager</depend>
   <depend>hardware_interface</depend>
-  <depend>joint_limits_interface</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
@@ -37,6 +36,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-    <gazebo_ros_control plugin="${prefix}/robot_hw_sim_plugins.xml"/>
+    <gazebo_ros2_control plugin="${prefix}/gazebo_hardware_plugins.xml"/>
   </export>
 </package>

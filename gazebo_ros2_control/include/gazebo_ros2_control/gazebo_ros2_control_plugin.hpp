@@ -39,18 +39,16 @@
 #include <string>
 #include <vector>
 
-// ROS
-#include "pluginlib/class_loader.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/bool.hpp"
-
-// Gazebo
-#include "gazebo/common/common.hh"
-#include "gazebo/physics/physics.hh"
-
-// ros_control
 #include "controller_manager/controller_manager.hpp"
-#include "gazebo_ros2_control/robot_hw_sim.hpp"
+
+#include "gazebo/common/common.hh"
+#include "gazebo/physics/Model.hh"
+
+#include "pluginlib/class_loader.hpp"
+
+#include "rclcpp/rclcpp.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
+
 #include "transmission_interface/transmission_parser.hpp"
 
 namespace gazebo_ros2_control

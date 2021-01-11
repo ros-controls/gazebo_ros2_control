@@ -1,0 +1,10 @@
+<library path="gazebo_hardware_plugins">
+  <class
+    name="gazebo_ros2_control/GazeboSystem"
+    type="gazebo_ros2_control::GazeboSystem"
+    base_class_type="gazebo_ros2_control::GazeboSystemInterface">
+    <description>
+      GazeboPositionJoint
+    </description>
+  </class>
+</library>
