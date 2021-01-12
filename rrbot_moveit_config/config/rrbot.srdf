@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="single_rrbot">
+    <group name="panda_arm">
+        <joint name="single_rrbot_fixed"/>
+        <joint name="single_rrbot_joint1"/>
+        <joint name="single_rrbot_joint2"/>
+    </group>
+    <group_state name="ready" group="panda_arm">
+        <joint name="single_rrbot_joint1" value="0.0"/>
+        <joint name="single_rrbot_joint2" value="0.0"/>
+    </group_state>
+    <group_state group="panda_arm" name="extended">
+      <joint name="single_rrbot_joint1" value="-1.57"/>
+      <joint name="single_rrbot_joint2" value="1.57"/>
+    </group_state>
+
+    <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="single_rrbot_link1"/>
+
+    <end_effector name="end_effector" parent_link="single_rrbot_hokuyo_link" group="panda_arm"/>
+
+    <disable_collisions link1="single_rrbot_camera_link" link2="single_rrbot_link1" reason="Never"/>
+    <disable_collisions link1="single_rrbot_camera_link" link2="single_rrbot_link2" reason="Never"/>
+    <disable_collisions link1="single_rrbot_camera_link" link2="single_rrbot_link3" reason="Adjacent"/>
+    <disable_collisions link1="single_rrbot_camera_link" link2="single_rrbot_hokuyo_link" reason="Never"/>
+    <disable_collisions link1="single_rrbot_hokuyo_link" link2="single_rrbot_link1" reason="Never"/>
+    <disable_collisions link1="single_rrbot_hokuyo_link" link2="single_rrbot_link3" reason="Adjacent"/>
+    <disable_collisions link1="single_rrbot_link1" link2="single_rrbot_link2" reason="Adjacent"/>
+    <disable_collisions link1="single_rrbot_link1" link2="single_rrbot_link3" reason="Never"/>
+    <disable_collisions link1="single_rrbot_link2" link2="single_rrbot_link3" reason="Adjacent"/>
+</robot>

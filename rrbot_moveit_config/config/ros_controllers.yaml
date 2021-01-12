@@ -1,0 +1,10 @@
+controller_names:
+  - rrbot_arm_controller
+
+rrbot_arm_controller:
+  action_ns: follow_joint_trajectory
+  type: FollowJointTrajectory
+  default: true
+  joints:
+    - single_rrbot_joint1
+    - single_rrbot_joint2
