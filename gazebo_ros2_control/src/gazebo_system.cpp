@@ -189,6 +189,12 @@ bool GazeboSystem::initSim(
                 nh_->get_logger(), "joint %s is configured in VELOCITY_PID mode",
                 transmissions[j].joints[0].name.c_str());
               break;
+            case EFFORT:
+              {}            // fallthrough
+            case POSITION_PID:
+              {}             // fallthrough
+            case VELOCITY_PID:
+              {}           // fallthrough
           }
         }
       }
