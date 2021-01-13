@@ -20,13 +20,18 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 include_directories(include)
+link_directories(
+  ${gazebo_dev_LIBRARY_DIRS}
+)
 
 # Libraries
 add_library(${PROJECT_NAME} SHARED
   src/gazebo_ros2_control_plugin.cpp
 )
 ament_target_dependencies(${PROJECT_NAME}
+  angles
   controller_manager
+  control_toolbox
   gazebo_dev
   gazebo_ros
   hardware_interface
