@@ -83,9 +83,6 @@ private:
   /// \brief last time the write method was called.
   rclcpp::Time last_update_sim_time_ros_;
 
-  /// \brief it is ODE physics engine?
-  bool usingODE;
-
   /// \brief vector with the joint's names.
   std::vector<std::string> joint_names_;
 

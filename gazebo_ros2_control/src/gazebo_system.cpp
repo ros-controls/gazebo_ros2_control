@@ -58,9 +58,6 @@ bool GazeboSystem::initSim(
     return false;
   }
 
-  // special handing since ODE uses a different set/get interface then the other engines
-  usingODE = (physics_type_.compare("ode") == 0);
-
   for (unsigned int j = 0; j < this->n_dof_; j++) {
     //
     // Perform some validation on the URDF joint and actuator spec
@@ -352,11 +349,7 @@ hardware_interface::return_type GazeboSystem::write()
         }
         break;
       case VELOCITY:
-        if (usingODE) {
-          sim_joints_[j]->SetParam("vel", 0, e_stop_active_ ? 0 : joint_velocity_cmd_[j]);
-        } else {
-          sim_joints_[j]->SetVelocity(0, e_stop_active_ ? 0 : joint_velocity_cmd_[j]);
-        }
+        sim_joints_[j]->SetVelocity(0, e_stop_active_ ? 0 : joint_velocity_cmd_[j]);
         break;
       case VELOCITY_PID:
         double error;

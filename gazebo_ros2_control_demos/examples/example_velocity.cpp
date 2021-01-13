@@ -28,7 +28,7 @@ int main(int argc, char * argv[])
 
   node = std::make_shared<rclcpp::Node>("velocity_test_node");
 
-  auto publisher = node->create_publisher<std_msgs::msg::Float64MultiArray>("/commands", 10);
+  auto publisher = node->create_publisher<std_msgs::msg::Float64MultiArray>("/cart_pole_controller/commands", 10);
 
   RCLCPP_INFO(node->get_logger(), "node created");
 
