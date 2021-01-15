@@ -239,3 +239,16 @@ ros2 param set /gazebo_ros2_control slider_to_cart.d 15.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_max 3.0
 ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_min -3.0
 ```
+
+#### Gazebo + Moveit2 + ROS 2
+
+This example works with [ROS 2 Foxy](https://index.ros.org/doc/ros2/Installation/Foxy/).
+You should install Moveit2 from sources, the instructions are available in this [link](https://moveit.ros.org/install-moveit2/source/).
+
+The repository with all the required packages are in the [gazebo_ros_demos](https://github.com/ros-simulation/gazebo_ros_demos/tree/ahcorde/port/ros2).
+
+```bash
+ros2 launch rrbot_moveit_demo_nodes rrbot_demo.launch.py
+```
+
+![](img/moveit2.gif)
