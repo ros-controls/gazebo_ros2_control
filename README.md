@@ -173,7 +173,7 @@ cart_pole_controller:
 
 #### Setting PID gains
 
-To set the PID gains for a specific joint you need to define them inside `<plugin><ros></plugin></ros>`.
+To set the PID gains for a specific joint you need to define them inside `<plugin><ros></ros></plugin>`.
 Using the generic way of defining parameters with `gazebo_ros`. The name of the parameter correspond to
 the name of the joint followed by a dot and the name of the parameter: `p`, `i`, `d`, `i_clamp_max`, `i_clamp_min` and `antiwindup`.
 
