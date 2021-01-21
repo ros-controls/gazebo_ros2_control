@@ -38,6 +38,8 @@
 namespace gazebo_ros2_control
 {
 
+// SystemInterface provides API-level access to read and command joint properties.
+
 class GazeboSystemInterface
   : public hardware_interface::BaseInterface<hardware_interface::SystemInterface>
 {

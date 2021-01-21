@@ -42,6 +42,10 @@
 #include "gazebo_ros2_control/gazebo_ros2_control_plugin.hpp"
 #include "gazebo_ros2_control/gazebo_system.hpp"
 
+#include "pluginlib/class_loader.hpp"
+
+#include "rclcpp/rclcpp.hpp"
+
 #include "hardware_interface/resource_manager.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
@@ -295,7 +299,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
     // TODO(anyone): Coded example here. should disable when spawn functionality of
     // controller manager is up
-    auto load_params_from_yaml_node = [](rclcpp::Node::SharedPtr lc_node,
+    auto load_params_from_yaml_node = [](rclcpp::Node::SharedPtr node,
         YAML::Node & yaml_node, const std::string & prefix)
       {
         std::function<void(YAML::Node, const std::string &,
@@ -374,12 +378,12 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
               }
             }
           };
-        if (lc_node->get_name() != prefix) {
+        if (node->get_name() != prefix) {
           return;
         }
-        feed_yaml_to_node_rec(yaml_node, prefix, lc_node, prefix);
+        feed_yaml_to_node_rec(yaml_node, prefix, node, prefix);
       };
-    auto load_params_from_yaml = [&](rclcpp::Node::SharedPtr lc_node,
+    auto load_params_from_yaml = [&](rclcpp::Node::SharedPtr node,
         const std::string & yaml_config_file, const std::string & prefix)
       {
         if (yaml_config_file.empty()) {
@@ -390,7 +394,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
           auto nodename = yaml.first.as<std::string>();
           RCLCPP_ERROR(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
           if (nodename == prefix) {
-            load_params_from_yaml_node(lc_node, yaml.second, prefix);
+            load_params_from_yaml_node(node, yaml.second, prefix);
           }
         }
       };

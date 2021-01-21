@@ -30,6 +30,11 @@
 
 namespace gazebo_ros2_control
 {
+// Forward declaration
+class GazeboSystemPrivate;
+
+// These class must inherit `gazebo_ros2_control::GazeboSystemInterface` which implements a
+// simulated `ros2_control` `hardware_interface::SystemInterface`.
 
 class GazeboSystem : public GazeboSystemInterface
 {
@@ -64,75 +69,9 @@ public:
     std::vector<transmission_interface::TransmissionInfo> transmissions,
     sdf::ElementPtr sdf) override;
 
-  /// \brief callback to get the e_stop signal from the ROS 2 topic
-  void eStopCB(const std::shared_ptr<std_msgs::msg::Bool> e_stop_active);
-
 private:
-  /// \brief Degrees od freedom.
-  unsigned int n_dof_;
-
-  /// \brief e_stop_active_ is true if the emergency stop is active.
-  bool e_stop_active_;
-
-  /// \brief Emergency stop subscriber.
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr e_stop_sub_;
-
-  /// \brief Gazebo Model Ptr.
-  gazebo::physics::ModelPtr parent_model_;
-
-  /// \brief last time the write method was called.
-  rclcpp::Time last_update_sim_time_ros_;
-
-  /// \brief vector with the joint's names.
-  std::vector<std::string> joint_names_;
-
-  /// \brief vector with the control method defined in the URDF for each joint.
-  std::vector<ControlMethod> joint_control_methods_;
-
-  /// \brief handles to the joints from within Gazebo
-  std::vector<gazebo::physics::JointPtr> sim_joints_;
-
-  /// \brief vector with the current joint position
-  std::vector<double> joint_position_;
-
-  /// \brief vector with the current joint velocity
-  std::vector<double> joint_velocity_;
-
-  /// \brief vector with the current joint effort
-  std::vector<double> joint_effort_;
-
-  /// \brief vector with the current cmd joint position
-  std::vector<double> joint_position_cmd_;
-
-  /// \brief vector with the last cmd joint position
-  std::vector<double> last_joint_position_cmd_;
-
-  /// \brief vector with the current cmd joint velocity
-  std::vector<double> joint_velocity_cmd_;
-
-  /// \brief vector with the current cmd joint effort
-  std::vector<double> joint_effort_cmd_;
-
-  /// \brief The current positions of the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_pos_state_;
-
-  /// \brief The current velocities of the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_vel_state_;
-
-  /// \brief The current effort forces applied to the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_eff_state_;
-
-  /// \brief The position command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_pos_cmd_;
-
-  /// \brief The velocity command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_vel_cmd_;
-
-  /// \brief The effort command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_eff_cmd_;
-
-  /// \brief vector with the PID of each joint.
-  std::vector<control_toolbox::PidROS> pid_controllers_;
+  /// \brief Private data class
+  std::unique_ptr<GazeboSystemPrivate> dataPtr;
 };
 
 }  // namespace gazebo_ros2_control

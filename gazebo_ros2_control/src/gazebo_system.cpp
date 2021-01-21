@@ -18,6 +18,82 @@
 
 #include "gazebo_ros2_control/gazebo_system.hpp"
 
+class gazebo_ros2_control::GazeboSystemPrivate
+{
+public:
+  /// \brief Degrees od freedom.
+  unsigned int n_dof_;
+
+  /// \brief e_stop_active_ is true if the emergency stop is active.
+  bool e_stop_active_;
+
+  /// \brief Emergency stop subscriber.
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr e_stop_sub_;
+
+  /// \brief Gazebo Model Ptr.
+  gazebo::physics::ModelPtr parent_model_;
+
+  /// \brief last time the write method was called.
+  rclcpp::Time last_update_sim_time_ros_;
+
+  /// \brief vector with the joint's names.
+  std::vector<std::string> joint_names_;
+
+  /// \brief vector with the control method defined in the URDF for each joint.
+  std::vector<GazeboSystemInterface::ControlMethod> joint_control_methods_;
+
+  /// \brief handles to the joints from within Gazebo
+  std::vector<gazebo::physics::JointPtr> sim_joints_;
+
+  /// \brief vector with the current joint position
+  std::vector<double> joint_position_;
+
+  /// \brief vector with the current joint velocity
+  std::vector<double> joint_velocity_;
+
+  /// \brief vector with the current joint effort
+  std::vector<double> joint_effort_;
+
+  /// \brief vector with the current cmd joint position
+  std::vector<double> joint_position_cmd_;
+
+  /// \brief vector with the last cmd joint position
+  std::vector<double> last_joint_position_cmd_;
+
+  /// \brief vector with the current cmd joint velocity
+  std::vector<double> joint_velocity_cmd_;
+
+  /// \brief vector with the current cmd joint effort
+  std::vector<double> joint_effort_cmd_;
+
+  /// \brief The current positions of the joints
+  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_pos_state_;
+
+  /// \brief The current velocities of the joints
+  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_vel_state_;
+
+  /// \brief The current effort forces applied to the joints
+  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_eff_state_;
+
+  /// \brief The position command interfaces of the joints
+  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_pos_cmd_;
+
+  /// \brief The velocity command interfaces of the joints
+  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_vel_cmd_;
+
+  /// \brief The effort command interfaces of the joints
+  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_eff_cmd_;
+
+  /// \brief vector with the PID of each joint.
+  std::vector<control_toolbox::PidROS> pid_controllers_;
+
+  /// \brief callback to get the e_stop signal from the ROS 2 topic
+  void eStopCB(const std::shared_ptr<std_msgs::msg::Bool> e_stop_active)
+  {
+    this->e_stop_active_ = e_stop_active->data;
+  }
+};
+
 namespace gazebo_ros2_control
 {
 
@@ -28,54 +104,55 @@ bool GazeboSystem::initSim(
   std::vector<transmission_interface::TransmissionInfo> transmissions,
   sdf::ElementPtr sdf)
 {
-  last_update_sim_time_ros_ = rclcpp::Time();
+  this->dataPtr = std::make_unique<GazeboSystemPrivate>();
+  this->dataPtr->last_update_sim_time_ros_ = rclcpp::Time();
 
   this->nh_ = model_nh;
-  this->parent_model_ = parent_model;
-  n_dof_ = transmissions.size();
+  this->dataPtr->parent_model_ = parent_model;
+  this->dataPtr->n_dof_ = transmissions.size();
 
-  joint_names_.resize(n_dof_);
-  joint_control_methods_.resize(n_dof_);
-  joint_position_.resize(n_dof_);
-  joint_velocity_.resize(n_dof_);
-  joint_effort_.resize(n_dof_);
-  joint_pos_state_.resize(n_dof_);
-  joint_vel_state_.resize(n_dof_);
-  joint_eff_state_.resize(n_dof_);
-  joint_position_cmd_.resize(n_dof_);
-  last_joint_position_cmd_.resize(n_dof_);
-  joint_velocity_cmd_.resize(n_dof_);
-  joint_effort_cmd_.resize(n_dof_);
-  joint_pos_cmd_.resize(n_dof_);
-  joint_vel_cmd_.resize(n_dof_);
-  joint_eff_cmd_.resize(n_dof_);
+  this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_control_methods_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_position_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_velocity_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_effort_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_pos_state_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_vel_state_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_eff_state_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->last_joint_position_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_pos_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_vel_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_eff_cmd_.resize(this->dataPtr->n_dof_);
 
   gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->Physics();
 
   std::string physics_type_ = physics->GetType();
   if (physics_type_.empty()) {
-    RCLCPP_ERROR(nh_->get_logger(), "No physics engine configured in Gazebo.");
+    RCLCPP_ERROR(this->nh_->get_logger(), "No physics engine configured in Gazebo.");
     return false;
   }
 
-  for (unsigned int j = 0; j < this->n_dof_; j++) {
+  for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     //
     // Perform some validation on the URDF joint and actuator spec
     //
     // Check that this transmission has one joint
     if (transmissions[j].joints.empty()) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Transmission " << transmissions[j].name <<
+        this->nh_->get_logger(), "Transmission " << transmissions[j].name <<
           " has no associated joints.");
       continue;
     } else if (transmissions[j].joints.size() > 1) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Transmission " << transmissions[j].name <<
+        this->nh_->get_logger(), "Transmission " << transmissions[j].name <<
           " has more than one joint. Currently the default robot hardware simulation " <<
           " interface only supports one.");
       continue;
     }
-    std::string joint_name = joint_names_[j] = transmissions[j].joints[0].name;
+    std::string joint_name = this->dataPtr->joint_names_[j] = transmissions[j].joints[0].name;
 
     std::vector<std::string> joint_interfaces = transmissions[j].joints[0].interfaces;
     if (joint_interfaces.empty() &&
@@ -85,14 +162,14 @@ bool GazeboSystem::initSim(
       // TODO(anyone): Deprecate HW interface specification in actuators in ROS 2
       joint_interfaces = transmissions[j].actuators[0].interfaces;
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "The <hardware_interface> element of transmission " <<
+        this->nh_->get_logger(), "The <hardware_interface> element of transmission " <<
           transmissions[j].name << " should be nested inside the <joint> element," <<
           " not <actuator>. The transmission will be properly loaded, but please update " <<
           "your robot model to remain compatible with future versions of the plugin.");
     }
     if (joint_interfaces.empty()) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Joint " << transmissions[j].name <<
+        this->nh_->get_logger(), "Joint " << transmissions[j].name <<
           " of transmission " << transmissions[j].name <<
           " does not specify any hardware interface. " <<
           "Not adding it to the robot hardware simulation.");
@@ -100,7 +177,7 @@ bool GazeboSystem::initSim(
     } else if (joint_interfaces.size() > 1) {
       // only a warning, allow joint to continue
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Joint " << transmissions[j].name <<
+        this->nh_->get_logger(), "Joint " << transmissions[j].name <<
           " of transmission " << transmissions[j].name <<
           " specifies multiple hardware interfaces. " <<
           "Currently the default robot hardware simulation interface only supports one." <<
@@ -109,17 +186,17 @@ bool GazeboSystem::initSim(
     std::string hardware_interface = joint_interfaces.front();
     // Decide what kind of command interface this actuator/joint has
     if (hardware_interface == "hardware_interface/EffortJointInterface") {
-      joint_control_methods_[j] = EFFORT;
+      this->dataPtr->joint_control_methods_[j] = EFFORT;
     } else if (hardware_interface == "hardware_interface/PositionJointInterface") {
-      joint_control_methods_[j] = POSITION;
+      this->dataPtr->joint_control_methods_[j] = POSITION;
     } else if (hardware_interface == "hardware_interface/VelocityJointInterface") {
-      joint_control_methods_[j] = VELOCITY;
+      this->dataPtr->joint_control_methods_[j] = VELOCITY;
     } else {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "No matching joint interface '" <<
+        this->nh_->get_logger(), "No matching joint interface '" <<
           hardware_interface << "' for joint " << joint_name);
       RCLCPP_INFO(
-        nh_->get_logger(),
+        this->nh_->get_logger(),
         "    Expecting one of 'hardware_interface/{EffortJointInterface |"
         " PositionJointInterface | VelocityJointInterface}'");
       return false;
@@ -133,60 +210,62 @@ bool GazeboSystem::initSim(
     gazebo::physics::JointPtr simjoint = parent_model->GetJoint(joint_name);
     if (!simjoint) {
       RCLCPP_WARN_STREAM(
-        nh_->get_logger(), "Skipping joint in the URDF named '" << joint_name <<
+        this->nh_->get_logger(), "Skipping joint in the URDF named '" << joint_name <<
           "' which is not in the gazebo model.");
       continue;
     }
-    sim_joints_.push_back(simjoint);
+    this->dataPtr->sim_joints_.push_back(simjoint);
 
     // Accept this joint and continue configuration
     RCLCPP_INFO_STREAM(
-      nh_->get_logger(), "Loading joint '" << joint_name << "' of type '" <<
+      this->nh_->get_logger(), "Loading joint '" << joint_name << "' of type '" <<
         hardware_interface << "'");
 
     // register the state handles
-    joint_pos_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-      joint_name, hardware_interface::HW_IF_POSITION, &joint_position_[j]);
-    joint_vel_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-      joint_name, hardware_interface::HW_IF_VELOCITY, &joint_velocity_[j]);
-    joint_eff_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-      joint_name, hardware_interface::HW_IF_EFFORT, &joint_effort_[j]);
+    this->dataPtr->joint_pos_state_[j] = std::make_shared<hardware_interface::StateInterface>(
+      joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_[j]);
+    this->dataPtr->joint_vel_state_[j] = std::make_shared<hardware_interface::StateInterface>(
+      joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_[j]);
+    this->dataPtr->joint_eff_state_[j] = std::make_shared<hardware_interface::StateInterface>(
+      joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_[j]);
 
     // register the state handles
-    joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-      joint_name, hardware_interface::HW_IF_POSITION, &joint_position_cmd_[j]);
-    joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-      joint_name, hardware_interface::HW_IF_VELOCITY, &joint_velocity_cmd_[j]);
-    joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-      joint_name, hardware_interface::HW_IF_EFFORT, &joint_effort_cmd_[j]);
+    this->dataPtr->joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+      joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_cmd_[j]);
+    this->dataPtr->joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+      joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
+    this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+      joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
 
     try {
-      nh_->declare_parameter(transmissions[j].joints[0].name + ".p");
-      nh_->declare_parameter(transmissions[j].joints[0].name + ".i");
-      nh_->declare_parameter(transmissions[j].joints[0].name + ".d");
-      nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_max");
-      nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_min");
-      nh_->declare_parameter(transmissions[j].joints[0].name + ".antiwindup", false);
+      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".p");
+      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".i");
+      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".d");
+      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_max");
+      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_min");
+      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".antiwindup", false);
 
-      if (nh_->get_parameter(transmissions[j].joints[0].name + ".p").get_type() ==
+      if (this->nh_->get_parameter(transmissions[j].joints[0].name + ".p").get_type() ==
         rclcpp::PARAMETER_DOUBLE &&
-        nh_->get_parameter(transmissions[j].joints[0].name + ".i").get_type() ==
+        this->nh_->get_parameter(transmissions[j].joints[0].name + ".i").get_type() ==
         rclcpp::PARAMETER_DOUBLE &&
-        nh_->get_parameter(transmissions[j].joints[0].name + ".d").get_type() ==
+        this->nh_->get_parameter(transmissions[j].joints[0].name + ".d").get_type() ==
         rclcpp::PARAMETER_DOUBLE)
       {
-        pid_controllers_.push_back(
-          control_toolbox::PidROS(nh_, transmissions[j].joints[0].name));
-        if (pid_controllers_[j].initPid()) {
-          switch (joint_control_methods_[j]) {
-            case POSITION: joint_control_methods_[j] = POSITION_PID;
+        this->dataPtr->pid_controllers_.push_back(
+          control_toolbox::PidROS(this->nh_, transmissions[j].joints[0].name));
+        if (this->dataPtr->pid_controllers_[j].initPid()) {
+          switch (this->dataPtr->joint_control_methods_[j]) {
+            case POSITION:
+              this->dataPtr->joint_control_methods_[j] = POSITION_PID;
               RCLCPP_INFO(
-                nh_->get_logger(), "joint %s is configured in POSITION_PID mode",
+                this->nh_->get_logger(), "joint %s is configured in POSITION_PID mode",
                 transmissions[j].joints[0].name.c_str());
               break;
-            case VELOCITY: joint_control_methods_[j] = VELOCITY_PID;
+            case VELOCITY:
+              this->dataPtr->joint_control_methods_[j] = VELOCITY_PID;
               RCLCPP_INFO(
-                nh_->get_logger(), "joint %s is configured in VELOCITY_PID mode",
+                this->nh_->get_logger(), "joint %s is configured in VELOCITY_PID mode",
                 transmissions[j].joints[0].name.c_str());
               break;
             case EFFORT:
@@ -199,19 +278,19 @@ bool GazeboSystem::initSim(
         }
       }
     } catch (const std::exception & e) {
-      RCLCPP_ERROR(nh_->get_logger(), "%s", e.what());
+      RCLCPP_ERROR(this->nh_->get_logger(), "%s", e.what());
     }
   }
 
   // Initialize the emergency stop code.
-  this->e_stop_active_ = false;
+  this->dataPtr->e_stop_active_ = false;
   if (sdf->HasElement("e_stop_topic")) {
     const std::string e_stop_topic = sdf->GetElement("e_stop_topic")->Get<std::string>();
     rclcpp::QoS qos = rclcpp::SensorDataQoS().reliable();
-    this->e_stop_sub_ = this->nh_->create_subscription<std_msgs::msg::Bool>(
+    this->dataPtr->e_stop_sub_ = this->nh_->create_subscription<std_msgs::msg::Bool>(
       e_stop_topic,
       qos,
-      std::bind(&GazeboSystem::eStopCB, this, std::placeholders::_1));
+      std::bind(&GazeboSystemPrivate::eStopCB, this->dataPtr.get(), std::placeholders::_1));
   }
 
   return true;
@@ -231,20 +310,26 @@ GazeboSystem::export_state_interfaces()
 {
   std::vector<hardware_interface::StateInterface> state_interfaces;
 
-  for (unsigned int i = 0; i < this->joint_names_.size(); i++) {
+  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
     state_interfaces.emplace_back(
       hardware_interface::StateInterface(
-        this->joint_names_[i], hardware_interface::HW_IF_POSITION, &joint_position_[i]));
+        this->dataPtr->joint_names_[i],
+        hardware_interface::HW_IF_POSITION,
+        &this->dataPtr->joint_position_[i]));
   }
-  for (unsigned int i = 0; i < this->joint_names_.size(); i++) {
+  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
     state_interfaces.emplace_back(
       hardware_interface::StateInterface(
-        this->joint_names_[i], hardware_interface::HW_IF_VELOCITY, &joint_velocity_[i]));
+        this->dataPtr->joint_names_[i],
+        hardware_interface::HW_IF_VELOCITY,
+        &this->dataPtr->joint_velocity_[i]));
   }
-  for (unsigned int i = 0; i < this->joint_names_.size(); i++) {
+  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
     state_interfaces.emplace_back(
       hardware_interface::StateInterface(
-        this->joint_names_[i], hardware_interface::HW_IF_EFFORT, &joint_effort_[i]));
+        this->dataPtr->joint_names_[i],
+        hardware_interface::HW_IF_EFFORT,
+        &this->dataPtr->joint_effort_[i]));
   }
   return state_interfaces;
 }
@@ -254,20 +339,26 @@ GazeboSystem::export_command_interfaces()
 {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-  for (unsigned int i = 0; i < this->joint_names_.size(); i++) {
+  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
     command_interfaces.emplace_back(
       hardware_interface::CommandInterface(
-        this->joint_names_[i], hardware_interface::HW_IF_POSITION, &joint_position_cmd_[i]));
+        this->dataPtr->joint_names_[i],
+        hardware_interface::HW_IF_POSITION,
+        &this->dataPtr->joint_position_cmd_[i]));
   }
-  for (unsigned int i = 0; i < this->joint_names_.size(); i++) {
+  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
     command_interfaces.emplace_back(
       hardware_interface::CommandInterface(
-        this->joint_names_[i], hardware_interface::HW_IF_VELOCITY, &joint_velocity_cmd_[i]));
+        this->dataPtr->joint_names_[i],
+        hardware_interface::HW_IF_VELOCITY,
+        &this->dataPtr->joint_velocity_cmd_[i]));
   }
-  for (unsigned int i = 0; i < this->joint_names_.size(); i++) {
+  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
     command_interfaces.emplace_back(
       hardware_interface::CommandInterface(
-        this->joint_names_[i], hardware_interface::HW_IF_EFFORT, &joint_effort_cmd_[i]));
+        this->dataPtr->joint_names_[i],
+        hardware_interface::HW_IF_EFFORT,
+        &this->dataPtr->joint_effort_cmd_[i]));
   }
   return command_interfaces;
 }
@@ -286,10 +377,10 @@ hardware_interface::return_type GazeboSystem::stop()
 
 hardware_interface::return_type GazeboSystem::read()
 {
-  for (unsigned int j = 0; j < this->joint_names_.size(); j++) {
-    joint_position_[j] = this->sim_joints_[j]->Position(0);
-    joint_velocity_[j] = this->sim_joints_[j]->GetVelocity(0);
-    joint_effort_[j] = this->sim_joints_[j]->GetForce(0u);
+  for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
+    this->dataPtr->joint_position_[j] = this->dataPtr->sim_joints_[j]->Position(0);
+    this->dataPtr->joint_velocity_[j] = this->dataPtr->sim_joints_[j]->GetVelocity(0);
+    this->dataPtr->joint_effort_[j] = this->dataPtr->sim_joints_[j]->GetForce(0u);
   }
   return hardware_interface::return_type::OK;
 }
@@ -297,26 +388,31 @@ hardware_interface::return_type GazeboSystem::read()
 hardware_interface::return_type GazeboSystem::write()
 {
   // Get the simulation time and period
-  gazebo::common::Time gz_time_now = this->parent_model_->GetWorld()->SimTime();
+  gazebo::common::Time gz_time_now = this->dataPtr->parent_model_->GetWorld()->SimTime();
   rclcpp::Time sim_time_ros(gz_time_now.sec, gz_time_now.nsec);
-  rclcpp::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
+  rclcpp::Duration sim_period = sim_time_ros - this->dataPtr->last_update_sim_time_ros_;
 
-  for (unsigned int j = 0; j < this->joint_names_.size(); j++) {
-    switch (joint_control_methods_[j]) {
+  for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
+    switch (this->dataPtr->joint_control_methods_[j]) {
       case EFFORT:
         {
-          const double effort = e_stop_active_ ? 0 : joint_effort_cmd_[j];
-          sim_joints_[j]->SetForce(0, effort);
+          const double effort =
+            this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_effort_cmd_[j];
+          this->dataPtr->sim_joints_[j]->SetForce(0, effort);
         }
         break;
       case POSITION:
-        if (e_stop_active_) {
+        if (this->dataPtr->e_stop_active_) {
           // If the E-stop is active, joints controlled by position commands will maintain
           // their positions.
-          this->sim_joints_[j]->SetPosition(0, last_joint_position_cmd_[j], true);
+          this->dataPtr->sim_joints_[j]->SetPosition(
+            0, this->dataPtr->last_joint_position_cmd_[j],
+            true);
         } else {
-          this->sim_joints_[j]->SetPosition(0, joint_position_cmd_[j], true);
-          last_joint_position_cmd_[j] = joint_position_cmd_[j];
+          this->dataPtr->sim_joints_[j]->SetPosition(
+            0, this->dataPtr->joint_position_cmd_[j],
+            true);
+          this->dataPtr->last_joint_position_cmd_[j] = this->dataPtr->joint_position_cmd_[j];
         }
         break;
       case POSITION_PID:
@@ -340,7 +436,7 @@ hardware_interface::return_type GazeboSystem::write()
           // default:
           // error = joint_position_cmd_[j] - joint_position_[j];
           // }
-          error = joint_position_cmd_[j] - joint_position_[j];
+          error = this->dataPtr->joint_position_cmd_[j] - this->dataPtr->joint_position_[j];
 
           // TODO(ahcorde): Restore this when Jonit_limit interface is available
           // const double effort_limit = joint_effort_limits_[j];
@@ -348,44 +444,40 @@ hardware_interface::return_type GazeboSystem::write()
           //   pid_controllers_[j].computeCommand(error, period),
           //   -effort_limit, effort_limit);
 
-          const double effort = pid_controllers_[j].computeCommand(error, sim_period);
+          const double effort =
+            this->dataPtr->pid_controllers_[j].computeCommand(error, sim_period);
 
-          sim_joints_[j]->SetForce(0, effort);
-          sim_joints_[j]->SetParam("friction", 0, 0.0);
+          this->dataPtr->sim_joints_[j]->SetForce(0, effort);
+          this->dataPtr->sim_joints_[j]->SetParam("friction", 0, 0.0);
         }
         break;
       case VELOCITY:
-        sim_joints_[j]->SetVelocity(0, e_stop_active_ ? 0 : joint_velocity_cmd_[j]);
+        this->dataPtr->sim_joints_[j]->SetVelocity(
+          0,
+          this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_velocity_cmd_[j]);
         break;
       case VELOCITY_PID:
         double error;
-        if (e_stop_active_) {
-          error = -joint_velocity_[j];
+        if (this->dataPtr->e_stop_active_) {
+          error = -this->dataPtr->joint_velocity_[j];
         } else {
-          error = joint_velocity_cmd_[j] - joint_velocity_[j];
+          error = this->dataPtr->joint_velocity_cmd_[j] - this->dataPtr->joint_velocity_[j];
         }
         // TODO(ahcorde): Restore this when Jonit_limit interface is available
         // const double effort_limit = joint_effort_limits_[j];
         // const double effort = ignition::math::clamp(
         //   pid_controllers_[j].computeCommand(error, period),
         //   -effort_limit, effort_limit);
-        const double effort = pid_controllers_[j].computeCommand(error, sim_period);
-        sim_joints_[j]->SetForce(0, effort);
+        const double effort = this->dataPtr->pid_controllers_[j].computeCommand(error, sim_period);
+        this->dataPtr->sim_joints_[j]->SetForce(0, effort);
         break;
     }
   }
 
-  last_update_sim_time_ros_ = sim_time_ros;
+  this->dataPtr->last_update_sim_time_ros_ = sim_time_ros;
 
   return hardware_interface::return_type::OK;
 }
-
-// Emergency stop callback
-void GazeboSystem::eStopCB(const std::shared_ptr<std_msgs::msg::Bool> e_stop_active)
-{
-  this->e_stop_active_ = e_stop_active->data;
-}
-
 }  // namespace gazebo_ros2_control
 
 #include "pluginlib/class_list_macros.hpp"  // NOLINT

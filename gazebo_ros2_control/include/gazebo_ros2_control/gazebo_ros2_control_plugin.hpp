@@ -44,11 +44,6 @@
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/Model.hh"
 
-#include "pluginlib/class_loader.hpp"
-
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
-
 #include "transmission_interface/transmission_parser.hpp"
 
 namespace gazebo_ros2_control
