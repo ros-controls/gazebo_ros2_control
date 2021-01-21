@@ -290,7 +290,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     impl_->thread_executor_spin_ = std::thread(spin);
 
     // Create the controller manager
-    RCLCPP_ERROR(impl_->model_nh_->get_logger(), "Loading controller_manager");
+    RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
     impl_->controller_manager_.reset(
       new controller_manager::ControllerManager(
         std::move(resourceManager_),
@@ -392,7 +392,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         YAML::Node root_node = YAML::LoadFile(yaml_config_file);
         for (auto yaml : root_node) {
           auto nodename = yaml.first.as<std::string>();
-          RCLCPP_ERROR(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
+          RCLCPP_DEBUG(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
           if (nodename == prefix) {
             load_params_from_yaml_node(node, yaml.second, prefix);
           }
@@ -454,7 +454,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       &GazeboRosControlPrivate::Update,
       impl_.get()));
 
-  RCLCPP_ERROR(impl_->model_nh_->get_logger(), "Loaded gazebo_ros2_control.");
+  RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loaded gazebo_ros2_control.");
 }
 
 // Called by the world update start event
@@ -500,7 +500,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
       robot_description_node_.c_str());
   }
 
-  RCLCPP_ERROR(
+  RCLCPP_INFO(
     model_nh_->get_logger(), "connected to service!! %s", robot_description_node_.c_str());
 
   // search and wait for robot_description on param server
@@ -526,7 +526,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
     }
     usleep(100000);
   }
-  RCLCPP_ERROR(
+  RCLCPP_INFO(
     model_nh_->get_logger(), "Recieved urdf from param server, parsing...");
 
   return urdf_string;
