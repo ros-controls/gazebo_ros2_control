@@ -198,7 +198,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   }
 
   // Get the Gazebo simulation period
-  rclcpp::Duration gazebo_period(impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize());
+  rclcpp::Duration gazebo_period(
+    std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::duration<double>(
+        impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize())));
 
   // Decide the plugin control period
   if (sdf->HasElement("control_period")) {
