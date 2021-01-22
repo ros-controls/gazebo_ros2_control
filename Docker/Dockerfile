@@ -1,5 +1,8 @@
 FROM osrf/ros:foxy-desktop
 
+# TODO(ahcorde): Remove this line when a new foxy released is launched (transmission_interface)
+RUN echo "deb http://packages.ros.org/ros2-testing/ubuntu focal main" > /etc/apt/sources.list.d/ros2-latest.list
+
 # Make sure everything is up to date before building from source
 RUN apt-get update \
   && apt-get upgrade -y \
@@ -14,9 +17,7 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 
 RUN mkdir -p /home/ros2_ws/src \
     && cd /home/ros2_ws/src/ \
-    && git clone https://github.com/ros-simulation/gazebo_ros2_control \
-    && git clone https://github.com/ros-controls/ros2_control \
-    && git clone https://github.com/ros-controls/ros2_controllers \
+    && git clone https://github.com/ros-simulation/gazebo_ros2_control -b ahcorde/update/foxy \
     && rosdep update \
     && rosdep install --from-paths ./ -i -y --rosdistro foxy \
       --ignore-src
