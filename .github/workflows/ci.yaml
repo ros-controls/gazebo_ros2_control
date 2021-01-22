@@ -20,7 +20,7 @@ jobs:
         cp -r gazebo_ros2_control /home/ros2_ws/src/
         # TODO(ahcorde): Remove this line when a new foxy released is launched (transmission_interface)
         echo "deb http://packages.ros.org/ros2-testing/ubuntu focal main" > /etc/apt/sources.list.d/ros2-latest.list
-        apt-get upgrade -q -y
+        apt-get update && apt-get upgrade -q -y
         apt-get update && apt-get install -q -y --no-install-recommends \
           dirmngr \
           gnupg2 \
