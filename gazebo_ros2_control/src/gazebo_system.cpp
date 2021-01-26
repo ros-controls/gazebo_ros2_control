@@ -25,7 +25,7 @@ public:
 
   ~GazeboSystemPrivate() = default;
   /// \brief Degrees od freedom.
-  long unsigned int n_dof_;
+  size_t n_dof_;
 
   /// \brief e_stop_active_ is true if the emergency stop is active.
   bool e_stop_active_;
