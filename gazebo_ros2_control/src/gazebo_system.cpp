@@ -21,8 +21,11 @@
 class gazebo_ros2_control::GazeboSystemPrivate
 {
 public:
+  GazeboSystemPrivate() = default;
+
+  ~GazeboSystemPrivate() = default;
   /// \brief Degrees od freedom.
-  unsigned int n_dof_;
+  long unsigned int n_dof_;
 
   /// \brief e_stop_active_ is true if the emergency stop is active.
   bool e_stop_active_;
@@ -100,7 +103,6 @@ namespace gazebo_ros2_control
 bool GazeboSystem::initSim(
   rclcpp::Node::SharedPtr & model_nh,
   gazebo::physics::ModelPtr parent_model,
-  const urdf::Model * const urdf_model,
   std::vector<transmission_interface::TransmissionInfo> transmissions,
   sdf::ElementPtr sdf)
 {

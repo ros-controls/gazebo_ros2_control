@@ -47,13 +47,11 @@ public:
   /// \brief Initilize the system interface
   /// param[in] model_nh pointer to the ros2 node
   /// param[in] parent_model pointer to the model
-  /// param[in] urdf_model pointer to the URDF
   /// param[in] transmissions availables in the model
   /// param[in] sdf pointer to the SDF
   virtual bool initSim(
     rclcpp::Node::SharedPtr & model_nh,
     gazebo::physics::ModelPtr parent_model,
-    const urdf::Model * const urdf_model,
     std::vector<transmission_interface::TransmissionInfo> transmissions,
     sdf::ElementPtr sdf) = 0;
 

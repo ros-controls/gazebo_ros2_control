@@ -60,6 +60,10 @@ namespace gazebo_ros2_control
 class GazeboRosControlPrivate
 {
 public:
+  GazeboRosControlPrivate() = default;
+
+  virtual ~GazeboRosControlPrivate() = default;
+
   // Called by the world update start event
   void Update();
 
@@ -186,7 +190,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     impl_->robot_hw_sim_type_str_ = "gazebo_ros2_control/GazeboSystem";
     RCLCPP_DEBUG_STREAM(
       impl_->model_nh_->get_logger(),
-      "Using default plugin for RobotHWSim (none specified in URDF/SDF)\"" <<
+      "Using default plugin for ros2_control system plugin (none specified in URDF/SDF)\"" <<
         impl_->robot_hw_sim_type_str_ << "\"");
   }
 
@@ -243,7 +247,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     return;
   }
 
-  std::unique_ptr<hardware_interface::ResourceManager> resourceManager_ =
+  std::unique_ptr<hardware_interface::ResourceManager> resource_manager_ =
     std::make_unique<hardware_interface::ResourceManager>();
 
   try {
@@ -256,15 +260,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
       impl_->robot_hw_sim_loader_->createUnmanagedInstance(impl_->robot_hw_sim_type_str_));
 
-    urdf::Model urdf_model;
-    const urdf::Model * const urdf_model_ptr =
-      urdf_model.initString(urdf_string) ? &urdf_model : NULL;
-
     rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
     if (!gazeboSystem->initSim(
         node_ros2,
         impl_->parent_model_,
-        urdf_model_ptr,
         impl_->transmissions_,
         sdf))
     {
@@ -273,14 +272,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       return;
     }
 
-    std::vector<hardware_interface::LoanedStateInterface> loaned_state_ifs;
-    std::vector<hardware_interface::StateInterface> state_ifs;
-    state_ifs = gazeboSystem->export_state_interfaces();
-    for (auto state : state_ifs) {
-      loaned_state_ifs.emplace_back(hardware_interface::LoanedStateInterface(state));
-    }
-
-    resourceManager_->import_component(std::move(gazeboSystem));
+    resource_manager_->import_component(std::move(gazeboSystem));
 
     impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
 
@@ -296,9 +288,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
     impl_->controller_manager_.reset(
       new controller_manager::ControllerManager(
-        std::move(resourceManager_),
+        std::move(resource_manager_),
         impl_->executor_,
-        "gazebo_controller_manager"));
+        "controller_manager"));
+    impl_->executor_->add_node(impl_->controller_manager_);
 
     // TODO(anyone): Coded example here. should disable when spawn functionality of
     // controller manager is up
@@ -422,9 +415,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
               controller->get_node(),
               impl_->param_file_,
               controller_name);
-            if (controller_name == "joint_state_controller") {
-              controller->assign_interfaces({}, std::move(loaned_state_ifs));
-            }
             controller->configure();
             start_controllers.push_back(controller_name);
           }
@@ -434,7 +424,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
     auto switch_future = std::async(
       std::launch::async,
-      &controller_manager::ControllerManager::switch_controller, impl_->controller_manager_,
+      &controller_manager::ControllerManager::switch_controller,
+      impl_->controller_manager_,
       start_controllers, stop_controllers,
       2, true, rclcpp::Duration(0, 0));  // STRICT_: 2
     while (std::future_status::timeout == switch_future.wait_for(std::chrono::milliseconds(100))) {
@@ -536,5 +527,5 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
 }
 
 // Register this plugin with the simulator
-GZ_REGISTER_MODEL_PLUGIN(GazeboRosControlPlugin);
+GZ_REGISTER_MODEL_PLUGIN(GazeboRosControlPlugin)
 }  // namespace gazebo_ros2_control

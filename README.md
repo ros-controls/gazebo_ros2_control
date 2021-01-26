@@ -99,7 +99,7 @@ The `gazebo_ros2_control` `<plugin>` tag also has the following optional child e
  - `<control_period>`: The period of the controller update (in seconds), defaults to Gazebo's period
  - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
  - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
- - `<robot_sim_type>`: The pluginlib name of a custom robot sim interface to be used, defaults to `gazebo_ros2_control/GazeboSystem`
+ - `<robot_sim_type>`: The pluginlib name of a custom robot ros2_control system plugin to be used, defaults to `gazebo_ros2_control/GazeboSystem`
  - `<parameters>`: YAML file with the configuration of the controllers
  - `<e_stop_topic>`: Topic to publish the emergency stop
 

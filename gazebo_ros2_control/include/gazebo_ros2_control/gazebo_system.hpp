@@ -65,7 +65,6 @@ public:
   bool initSim(
     rclcpp::Node::SharedPtr & model_nh,
     gazebo::physics::ModelPtr parent_model,
-    const urdf::Model * const urdf_model,
     std::vector<transmission_interface::TransmissionInfo> transmissions,
     sdf::ElementPtr sdf) override;
 
