@@ -87,9 +87,6 @@ public:
   /// \brief The effort command interfaces of the joints
   std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_eff_cmd_;
 
-  /// \brief vector with the PID of each joint.
-  std::vector<control_toolbox::PidROS> pid_controllers_;
-
   /// \brief callback to get the e_stop signal from the ROS 2 topic
   void eStopCB(const std::shared_ptr<std_msgs::msg::Bool> e_stop_active)
   {
@@ -238,50 +235,6 @@ bool GazeboSystem::initSim(
       joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
     this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
       joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
-
-    try {
-      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".p");
-      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".i");
-      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".d");
-      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_max");
-      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".i_clamp_min");
-      this->nh_->declare_parameter(transmissions[j].joints[0].name + ".antiwindup", false);
-
-      if (this->nh_->get_parameter(transmissions[j].joints[0].name + ".p").get_type() ==
-        rclcpp::PARAMETER_DOUBLE &&
-        this->nh_->get_parameter(transmissions[j].joints[0].name + ".i").get_type() ==
-        rclcpp::PARAMETER_DOUBLE &&
-        this->nh_->get_parameter(transmissions[j].joints[0].name + ".d").get_type() ==
-        rclcpp::PARAMETER_DOUBLE)
-      {
-        this->dataPtr->pid_controllers_.push_back(
-          control_toolbox::PidROS(this->nh_, transmissions[j].joints[0].name));
-        if (this->dataPtr->pid_controllers_[j].initPid()) {
-          switch (this->dataPtr->joint_control_methods_[j]) {
-            case POSITION:
-              this->dataPtr->joint_control_methods_[j] = POSITION_PID;
-              RCLCPP_INFO(
-                this->nh_->get_logger(), "joint %s is configured in POSITION_PID mode",
-                transmissions[j].joints[0].name.c_str());
-              break;
-            case VELOCITY:
-              this->dataPtr->joint_control_methods_[j] = VELOCITY_PID;
-              RCLCPP_INFO(
-                this->nh_->get_logger(), "joint %s is configured in VELOCITY_PID mode",
-                transmissions[j].joints[0].name.c_str());
-              break;
-            case EFFORT:
-              {}            // fallthrough
-            case POSITION_PID:
-              {}             // fallthrough
-            case VELOCITY_PID:
-              {}           // fallthrough
-          }
-        }
-      }
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(this->nh_->get_logger(), "%s", e.what());
-    }
   }
 
   // Initialize the emergency stop code.
@@ -417,61 +370,10 @@ hardware_interface::return_type GazeboSystem::write()
           this->dataPtr->last_joint_position_cmd_[j] = this->dataPtr->joint_position_cmd_[j];
         }
         break;
-      case POSITION_PID:
-        {
-          double error;
-          // TODO(ahcorde): Restore this part
-          // switch (joint_types_[j]) {
-          // case urdf::Joint::REVOLUTE:
-          //   // angles::shortest_angular_distance_with_limits(
-          //   //   joint_pos_state_[j].get_value(),
-          //   //   joint_pos_cmdh_[j].get_value(),
-          //   //   joint_lower_limits_[j],
-          //   //   joint_upper_limits_[j],
-          //   //   error);
-          //   break;
-          // case urdf::Joint::CONTINUOUS:
-          //   error = angles::shortest_angular_distance(
-          //     joint_position_[j],
-          //     joint_position_cmd_[j]);
-          //   break;
-          // default:
-          // error = joint_position_cmd_[j] - joint_position_[j];
-          // }
-          error = this->dataPtr->joint_position_cmd_[j] - this->dataPtr->joint_position_[j];
-
-          // TODO(ahcorde): Restore this when Jonit_limit interface is available
-          // const double effort_limit = joint_effort_limits_[j];
-          // const double effort = ignition::math::clamp(
-          //   pid_controllers_[j].computeCommand(error, period),
-          //   -effort_limit, effort_limit);
-
-          const double effort =
-            this->dataPtr->pid_controllers_[j].computeCommand(error, sim_period);
-
-          this->dataPtr->sim_joints_[j]->SetForce(0, effort);
-          this->dataPtr->sim_joints_[j]->SetParam("friction", 0, 0.0);
-        }
-        break;
-      case VELOCITY:
+     case VELOCITY:
         this->dataPtr->sim_joints_[j]->SetVelocity(
           0,
           this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_velocity_cmd_[j]);
-        break;
-      case VELOCITY_PID:
-        double error;
-        if (this->dataPtr->e_stop_active_) {
-          error = -this->dataPtr->joint_velocity_[j];
-        } else {
-          error = this->dataPtr->joint_velocity_cmd_[j] - this->dataPtr->joint_velocity_[j];
-        }
-        // TODO(ahcorde): Restore this when Jonit_limit interface is available
-        // const double effort_limit = joint_effort_limits_[j];
-        // const double effort = ignition::math::clamp(
-        //   pid_controllers_[j].computeCommand(error, period),
-        //   -effort_limit, effort_limit);
-        const double effort = this->dataPtr->pid_controllers_[j].computeCommand(error, sim_period);
-        this->dataPtr->sim_joints_[j]->SetForce(0, effort);
         break;
     }
   }

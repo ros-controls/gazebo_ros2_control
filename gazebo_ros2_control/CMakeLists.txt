@@ -3,7 +3,6 @@ project(gazebo_ros2_control)
 
 find_package(ament_cmake REQUIRED)
 find_package(angles REQUIRED)
-find_package(control_toolbox REQUIRED)
 find_package(controller_manager REQUIRED)
 find_package(gazebo_dev REQUIRED)
 find_package(gazebo_ros REQUIRED)
@@ -34,7 +33,6 @@ add_library(${PROJECT_NAME} SHARED
 ament_target_dependencies(${PROJECT_NAME}
   angles
   controller_manager
-  control_toolbox
   gazebo_dev
   gazebo_ros
   hardware_interface
@@ -52,7 +50,6 @@ ament_target_dependencies(gazebo_hardware_plugins
   hardware_interface
   gazebo_dev
   transmission_interface
-  control_toolbox
   angles
 )
 

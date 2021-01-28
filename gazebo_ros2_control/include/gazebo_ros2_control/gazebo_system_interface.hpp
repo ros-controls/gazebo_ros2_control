@@ -56,7 +56,7 @@ public:
     sdf::ElementPtr sdf) = 0;
 
   // Methods used to control a joint.
-  enum ControlMethod {EFFORT, POSITION, POSITION_PID, VELOCITY, VELOCITY_PID};
+  enum ControlMethod {EFFORT, POSITION, VELOCITY};
 
 protected:
   rclcpp::Node::SharedPtr nh_;

@@ -22,8 +22,6 @@
 
 #include "angles/angles.h"
 
-#include "control_toolbox/pid_ros.hpp"
-
 #include "gazebo_ros2_control/gazebo_system_interface.hpp"
 
 #include "std_msgs/msg/bool.hpp"

@@ -13,7 +13,7 @@ It is running Gazebo and some other ROS 2 nodes.
 
 ## Video + Pictures
 
-![](img/gazebo_ros2_control_position_pid.gif)
+![](img/gazebo_ros2_control_position.gif)
 
 ## Running
 
@@ -170,33 +170,6 @@ cart_pole_controller:
       stopped_velocity_tolerance: 0.05
       goal_time: 5
 ```
-
-#### Setting PID gains
-
-To set the PID gains for a specific joint you need to define them inside `<plugin><ros></ros></plugin>`.
-Using the generic way of defining parameters with `gazebo_ros`. The name of the parameter correspond to
-the name of the joint followed by a dot and the name of the parameter: `p`, `i`, `d`, `i_clamp_max`, `i_clamp_min` and `antiwindup`.
-
-```xml
-<gazebo>
-  <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-    <ros>
-      <namespace>/my_robot</namespace>
-      <parameter name="slider_to_cart.p" type="double">50.0</parameter>
-      <parameter name="slider_to_cart.i" type="double">10.0</parameter>
-      <parameter name="slider_to_cart.d" type="double">15.0</parameter>
-      <parameter name="slider_to_cart.i_clamp_max" type="double">3.0</parameter>
-      <parameter name="slider_to_cart.i_clamp_min" type="double">-3.0</parameter>
-      <parameter name="slider_to_cart.antiwindup" type="bool">false</parameter>
-      <remapping>e_stop_topic:=emergency_stop</remapping>
-    </ros>
-    <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
-    <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
-    ...
-  </plugins>
-</gazebo>
-```
-
 #### Executing the examples
 
 There are some examples in the `gazebo_ros2_control_demos` package. These examples allow to launch a cart in a 30 meter rail.
@@ -206,7 +179,6 @@ There are some examples in the `gazebo_ros2_control_demos` package. These exampl
 You can run some of the configuration running the following commands:
 
 ```bash
-ros2 launch gazebo_ros2_control_demos cart_example_position_pid.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
@@ -220,24 +192,6 @@ When the Gazebo world is launched you can run some of the following commads to m
 ros2 run gazebo_ros2_control_demos example_position
 ros2 run gazebo_ros2_control_demos example_velocity
 ros2 run gazebo_ros2_control_demos example_effort
-```
-
-To get or modify the values of the PID controller you can run the following commands:
-
-```bash
-ros2 param get /gazebo_ros2_control slider_to_cart.p
-ros2 param get /gazebo_ros2_control slider_to_cart.i
-ros2 param get /gazebo_ros2_control slider_to_cart.d
-ros2 param get /gazebo_ros2_control slider_to_cart.i_clamp_max
-ros2 param get /gazebo_ros2_control slider_to_cart.i_clamp_min
-```
-
-```bash
-ros2 param set /gazebo_ros2_control slider_to_cart.p 50.0
-ros2 param set /gazebo_ros2_control slider_to_cart.i 10.0
-ros2 param set /gazebo_ros2_control slider_to_cart.d 15.0
-ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_max 3.0
-ros2 param set /gazebo_ros2_control slider_to_cart.i_clamp_min -3.0
 ```
 
 #### Gazebo + Moveit2 + ROS 2
