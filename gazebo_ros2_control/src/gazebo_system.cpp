@@ -370,7 +370,7 @@ hardware_interface::return_type GazeboSystem::write()
           this->dataPtr->last_joint_position_cmd_[j] = this->dataPtr->joint_position_cmd_[j];
         }
         break;
-     case VELOCITY:
+      case VELOCITY:
         this->dataPtr->sim_joints_[j]->SetVelocity(
           0,
           this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_velocity_cmd_[j]);
