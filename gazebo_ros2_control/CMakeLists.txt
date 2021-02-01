@@ -45,9 +45,10 @@ add_library(gazebo_hardware_plugins SHARED
   src/gazebo_system.cpp
 )
 ament_target_dependencies(gazebo_hardware_plugins
-  hardware_interface
-  gazebo_dev
   angles
+  gazebo_dev
+  hardware_interface
+  rclcpp
 )
 
 ## Install
