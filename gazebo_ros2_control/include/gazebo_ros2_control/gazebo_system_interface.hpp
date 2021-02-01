@@ -66,7 +66,7 @@ public:
   /// \brief Initilize the system interface
   /// param[in] model_nh pointer to the ros2 node
   /// param[in] parent_model pointer to the model
-  /// param[in] transmissions availables in the model
+  /// param[in] control_hardware vector filled with information about robot's control resources
   /// param[in] sdf pointer to the SDF
   virtual bool initSim(
     rclcpp::Node::SharedPtr & model_nh,

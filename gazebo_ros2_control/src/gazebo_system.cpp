@@ -126,47 +126,7 @@ bool GazeboSystem::initSim(
 
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     std::string joint_name = this->dataPtr->joint_names_[j] = hardware_info.joints[j].name;
-    // std::vector<std::string> joint_interfaces = hardware_info.joints[j].interfaces;
 
-    // if (joint_interfaces.empty()) {
-    //   RCLCPP_WARN_STREAM(
-    //     this->nh_->get_logger(), "Joint " << transmissions[j].name <<
-    //       " of transmission " << transmissions[j].name <<
-    //       " does not specify any hardware interface. " <<
-    //       "Not adding it to the robot hardware simulation.");
-    //   continue;
-    // } else if (joint_interfaces.size() > 1) {
-    //   // only a warning, allow joint to continue
-    //   RCLCPP_WARN_STREAM(
-    //     this->nh_->get_logger(), "Joint " << transmissions[j].name <<
-    //       " of transmission " << transmissions[j].name <<
-    //       " specifies multiple hardware interfaces. " <<
-    //       "Currently the default robot hardware simulation interface only supports one." <<
-    //       "Using the first entry");
-    // }
-    // std::string hardware_interface = joint_interfaces.front();
-    // // Decide what kind of command interface this actuator/joint has
-    // if (hardware_interface == "hardware_interface/EffortJointInterface") {
-    //   this->dataPtr->joint_control_methods_[j] = EFFORT;
-    // } else if (hardware_interface == "hardware_interface/PositionJointInterface") {
-    //   this->dataPtr->joint_control_methods_[j] = POSITION;
-    // } else if (hardware_interface == "hardware_interface/VelocityJointInterface") {
-    //   this->dataPtr->joint_control_methods_[j] = VELOCITY;
-    // } else {
-    //   RCLCPP_WARN_STREAM(
-    //     this->nh_->get_logger(), "No matching joint interface '" <<
-    //       hardware_interface << "' for joint " << joint_name);
-    //   RCLCPP_INFO(
-    //     this->nh_->get_logger(),
-    //     "    Expecting one of 'hardware_interface/{EffortJointInterface |"
-    //     " PositionJointInterface | VelocityJointInterface}'");
-    //   return false;
-    // }
-    //
-    // //
-    // // Accept this URDF joint as valid and link with the gazebo joint of the same name
-    // //
-    //
     gazebo::physics::JointPtr simjoint = parent_model->GetJoint(joint_name);
     if (!simjoint) {
       RCLCPP_WARN_STREAM(
@@ -175,11 +135,12 @@ bool GazeboSystem::initSim(
       continue;
     }
     this->dataPtr->sim_joints_.push_back(simjoint);
-    //
+
     // Accept this joint and continue configuration
     RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Loading joint: " << joint_name);
 
     RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\tCommand:");
+
     // register the command handles
     for (unsigned int i = 0; i < hardware_info.joints[j].command_interfaces.size(); i++) {
       if (hardware_info.joints[j].command_interfaces[i].name == "position") {

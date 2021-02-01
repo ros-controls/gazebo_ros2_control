@@ -60,7 +60,7 @@ ros2 run gazebo_ros2_control_demos example_position
 ```
 
 
-## Add transmission elements to a URDF
+## Add ros2_control tag to a URDF
 
 To use `ros2_control` with your robot, you need to add some additional elements to your URDF.
 You should include the tag `<ros2_control>` to access and control the robot interfaces. We should
@@ -88,8 +88,8 @@ include
 
 ## Add the gazebo_ros2_control plugin
 
-In addition to the transmission tags, a Gazebo plugin needs to be added to your URDF that
-actually parses the transmission tags and loads the appropriate hardware interfaces and
+In addition to the `ros2_control` tags, a Gazebo plugin needs to be added to your URDF that
+actually parses the `ros2_control` tags and loads the appropriate hardware interfaces and
 controller manager. By default the `gazebo_ros2_control` plugin is very simple, though it is also
 extensible via an additional plugin architecture to allow power users to create their own custom
 robot hardware interfaces between `ros2_control` and Gazebo.
@@ -100,7 +100,6 @@ robot hardware interfaces between `ros2_control` and Gazebo.
       <robot_param>robot_description</robot_param>
       <robot_param_node>robot_state_publisher</robot_param_node>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
-      <e_stop_topic>False</e_stop_topic>
       <control_period>0.01</control_period>
     </plugin>
 </gazebo>
@@ -112,7 +111,6 @@ The `gazebo_ros2_control` `<plugin>` tag also has the following optional child e
  - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
  - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
  - `<parameters>`: YAML file with the configuration of the controllers
- - `<e_stop_topic>`: Topic to publish the emergency stop
 
 #### Default gazebo_ros2_control Behavior
 
