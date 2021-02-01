@@ -47,6 +47,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "hardware_interface/resource_manager.hpp"
+#include "hardware_interface/component_parser.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
 #include "urdf/model.h"
@@ -94,9 +95,6 @@ public:
 
   // Name of the file with the controllers configuration
   std::string param_file_;
-
-  // Transmissions in this plugin's scope
-  std::vector<transmission_interface::TransmissionInfo> transmissions_;
 
   // Robot simulator interface
   std::string robot_hw_sim_type_str_;
@@ -183,17 +181,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     impl_->robot_description_node_ = "robot_state_publisher";  // default
   }
 
-  // Get the robot simulation interface type
-  if (sdf->HasElement("robot_sim_type")) {
-    impl_->robot_hw_sim_type_str_ = sdf->Get<std::string>("robot_sim_type");
-  } else {
-    impl_->robot_hw_sim_type_str_ = "gazebo_ros2_control/GazeboSystem";
-    RCLCPP_DEBUG_STREAM(
-      impl_->model_nh_->get_logger(),
-      "Using default plugin for ros2_control system plugin (none specified in URDF/SDF)\"" <<
-        impl_->robot_hw_sim_type_str_ << "\"");
-  }
-
   if (sdf->HasElement("parameters")) {
     impl_->param_file_ = sdf->GetElement("parameters")->Get<std::string>();
   } else {
@@ -237,9 +224,12 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // setup actuators and mechanism control node.
   // This call will block if ROS is not properly initialized.
   std::string urdf_string;
+  std::vector<hardware_interface::HardwareInfo> control_hardware;
   try {
     urdf_string = impl_->getURDF(impl_->robot_description_);
-    impl_->transmissions_ = transmission_interface::parse_transmissions_from_urdf(urdf_string);
+    control_hardware = hardware_interface::parse_control_resources_from_urdf(urdf_string);
+    const auto hardware_info = control_hardware.front();
+    impl_->robot_hw_sim_type_str_  = hardware_info.hardware_class_type;
   } catch (const std::runtime_error & ex) {
     RCLCPP_ERROR_STREAM(
       impl_->model_nh_->get_logger(),
@@ -251,7 +241,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     std::make_unique<hardware_interface::ResourceManager>();
 
   try {
-    // We cannot use (for now) the <ros2_control> tag in the URDF, we need to call it manually.
     impl_->robot_hw_sim_loader_.reset(
       new pluginlib::ClassLoader<gazebo_ros2_control::GazeboSystemInterface>(
         "gazebo_ros2_control",
@@ -264,7 +253,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     if (!gazeboSystem->initSim(
         node_ros2,
         impl_->parent_model_,
-        impl_->transmissions_,
+        control_hardware,
         sdf))
     {
       RCLCPP_FATAL(

@@ -100,7 +100,7 @@ namespace gazebo_ros2_control
 bool GazeboSystem::initSim(
   rclcpp::Node::SharedPtr & model_nh,
   gazebo::physics::ModelPtr parent_model,
-  std::vector<transmission_interface::TransmissionInfo> transmissions,
+  const std::vector<hardware_interface::HardwareInfo> & control_hardware,
   sdf::ElementPtr sdf)
 {
   this->dataPtr = std::make_unique<GazeboSystemPrivate>();
@@ -108,7 +108,8 @@ bool GazeboSystem::initSim(
 
   this->nh_ = model_nh;
   this->dataPtr->parent_model_ = parent_model;
-  this->dataPtr->n_dof_ = transmissions.size();
+  const auto hardware_info = control_hardware.front();
+  this->dataPtr->n_dof_ = hardware_info.joints.size();
 
   this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_control_methods_.resize(this->dataPtr->n_dof_);
@@ -134,78 +135,55 @@ bool GazeboSystem::initSim(
     return false;
   }
 
+  if (this->dataPtr->n_dof_ == 0)
+  {
+    RCLCPP_WARN_STREAM(this->nh_->get_logger(), "There is not joint available ");
+    return false;
+  }
+
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
-    //
-    // Perform some validation on the URDF joint and actuator spec
-    //
-    // Check that this transmission has one joint
-    if (transmissions[j].joints.empty()) {
-      RCLCPP_WARN_STREAM(
-        this->nh_->get_logger(), "Transmission " << transmissions[j].name <<
-          " has no associated joints.");
-      continue;
-    } else if (transmissions[j].joints.size() > 1) {
-      RCLCPP_WARN_STREAM(
-        this->nh_->get_logger(), "Transmission " << transmissions[j].name <<
-          " has more than one joint. Currently the default robot hardware simulation " <<
-          " interface only supports one.");
-      continue;
-    }
-    std::string joint_name = this->dataPtr->joint_names_[j] = transmissions[j].joints[0].name;
+    std::string joint_name = this->dataPtr->joint_names_[j] = hardware_info.joints[j].name;
+    // std::vector<std::string> joint_interfaces = hardware_info.joints[j].interfaces;
 
-    std::vector<std::string> joint_interfaces = transmissions[j].joints[0].interfaces;
-    if (joint_interfaces.empty() &&
-      !(transmissions[j].actuators.empty()) &&
-      !(transmissions[j].actuators[0].interfaces.empty()))
-    {
-      // TODO(anyone): Deprecate HW interface specification in actuators in ROS 2
-      joint_interfaces = transmissions[j].actuators[0].interfaces;
-      RCLCPP_WARN_STREAM(
-        this->nh_->get_logger(), "The <hardware_interface> element of transmission " <<
-          transmissions[j].name << " should be nested inside the <joint> element," <<
-          " not <actuator>. The transmission will be properly loaded, but please update " <<
-          "your robot model to remain compatible with future versions of the plugin.");
-    }
-    if (joint_interfaces.empty()) {
-      RCLCPP_WARN_STREAM(
-        this->nh_->get_logger(), "Joint " << transmissions[j].name <<
-          " of transmission " << transmissions[j].name <<
-          " does not specify any hardware interface. " <<
-          "Not adding it to the robot hardware simulation.");
-      continue;
-    } else if (joint_interfaces.size() > 1) {
-      // only a warning, allow joint to continue
-      RCLCPP_WARN_STREAM(
-        this->nh_->get_logger(), "Joint " << transmissions[j].name <<
-          " of transmission " << transmissions[j].name <<
-          " specifies multiple hardware interfaces. " <<
-          "Currently the default robot hardware simulation interface only supports one." <<
-          "Using the first entry");
-    }
-    std::string hardware_interface = joint_interfaces.front();
-    // Decide what kind of command interface this actuator/joint has
-    if (hardware_interface == "hardware_interface/EffortJointInterface") {
-      this->dataPtr->joint_control_methods_[j] = EFFORT;
-    } else if (hardware_interface == "hardware_interface/PositionJointInterface") {
-      this->dataPtr->joint_control_methods_[j] = POSITION;
-    } else if (hardware_interface == "hardware_interface/VelocityJointInterface") {
-      this->dataPtr->joint_control_methods_[j] = VELOCITY;
-    } else {
-      RCLCPP_WARN_STREAM(
-        this->nh_->get_logger(), "No matching joint interface '" <<
-          hardware_interface << "' for joint " << joint_name);
-      RCLCPP_INFO(
-        this->nh_->get_logger(),
-        "    Expecting one of 'hardware_interface/{EffortJointInterface |"
-        " PositionJointInterface | VelocityJointInterface}'");
-      return false;
-    }
-
+    // if (joint_interfaces.empty()) {
+    //   RCLCPP_WARN_STREAM(
+    //     this->nh_->get_logger(), "Joint " << transmissions[j].name <<
+    //       " of transmission " << transmissions[j].name <<
+    //       " does not specify any hardware interface. " <<
+    //       "Not adding it to the robot hardware simulation.");
+    //   continue;
+    // } else if (joint_interfaces.size() > 1) {
+    //   // only a warning, allow joint to continue
+    //   RCLCPP_WARN_STREAM(
+    //     this->nh_->get_logger(), "Joint " << transmissions[j].name <<
+    //       " of transmission " << transmissions[j].name <<
+    //       " specifies multiple hardware interfaces. " <<
+    //       "Currently the default robot hardware simulation interface only supports one." <<
+    //       "Using the first entry");
+    // }
+    // std::string hardware_interface = joint_interfaces.front();
+    // // Decide what kind of command interface this actuator/joint has
+    // if (hardware_interface == "hardware_interface/EffortJointInterface") {
+    //   this->dataPtr->joint_control_methods_[j] = EFFORT;
+    // } else if (hardware_interface == "hardware_interface/PositionJointInterface") {
+    //   this->dataPtr->joint_control_methods_[j] = POSITION;
+    // } else if (hardware_interface == "hardware_interface/VelocityJointInterface") {
+    //   this->dataPtr->joint_control_methods_[j] = VELOCITY;
+    // } else {
+    //   RCLCPP_WARN_STREAM(
+    //     this->nh_->get_logger(), "No matching joint interface '" <<
+    //       hardware_interface << "' for joint " << joint_name);
+    //   RCLCPP_INFO(
+    //     this->nh_->get_logger(),
+    //     "    Expecting one of 'hardware_interface/{EffortJointInterface |"
+    //     " PositionJointInterface | VelocityJointInterface}'");
+    //   return false;
+    // }
     //
-    // Accept this URDF joint as valid and link with the gazebo joint of the same name
+    // //
+    // // Accept this URDF joint as valid and link with the gazebo joint of the same name
+    // //
     //
-
-    // I think it's safe to only skip this joint and not abort if there is no match found
     gazebo::physics::JointPtr simjoint = parent_model->GetJoint(joint_name);
     if (!simjoint) {
       RCLCPP_WARN_STREAM(
@@ -214,27 +192,53 @@ bool GazeboSystem::initSim(
       continue;
     }
     this->dataPtr->sim_joints_.push_back(simjoint);
-
+    //
     // Accept this joint and continue configuration
+    RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Loading joint: " << joint_name);
+
+    RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\tCommand:");
+    // register the command handles
+    for (unsigned int i = 0; i < hardware_info.joints[j].command_interfaces.size(); i++) {
+      if (hardware_info.joints[j].command_interfaces[i].name == "position") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
+        this->dataPtr->joint_control_methods_[i] |= POSITION;
+        this->dataPtr->joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_cmd_[j]);
+      }
+      if (hardware_info.joints[j].command_interfaces[i].name == "velocity") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
+        this->dataPtr->joint_control_methods_[i] |= VELOCITY;
+        this->dataPtr->joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
+      }
+      if (hardware_info.joints[j].command_interfaces[i].name == "effort") {
+        this->dataPtr->joint_control_methods_[i] |= EFFORT;
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
+        this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
+      }
+    }
+
     RCLCPP_INFO_STREAM(
-      this->nh_->get_logger(), "Loading joint '" << joint_name << "' of type '" <<
-        hardware_interface << "'");
-
+      this->nh_->get_logger(), "\tState:");
     // register the state handles
-    this->dataPtr->joint_pos_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-      joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_[j]);
-    this->dataPtr->joint_vel_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-      joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_[j]);
-    this->dataPtr->joint_eff_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-      joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_[j]);
-
-    // register the state handles
-    this->dataPtr->joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-      joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_cmd_[j]);
-    this->dataPtr->joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-      joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
-    this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-      joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
+    for (unsigned int i = 0; i < hardware_info.joints[j].state_interfaces.size(); i++) {
+      if (hardware_info.joints[j].state_interfaces[i].name == "position") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
+        this->dataPtr->joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_cmd_[j]);
+      }
+      if (hardware_info.joints[j].state_interfaces[i].name == "velocity") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
+        this->dataPtr->joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
+      }
+      if (hardware_info.joints[j].state_interfaces[i].name == "effort") {
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
+        this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
+          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
+      }
+    }
   }
 
   // Initialize the emergency stop code.
@@ -348,33 +352,29 @@ hardware_interface::return_type GazeboSystem::write()
   rclcpp::Duration sim_period = sim_time_ros - this->dataPtr->last_update_sim_time_ros_;
 
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
-    switch (this->dataPtr->joint_control_methods_[j]) {
-      case EFFORT:
-        {
-          const double effort =
-            this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_effort_cmd_[j];
-          this->dataPtr->sim_joints_[j]->SetForce(0, effort);
-        }
-        break;
-      case POSITION:
-        if (this->dataPtr->e_stop_active_) {
-          // If the E-stop is active, joints controlled by position commands will maintain
-          // their positions.
-          this->dataPtr->sim_joints_[j]->SetPosition(
-            0, this->dataPtr->last_joint_position_cmd_[j],
-            true);
-        } else {
-          this->dataPtr->sim_joints_[j]->SetPosition(
-            0, this->dataPtr->joint_position_cmd_[j],
-            true);
-          this->dataPtr->last_joint_position_cmd_[j] = this->dataPtr->joint_position_cmd_[j];
-        }
-        break;
-      case VELOCITY:
-        this->dataPtr->sim_joints_[j]->SetVelocity(
-          0,
-          this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_velocity_cmd_[j]);
-        break;
+    if (this->dataPtr->joint_control_methods_[j] & POSITION) {
+      if (this->dataPtr->e_stop_active_) {
+        // If the E-stop is active, joints controlled by position commands will maintain
+        // their positions.
+        this->dataPtr->sim_joints_[j]->SetPosition(
+          0, this->dataPtr->last_joint_position_cmd_[j],
+          true);
+      } else {
+        this->dataPtr->sim_joints_[j]->SetPosition(
+          0, this->dataPtr->joint_position_cmd_[j],
+          true);
+        this->dataPtr->last_joint_position_cmd_[j] = this->dataPtr->joint_position_cmd_[j];
+      }
+    }
+    if (this->dataPtr->joint_control_methods_[j] & VELOCITY) {
+      this->dataPtr->sim_joints_[j]->SetVelocity(
+        0,
+        this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_velocity_cmd_[j]);
+    }
+    if (this->dataPtr->joint_control_methods_[j] & EFFORT) {
+      const double effort =
+        this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_effort_cmd_[j];
+      this->dataPtr->sim_joints_[j]->SetForce(0, effort);
     }
   }
 

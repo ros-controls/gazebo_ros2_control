@@ -48,19 +48,24 @@
     <limit effort="1000.0" lower="-15" upper="15" velocity="30"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
-  <transmission name="slider_to_cart_trans">
-    <type>transmission_interface/SimpleTransmission</type>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
     <joint name="slider_to_cart">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <command_interface name="position">
+        <param name="min">-15</param>
+        <param name="max">15</param>
+      </command_interface>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
     </joint>
-    <actuator name="slider_to_cart_motor">
-      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
-      <mechanicalReduction>1</mechanicalReduction>
-    </actuator>
-  </transmission>
+  </ros2_control>
+
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <robot_sim_type>gazebo_ros2_control/GazeboSystem</robot_sim_type>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
       <control_period>0.01</control_period>
       <e_stop_topic>/cart_pole/estop</e_stop_topic>

@@ -44,8 +44,6 @@
 #include "gazebo/common/common.hh"
 #include "gazebo/physics/Model.hh"
 
-#include "transmission_interface/transmission_parser.hpp"
-
 namespace gazebo_ros2_control
 {
 class GazeboRosControlPrivate;

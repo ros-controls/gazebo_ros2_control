@@ -1,8 +1,5 @@
 FROM osrf/ros:foxy-desktop
 
-# TODO(ahcorde): Remove this line when a new foxy released is launched (transmission_interface)
-RUN echo "deb http://packages.ros.org/ros2-testing/ubuntu focal main" > /etc/apt/sources.list.d/ros2-latest.list
-
 # Make sure everything is up to date before building from source
 RUN apt-get update \
   && apt-get upgrade -y \
