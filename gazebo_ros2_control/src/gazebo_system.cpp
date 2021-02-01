@@ -27,12 +27,6 @@ public:
   /// \brief Degrees od freedom.
   size_t n_dof_;
 
-  /// \brief e_stop_active_ is true if the emergency stop is active.
-  bool e_stop_active_;
-
-  /// \brief Emergency stop subscriber.
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr e_stop_sub_;
-
   /// \brief Gazebo Model Ptr.
   gazebo::physics::ModelPtr parent_model_;
 
@@ -60,9 +54,6 @@ public:
   /// \brief vector with the current cmd joint position
   std::vector<double> joint_position_cmd_;
 
-  /// \brief vector with the last cmd joint position
-  std::vector<double> last_joint_position_cmd_;
-
   /// \brief vector with the current cmd joint velocity
   std::vector<double> joint_velocity_cmd_;
 
@@ -86,12 +77,6 @@ public:
 
   /// \brief The effort command interfaces of the joints
   std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_eff_cmd_;
-
-  /// \brief callback to get the e_stop signal from the ROS 2 topic
-  void eStopCB(const std::shared_ptr<std_msgs::msg::Bool> e_stop_active)
-  {
-    this->e_stop_active_ = e_stop_active->data;
-  }
 };
 
 namespace gazebo_ros2_control
@@ -120,7 +105,6 @@ bool GazeboSystem::initSim(
   this->dataPtr->joint_vel_state_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_eff_state_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->last_joint_position_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_pos_cmd_.resize(this->dataPtr->n_dof_);
@@ -240,18 +224,6 @@ bool GazeboSystem::initSim(
       }
     }
   }
-
-  // Initialize the emergency stop code.
-  this->dataPtr->e_stop_active_ = false;
-  if (sdf->HasElement("e_stop_topic")) {
-    const std::string e_stop_topic = sdf->GetElement("e_stop_topic")->Get<std::string>();
-    rclcpp::QoS qos = rclcpp::SensorDataQoS().reliable();
-    this->dataPtr->e_stop_sub_ = this->nh_->create_subscription<std_msgs::msg::Bool>(
-      e_stop_topic,
-      qos,
-      std::bind(&GazeboSystemPrivate::eStopCB, this->dataPtr.get(), std::placeholders::_1));
-  }
-
   return true;
 }
 
@@ -353,27 +325,18 @@ hardware_interface::return_type GazeboSystem::write()
 
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     if (this->dataPtr->joint_control_methods_[j] & POSITION) {
-      if (this->dataPtr->e_stop_active_) {
-        // If the E-stop is active, joints controlled by position commands will maintain
-        // their positions.
-        this->dataPtr->sim_joints_[j]->SetPosition(
-          0, this->dataPtr->last_joint_position_cmd_[j],
-          true);
-      } else {
-        this->dataPtr->sim_joints_[j]->SetPosition(
-          0, this->dataPtr->joint_position_cmd_[j],
-          true);
-        this->dataPtr->last_joint_position_cmd_[j] = this->dataPtr->joint_position_cmd_[j];
-      }
+      this->dataPtr->sim_joints_[j]->SetPosition(
+        0, this->dataPtr->joint_position_cmd_[j],
+        true);
     }
     if (this->dataPtr->joint_control_methods_[j] & VELOCITY) {
       this->dataPtr->sim_joints_[j]->SetVelocity(
         0,
-        this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_velocity_cmd_[j]);
+        this->dataPtr->joint_velocity_cmd_[j]);
     }
     if (this->dataPtr->joint_control_methods_[j] & EFFORT) {
       const double effort =
-        this->dataPtr->e_stop_active_ ? 0 : this->dataPtr->joint_effort_cmd_[j];
+        this->dataPtr->joint_effort_cmd_[j];
       this->dataPtr->sim_joints_[j]->SetForce(0, effort);
     }
   }

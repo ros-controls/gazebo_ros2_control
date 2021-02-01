@@ -68,7 +68,6 @@
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller_effort.yaml</parameters>
       <control_period>0.01</control_period>
-      <e_stop_topic>/cart_pole/estop</e_stop_topic>
     </plugin>
   </gazebo>
 </robot>
