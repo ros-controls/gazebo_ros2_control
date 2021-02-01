@@ -489,7 +489,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
   // search and wait for robot_description on param server
   while (urdf_string.empty()) {
     std::string search_param_name;
-    RCLCPP_ERROR(model_nh_->get_logger(), "param_name %s", param_name.c_str());
+    RCLCPP_DEBUG(model_nh_->get_logger(), "param_name %s", param_name.c_str());
 
     try {
       auto f = parameters_client->get_parameters({param_name});
