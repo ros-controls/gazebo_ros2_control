@@ -229,7 +229,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     urdf_string = impl_->getURDF(impl_->robot_description_);
     control_hardware = hardware_interface::parse_control_resources_from_urdf(urdf_string);
     const auto hardware_info = control_hardware.front();
-    impl_->robot_hw_sim_type_str_  = hardware_info.hardware_class_type;
+    impl_->robot_hw_sim_type_str_ = hardware_info.hardware_class_type;
   } catch (const std::runtime_error & ex) {
     RCLCPP_ERROR_STREAM(
       impl_->model_nh_->get_logger(),

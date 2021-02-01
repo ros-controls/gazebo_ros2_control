@@ -119,8 +119,7 @@ bool GazeboSystem::initSim(
     return false;
   }
 
-  if (this->dataPtr->n_dof_ == 0)
-  {
+  if (this->dataPtr->n_dof_ == 0) {
     RCLCPP_WARN_STREAM(this->nh_->get_logger(), "There is not joint available ");
     return false;
   }
