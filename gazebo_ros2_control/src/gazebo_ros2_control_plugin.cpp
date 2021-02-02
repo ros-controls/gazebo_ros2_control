@@ -241,8 +241,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         "gazebo_ros2_control",
         "gazebo_ros2_control::GazeboSystemInterface"));
 
-    for (unsigned int i = 0; i < control_hardware.size(); i++)
-    {
+    for (unsigned int i = 0; i < control_hardware.size(); i++) {
       std::string robot_hw_sim_type_str_ = control_hardware[i].hardware_class_type;
       auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
         impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
