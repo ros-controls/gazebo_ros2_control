@@ -63,7 +63,7 @@ public:
   bool initSim(
     rclcpp::Node::SharedPtr & model_nh,
     gazebo::physics::ModelPtr parent_model,
-    const std::vector<hardware_interface::HardwareInfo> & control_hardware,
+    const hardware_interface::HardwareInfo & hardware_info,
     sdf::ElementPtr sdf) override;
 
 private:

@@ -96,9 +96,6 @@ public:
   // Name of the file with the controllers configuration
   std::string param_file_;
 
-  // Robot simulator interface
-  std::string robot_hw_sim_type_str_;
-
   // Executor to spin the controller
   rclcpp::executors::MultiThreadedExecutor::SharedPtr executor_;
 
@@ -228,8 +225,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   try {
     urdf_string = impl_->getURDF(impl_->robot_description_);
     control_hardware = hardware_interface::parse_control_resources_from_urdf(urdf_string);
-    const auto hardware_info = control_hardware.front();
-    impl_->robot_hw_sim_type_str_ = hardware_info.hardware_class_type;
   } catch (const std::runtime_error & ex) {
     RCLCPP_ERROR_STREAM(
       impl_->model_nh_->get_logger(),
@@ -246,22 +241,26 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         "gazebo_ros2_control",
         "gazebo_ros2_control::GazeboSystemInterface"));
 
-    auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
-      impl_->robot_hw_sim_loader_->createUnmanagedInstance(impl_->robot_hw_sim_type_str_));
-
-    rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
-    if (!gazeboSystem->initSim(
-        node_ros2,
-        impl_->parent_model_,
-        control_hardware,
-        sdf))
+    for (unsigned int i = 0; i < control_hardware.size(); i++)
     {
-      RCLCPP_FATAL(
-        impl_->model_nh_->get_logger(), "Could not initialize robot simulation interface");
-      return;
-    }
+      std::string robot_hw_sim_type_str_ = control_hardware[i].hardware_class_type;
+      auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
+        impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
 
-    resource_manager_->import_component(std::move(gazeboSystem));
+      rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
+      if (!gazeboSystem->initSim(
+          node_ros2,
+          impl_->parent_model_,
+          control_hardware[i],
+          sdf))
+      {
+        RCLCPP_FATAL(
+          impl_->model_nh_->get_logger(), "Could not initialize robot simulation interface");
+        return;
+      }
+
+      resource_manager_->import_component(std::move(gazeboSystem));
+    }
 
     impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
 

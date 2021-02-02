@@ -85,7 +85,7 @@ namespace gazebo_ros2_control
 bool GazeboSystem::initSim(
   rclcpp::Node::SharedPtr & model_nh,
   gazebo::physics::ModelPtr parent_model,
-  const std::vector<hardware_interface::HardwareInfo> & control_hardware,
+  const hardware_interface::HardwareInfo & hardware_info,
   sdf::ElementPtr sdf)
 {
   this->dataPtr = std::make_unique<GazeboSystemPrivate>();
@@ -93,7 +93,6 @@ bool GazeboSystem::initSim(
 
   this->nh_ = model_nh;
   this->dataPtr->parent_model_ = parent_model;
-  const auto hardware_info = control_hardware.front();
   this->dataPtr->n_dof_ = hardware_info.joints.size();
 
   this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
