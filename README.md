@@ -100,14 +100,12 @@ robot hardware interfaces between `ros2_control` and Gazebo.
       <robot_param>robot_description</robot_param>
       <robot_param_node>robot_state_publisher</robot_param_node>
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
-      <control_period>0.01</control_period>
     </plugin>
 </gazebo>
 ```
 
 The `gazebo_ros2_control` `<plugin>` tag also has the following optional child elements:
 
- - `<control_period>`: The period of the controller update (in seconds), defaults to Gazebo's period
  - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
  - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
  - `<parameters>`: YAML file with the configuration of the controllers

@@ -1,11 +1,15 @@
-cart_pole_controller:
+controller_manager:
   ros__parameters:
-    type: effort_controllers/JointGroupEffortController
-    joints:
-       - slider_to_cart
-    write_op_modes:
-       - slider_to_cart
+    update_rate: 100  # Hz
 
-joint_state_controller:
+    effort_controllers:
+      type: effort_controllers/JointGroupEffortController
+
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
+
+effort_controllers:
   ros__parameters:
-    type: joint_state_controller/JointStateController
+    joints:
+      - slider_to_cart
+    interface_name: position

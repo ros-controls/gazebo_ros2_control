@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 
 RUN mkdir -p /home/ros2_ws/src \
     && cd /home/ros2_ws/src/ \
-    && git clone https://github.com/ros-simulation/gazebo_ros2_control -b ahcorde/update/foxy \
+    && git clone https://github.com/ros-simulation/gazebo_ros2_control \
     && rosdep update \
     && rosdep install --from-paths ./ -i -y --rosdistro foxy \
       --ignore-src
@@ -26,4 +26,4 @@ RUN cd /home/ros2_ws/ \
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ros2 launch rrbot_moveit_demo_nodes rrbot_demo.launch.py
+CMD ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py

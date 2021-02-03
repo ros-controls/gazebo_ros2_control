@@ -191,32 +191,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       std::chrono::duration<double>(
         impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize())));
 
-  // Decide the plugin control period
-  if (sdf->HasElement("control_period")) {
-    impl_->control_period_ = rclcpp::Duration(
-      std::chrono::duration_cast<std::chrono::nanoseconds>(
-        std::chrono::duration<double>(sdf->Get<double>("control_period"))));
-
-    // Check the period against the simulation period
-    if (impl_->control_period_ < gazebo_period) {
-      RCLCPP_ERROR_STREAM(
-        impl_->model_nh_->get_logger(),
-        "Desired controller update period (" << impl_->control_period_.seconds() <<
-          " s) is faster than the gazebo simulation period (" << gazebo_period.seconds() << " s).");
-    } else if (impl_->control_period_ > gazebo_period) {
-      RCLCPP_WARN_STREAM(
-        impl_->model_nh_->get_logger(),
-        " Desired controller update period (" << impl_->control_period_.seconds() <<
-          " s) is slower than the gazebo simulation period (" << gazebo_period.seconds() << " s).");
-    }
-  } else {
-    impl_->control_period_ = gazebo_period;
-    RCLCPP_DEBUG_STREAM(
-      impl_->model_nh_->get_logger(),
-      "Control period not found in URDF/SDF, defaulting to Gazebo period of " <<
-        impl_->control_period_.seconds());
-  }
-
   // Read urdf from ros parameter server then
   // setup actuators and mechanism control node.
   // This call will block if ROS is not properly initialized.
@@ -342,12 +316,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
                     node->declare_parameter(key);
                   }
                   node->set_parameter({rclcpp::Parameter(key, val)});
-                  if (key == "joints") {
-                    if (!node->has_parameter("write_op_modes")) {
-                      node->declare_parameter("write_op_modes");
-                    }
-                    node->set_parameter(rclcpp::Parameter("write_op_modes", val));
-                  }
                 } else {
                   size_t index = 0;
                   for (auto yaml_node_it : yaml_node) {
@@ -388,24 +356,51 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
     YAML::Node root_node = YAML::LoadFile(impl_->param_file_);
     for (auto yaml : root_node) {
-      auto controller_name = yaml.first.as<std::string>();
-      for (auto yaml_node_it : yaml.second) {    // ros__parameters
-        for (auto yaml_node_it2 : yaml_node_it.second) {
-          auto param_name = yaml_node_it2.first.as<std::string>();
-          if (param_name == "type") {
-            auto controller_type = yaml_node_it2.second.as<std::string>();
-            auto controller = impl_->controller_manager_->load_controller(
-              controller_name,
-              controller_type);
-            impl_->controllers_.push_back(controller);
-            load_params_from_yaml(
-              controller->get_node(),
-              impl_->param_file_,
-              controller_name);
-            controller->configure();
-            start_controllers.push_back(controller_name);
+      auto controller_manager_node_name = yaml.first.as<std::string>();
+      if (controller_manager_node_name == "controller_manager") {
+        for (auto yaml_node_it : yaml.second) {    // ros__parameters
+          for (auto controller_manager_params_it : yaml_node_it.second) {
+            auto controller_name = controller_manager_params_it.first.as<std::string>();
+
+            if (controller_name == "update_rate") {
+              float udpate_rate = controller_manager_params_it.second.as<float>();
+              // Decide the plugin control period
+              impl_->control_period_ = rclcpp::Duration(
+                std::chrono::duration_cast<std::chrono::nanoseconds>(
+                  std::chrono::duration<double>(1.0 / udpate_rate)));
+
+              // Check the period against the simulation period
+              if (impl_->control_period_ < gazebo_period) {
+                RCLCPP_ERROR_STREAM(
+                  impl_->model_nh_->get_logger(),
+                  "Desired controller update period (" << impl_->control_period_.seconds() <<
+                    " s) is faster than the gazebo simulation period (" <<
+                    gazebo_period.seconds() << " s).");
+              } else if (impl_->control_period_ > gazebo_period) {
+                RCLCPP_WARN_STREAM(
+                  impl_->model_nh_->get_logger(),
+                  " Desired controller update period (" << impl_->control_period_.seconds() <<
+                    " s) is slower than the gazebo simulation period (" <<
+                    gazebo_period.seconds() << " s).");
+              }
+            } else {
+              for (auto controller_type_it : controller_manager_params_it.second) {
+                auto controller_type = controller_type_it.second.as<std::string>();
+                auto controller = impl_->controller_manager_->load_controller(
+                  controller_name,
+                  controller_type);
+                impl_->controllers_.push_back(controller);
+                load_params_from_yaml(
+                  controller->get_node(),
+                  impl_->param_file_,
+                  controller_name);
+                controller->configure();
+                start_controllers.push_back(controller_name);
+              }
+            }
           }
         }
+        break;
       }
     }
 
