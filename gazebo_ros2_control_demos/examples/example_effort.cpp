@@ -26,10 +26,10 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  node = std::make_shared<rclcpp::Node>("velocity_test_node");
+  node = std::make_shared<rclcpp::Node>("effort_test_node");
 
   auto publisher = node->create_publisher<std_msgs::msg::Float64MultiArray>(
-    "/velocity_controller/commands", 10);
+    "/effort_controllers/commands", 10);
 
   RCLCPP_INFO(node->get_logger(), "node created");
 
@@ -41,11 +41,11 @@ int main(int argc, char * argv[])
   publisher->publish(commands);
   std::this_thread::sleep_for(1s);
 
-  commands.data[0] = 1;
+  commands.data[0] = 100;
   publisher->publish(commands);
   std::this_thread::sleep_for(1s);
 
-  commands.data[0] = -1;
+  commands.data[0] = -200;
   publisher->publish(commands);
   std::this_thread::sleep_for(1s);
 

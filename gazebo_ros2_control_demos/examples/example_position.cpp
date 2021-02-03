@@ -96,7 +96,7 @@ int main(int argc, char * argv[])
     node->get_node_graph_interface(),
     node->get_node_logging_interface(),
     node->get_node_waitables_interface(),
-    "/cart_pole_controller/follow_joint_trajectory");
+    "/joint_trajectory_controller/follow_joint_trajectory");
 
   bool response =
     action_client->wait_for_action_server(std::chrono::seconds(1));

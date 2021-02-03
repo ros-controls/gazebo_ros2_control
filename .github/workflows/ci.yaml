@@ -18,16 +18,13 @@ jobs:
         cd ..
         mkdir -p /home/ros2_ws/src
         cp -r gazebo_ros2_control /home/ros2_ws/src/
-        apt-get upgrade -q -y
+        apt-get update && apt-get upgrade -q -y
         apt-get update && apt-get install -q -y --no-install-recommends \
           dirmngr \
           gnupg2 \
           lsb-release \
           python3-colcon-ros
-        apt-get upgrade -y
         cd /home/ros2_ws/src/
-        git clone https://github.com/ros-controls/ros2_control
-        git clone https://github.com/ros-controls/ros2_controllers
         rosdep update
         rosdep install --from-paths ./ -i -y --rosdistro foxy \
           --ignore-src
@@ -36,7 +33,6 @@ jobs:
       run: |
         cd /home/ros2_ws/
         . /opt/ros/foxy/local_setup.sh
-        export CMAKE_PREFIX_PATH=$AMENT_PREFIX_PATH:$CMAKE_PREFIX_PATH
         colcon build --packages-up-to gazebo_ros2_control_demos
     - name: Run tests
       id: test

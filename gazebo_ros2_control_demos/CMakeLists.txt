@@ -40,6 +40,12 @@ ament_target_dependencies(example_velocity
   std_msgs
 )
 
+add_executable(example_effort examples/example_effort.cpp)
+ament_target_dependencies(example_effort
+  rclcpp
+  std_msgs
+)
+
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
@@ -48,7 +54,7 @@ if(BUILD_TESTING)
 endif()
 
 ## Install
-install(TARGETS example_position example_velocity
+install(TARGETS example_position example_velocity example_effort
   DESTINATION lib/${PROJECT_NAME}
 )
 
