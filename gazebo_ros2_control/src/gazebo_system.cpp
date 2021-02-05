@@ -168,18 +168,18 @@ bool GazeboSystem::initSim(
     for (unsigned int i = 0; i < hardware_info.joints[j].state_interfaces.size(); i++) {
       if (hardware_info.joints[j].state_interfaces[i].name == "position") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
-        this->dataPtr->joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_cmd_[j]);
+        this->dataPtr->joint_pos_state_[j] = std::make_shared<hardware_interface::StateInterface>(
+          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_[j]);
       }
       if (hardware_info.joints[j].state_interfaces[i].name == "velocity") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
-        this->dataPtr->joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
+        this->dataPtr->joint_vel_state_[j] = std::make_shared<hardware_interface::StateInterface>(
+          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_[j]);
       }
       if (hardware_info.joints[j].state_interfaces[i].name == "effort") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
-        this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
+        this->dataPtr->joint_eff_state_[j] = std::make_shared<hardware_interface::StateInterface>(
+          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_[j]);
       }
     }
   }
