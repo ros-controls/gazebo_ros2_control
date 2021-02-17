@@ -183,7 +183,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   if (sdf->HasElement("parameters")) {
     impl_->param_file_ = sdf->GetElement("parameters")->Get<std::string>();
     RCLCPP_INFO(
-        impl_->model_nh_->get_logger(), "Loading parameter file %s\n", impl_->param_file_.c_str());
+      impl_->model_nh_->get_logger(), "Loading parameter file %s\n", impl_->param_file_.c_str());
   } else {
     RCLCPP_ERROR(
       impl_->model_nh_->get_logger(), "No parameter file provided. Configuration might be wrong");
@@ -227,17 +227,17 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   for (unsigned int i = 0; i < control_hardware.size(); i++) {
     std::string robot_hw_sim_type_str_ = control_hardware[i].hardware_class_type;
     auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
-        impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
+      impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
 
     rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
     if (!gazeboSystem->initSim(
-          node_ros2,
-          impl_->parent_model_,
-          control_hardware[i],
-          sdf))
+        node_ros2,
+        impl_->parent_model_,
+        control_hardware[i],
+        sdf))
     {
       RCLCPP_FATAL(
-          impl_->model_nh_->get_logger(), "Could not initialize robot simulation interface");
+        impl_->model_nh_->get_logger(), "Could not initialize robot simulation interface");
       return;
     }
 
@@ -249,17 +249,19 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // Create the controller manager
   RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
   impl_->controller_manager_.reset(
-      new controller_manager::ControllerManager(
-        std::move(resource_manager_),
-        impl_->executor_,
-        "controller_manager"));
+    new controller_manager::ControllerManager(
+      std::move(resource_manager_),
+      impl_->executor_,
+      "controller_manager"));
   impl_->executor_->add_node(impl_->controller_manager_);
 
   // parse the parameters file
   rcl_params_t * params_struct = rcl_yaml_node_struct_init(rcutils_get_default_allocator());
   auto ret = rcl_parse_yaml_file(impl_->param_file_.c_str(), params_struct);
   if (!ret) {
-    RCLCPP_ERROR(impl_->model_nh_->get_logger(), "Unable to parse yaml config in file %s", impl_->param_file_.c_str());
+    RCLCPP_ERROR(
+      impl_->model_nh_->get_logger(), "Unable to parse yaml config in file %s",
+      impl_->param_file_.c_str());
     return;
   }
   auto parameter_map = rclcpp::parameter_map_from(params_struct);
@@ -268,15 +270,17 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   if (it != parameter_map.end()) {
     impl_->controller_manager_->set_parameters(it->second);
   } else {
-    RCLCPP_INFO(impl_->model_nh_->get_logger(), "No parameters for /controller_manager found, setting defaults");
+    RCLCPP_INFO(
+      impl_->model_nh_->get_logger(),
+      "No parameters for /controller_manager found, setting defaults");
   }
 
   auto spin = [this]()
-  {
-    while (rclcpp::ok()) {
-      impl_->executor_->spin_once();
-    }
-  };
+    {
+      while (rclcpp::ok()) {
+        impl_->executor_->spin_once();
+      }
+    };
   impl_->thread_executor_spin_ = std::thread(spin);
 
   // Listen to the update event. This event is broadcast every simulation iteration.
