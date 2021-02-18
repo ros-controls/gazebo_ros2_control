@@ -275,6 +275,25 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       "No parameters for /controller_manager found, setting defaults");
   }
 
+  auto cm_update_rate = impl_->controller_manager_->get_parameter("update_rate").as_int();
+  impl_->control_period_ = rclcpp::Duration(
+    std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::duration<double>(1.0 / static_cast<double>(cm_update_rate))));
+  // Check the period against the simulation period
+  if (impl_->control_period_ < gazebo_period) {
+    RCLCPP_ERROR_STREAM(
+      impl_->model_nh_->get_logger(),
+      "Desired controller update period (" << impl_->control_period_.seconds() <<
+        " s) is faster than the gazebo simulation period (" <<
+        gazebo_period.seconds() << " s).");
+  } else if (impl_->control_period_ > gazebo_period) {
+    RCLCPP_WARN_STREAM(
+      impl_->model_nh_->get_logger(),
+      " Desired controller update period (" << impl_->control_period_.seconds() <<
+        " s) is slower than the gazebo simulation period (" <<
+        gazebo_period.seconds() << " s).");
+  }
+
   auto spin = [this]()
     {
       while (rclcpp::ok()) {
