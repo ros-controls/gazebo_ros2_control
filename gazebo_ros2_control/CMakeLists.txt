@@ -9,7 +9,6 @@ find_package(gazebo_ros REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rcl_yaml_param_parser REQUIRED)
 find_package(urdf REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
@@ -38,7 +37,6 @@ ament_target_dependencies(${PROJECT_NAME}
   hardware_interface
   pluginlib
   rclcpp
-  rcl_yaml_param_parser
   urdf
   yaml_cpp_vendor
 )
@@ -51,7 +49,6 @@ ament_target_dependencies(gazebo_hardware_plugins
   gazebo_dev
   hardware_interface
   rclcpp
-  rcl_yaml_param_parser
 )
 
 ## Install

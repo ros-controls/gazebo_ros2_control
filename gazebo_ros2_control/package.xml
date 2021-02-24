@@ -25,7 +25,6 @@
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
-  <depend>rcl_yaml_param_parser</depend>
   <depend>std_msgs</depend>
   <depend>urdf</depend>
   <depend>yaml_cpp_vendor</depend>

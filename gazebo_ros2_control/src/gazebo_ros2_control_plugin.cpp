@@ -45,8 +45,6 @@
 #include "pluginlib/class_loader.hpp"
 
 #include "rclcpp/rclcpp.hpp"
-#include "rclcpp/parameter_map.hpp"
-#include "rcl_yaml_param_parser/parser.h"
 
 #include "hardware_interface/resource_manager.hpp"
 #include "hardware_interface/component_parser.hpp"
@@ -189,6 +187,31 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       impl_->model_nh_->get_logger(), "No parameter file provided. Configuration might be wrong");
   }
 
+  // There's currently no direct way to set parameters to the plugin's node
+  // So we have to parse the plugin file manually and set it to the node's context.
+  auto rcl_context = impl_->model_nh_->get_node_base_interface()->get_context()->get_rcl_context();
+  std::vector<std::string> arguments = {"--ros-args", "--params-file", impl_->param_file_.c_str()};
+  std::vector<char *> argv;
+  for (const auto & arg : arguments) {
+    argv.push_back((char *)arg.data());
+  }
+  rcl_arguments_t rcl_args = rcl_get_zero_initialized_arguments();
+  rcl_ret_t rcl_ret = rcl_parse_arguments(
+    static_cast<int>(argv.size()),
+    argv.data(), rcl_get_default_allocator(), &rcl_args);
+  rcl_context->global_arguments = rcl_args;
+  if (rcl_ret != RCL_RET_OK) {
+    RCLCPP_ERROR(impl_->model_nh_->get_logger(), "parser error %s\n", rcl_get_error_string().str);
+    rcl_reset_error();
+    return;
+  }
+  if (rcl_arguments_get_param_files_count(&rcl_args) < 1) {
+    RCLCPP_ERROR(
+      impl_->model_nh_->get_logger(), "failed to parse yaml file: '%s'\n",
+      impl_->param_file_.c_str());
+    return;
+  }
+
   // Get the Gazebo simulation period
   rclcpp::Duration gazebo_period(
     std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -255,24 +278,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       "controller_manager"));
   impl_->executor_->add_node(impl_->controller_manager_);
 
-  // parse the parameters file
-  rcl_params_t * params_struct = rcl_yaml_node_struct_init(rcutils_get_default_allocator());
-  auto ret = rcl_parse_yaml_file(impl_->param_file_.c_str(), params_struct);
-  if (!ret) {
-    RCLCPP_ERROR(
-      impl_->model_nh_->get_logger(), "Unable to parse yaml config in file %s",
-      impl_->param_file_.c_str());
+  if (!impl_->controller_manager_->has_parameter("update_rate")) {
+    RCLCPP_ERROR_STREAM(
+      impl_->model_nh_->get_logger(), "controller manager doesn't have an update_rate parameter");
     return;
-  }
-  auto parameter_map = rclcpp::parameter_map_from(params_struct);
-  rcl_yaml_node_struct_fini(params_struct);
-  auto it = parameter_map.find("/controller_manager");
-  if (it != parameter_map.end()) {
-    impl_->controller_manager_->set_parameters(it->second);
-  } else {
-    RCLCPP_INFO(
-      impl_->model_nh_->get_logger(),
-      "No parameters for /controller_manager found, setting defaults");
   }
 
   auto cm_update_rate = impl_->controller_manager_->get_parameter("update_rate").as_int();
