@@ -180,9 +180,36 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
   if (sdf->HasElement("parameters")) {
     impl_->param_file_ = sdf->GetElement("parameters")->Get<std::string>();
+    RCLCPP_INFO(
+      impl_->model_nh_->get_logger(), "Loading parameter file %s\n", impl_->param_file_.c_str());
   } else {
     RCLCPP_ERROR(
       impl_->model_nh_->get_logger(), "No parameter file provided. Configuration might be wrong");
+  }
+
+  // There's currently no direct way to set parameters to the plugin's node
+  // So we have to parse the plugin file manually and set it to the node's context.
+  auto rcl_context = impl_->model_nh_->get_node_base_interface()->get_context()->get_rcl_context();
+  std::vector<std::string> arguments = {"--ros-args", "--params-file", impl_->param_file_.c_str()};
+  std::vector<const char *> argv;
+  for (const auto & arg : arguments) {
+    argv.push_back(reinterpret_cast<const char *>(arg.data()));
+  }
+  rcl_arguments_t rcl_args = rcl_get_zero_initialized_arguments();
+  rcl_ret_t rcl_ret = rcl_parse_arguments(
+    static_cast<int>(argv.size()),
+    argv.data(), rcl_get_default_allocator(), &rcl_args);
+  rcl_context->global_arguments = rcl_args;
+  if (rcl_ret != RCL_RET_OK) {
+    RCLCPP_ERROR(impl_->model_nh_->get_logger(), "parser error %s\n", rcl_get_error_string().str);
+    rcl_reset_error();
+    return;
+  }
+  if (rcl_arguments_get_param_files_count(&rcl_args) < 1) {
+    RCLCPP_ERROR(
+      impl_->model_nh_->get_logger(), "failed to parse yaml file: '%s'\n",
+      impl_->param_file_.c_str());
+    return;
   }
 
   // Get the Gazebo simulation period
@@ -214,214 +241,75 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       new pluginlib::ClassLoader<gazebo_ros2_control::GazeboSystemInterface>(
         "gazebo_ros2_control",
         "gazebo_ros2_control::GazeboSystemInterface"));
-
-    for (unsigned int i = 0; i < control_hardware.size(); i++) {
-      std::string robot_hw_sim_type_str_ = control_hardware[i].hardware_class_type;
-      auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
-        impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
-
-      rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
-      if (!gazeboSystem->initSim(
-          node_ros2,
-          impl_->parent_model_,
-          control_hardware[i],
-          sdf))
-      {
-        RCLCPP_FATAL(
-          impl_->model_nh_->get_logger(), "Could not initialize robot simulation interface");
-        return;
-      }
-
-      resource_manager_->import_component(std::move(gazeboSystem));
-    }
-
-    impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
-
-    auto spin = [this]()
-      {
-        while (rclcpp::ok()) {
-          impl_->executor_->spin_once();
-        }
-      };
-    impl_->thread_executor_spin_ = std::thread(spin);
-
-    // Create the controller manager
-    RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
-    impl_->controller_manager_.reset(
-      new controller_manager::ControllerManager(
-        std::move(resource_manager_),
-        impl_->executor_,
-        "controller_manager"));
-    impl_->executor_->add_node(impl_->controller_manager_);
-
-    // TODO(anyone): Coded example here. should disable when spawn functionality of
-    // controller manager is up
-    auto load_params_from_yaml_node = [](rclcpp::Node::SharedPtr node,
-        YAML::Node & yaml_node, const std::string & prefix)
-      {
-        std::function<void(YAML::Node, const std::string &,
-          std::shared_ptr<rclcpp::Node>, const std::string &)>
-        feed_yaml_to_node_rec =
-          [&](YAML::Node yaml_node, const std::string & key,
-            std::shared_ptr<rclcpp::Node> node, const std::string & prefix)
-          {
-            if (node->get_name() != prefix) {
-              return;
-            }
-            static constexpr char separator = '.';
-            if (yaml_node.Type() == YAML::NodeType::Scalar) {
-              std::string val_str = yaml_node.as<std::string>();
-
-              // TODO(ddengster): Do stricter typing for set_parameter value types.
-              // (ie. Numbers should be converted to int/double/etc instead of strings)
-              if (!node->has_parameter(key)) {
-                node->declare_parameter(key);
-              }
-
-              auto is_number = [](const std::string & str) -> bool {
-                  return str.find_first_not_of("0123456789.-") == std::string::npos;
-                  // @note: bugs with .05 or 15.
-                };
-
-              if (is_number(val_str)) {
-                std::stringstream ss(val_str);
-                double v = 0.0;
-                ss >> v;
-                node->set_parameter(rclcpp::Parameter(key, v));
-              } else {
-                node->set_parameter(rclcpp::Parameter(key, val_str));
-              }
-              return;
-            } else if (yaml_node.Type() == YAML::NodeType::Map) {
-              for (auto yaml_node_it : yaml_node) {
-                std::string newkey = yaml_node_it.first.as<std::string>();
-                if (newkey == prefix || newkey == "ros__parameters") {
-                  newkey = "";
-                } else if (!key.empty()) {
-                  newkey = key + separator + newkey;
-                }
-                feed_yaml_to_node_rec(yaml_node_it.second, newkey, node, prefix);
-              }
-            } else if (yaml_node.Type() == YAML::NodeType::Sequence) {
-              auto it = yaml_node.begin();
-              if (yaml_node.size()) {
-                if (it->IsScalar()) {
-                  // submit as array of parameters
-                  std::vector<std::string> val;
-                  for (auto yaml_node_it : yaml_node) {
-                    std::string name = yaml_node_it.as<std::string>();
-                    val.push_back(name);
-                  }
-                  if (!node->has_parameter(key)) {
-                    node->declare_parameter(key);
-                  }
-                  node->set_parameter({rclcpp::Parameter(key, val)});
-                } else {
-                  size_t index = 0;
-                  for (auto yaml_node_it : yaml_node) {
-                    std::string newkey = std::to_string((index++));
-                    if (!key.empty()) {
-                      newkey = key + separator + newkey;
-                    }
-                    feed_yaml_to_node_rec(yaml_node_it, newkey, node, prefix);
-                  }
-                }
-              }
-            }
-          };
-        if (node->get_name() != prefix) {
-          return;
-        }
-        feed_yaml_to_node_rec(yaml_node, prefix, node, prefix);
-      };
-    auto load_params_from_yaml = [&](rclcpp::Node::SharedPtr node,
-        const std::string & yaml_config_file, const std::string & prefix)
-      {
-        if (yaml_config_file.empty()) {
-          throw std::runtime_error("yaml config file path is empty");
-        }
-        YAML::Node root_node = YAML::LoadFile(yaml_config_file);
-        for (auto yaml : root_node) {
-          auto nodename = yaml.first.as<std::string>();
-          RCLCPP_DEBUG(impl_->model_nh_->get_logger(), "nodename: %s", nodename.c_str());
-          if (nodename == prefix) {
-            load_params_from_yaml_node(node, yaml.second, prefix);
-          }
-        }
-      };
-
-    // Start controller, will take effect at the end of the update function
-    std::vector<std::string> start_controllers = {};
-    std::vector<std::string> stop_controllers = {};
-
-    YAML::Node root_node = YAML::LoadFile(impl_->param_file_);
-    for (auto yaml : root_node) {
-      auto controller_manager_node_name = yaml.first.as<std::string>();
-      if (controller_manager_node_name == "controller_manager") {
-        for (auto yaml_node_it : yaml.second) {    // ros__parameters
-          for (auto controller_manager_params_it : yaml_node_it.second) {
-            auto controller_name = controller_manager_params_it.first.as<std::string>();
-
-            if (controller_name == "update_rate") {
-              float udpate_rate = controller_manager_params_it.second.as<float>();
-              // Decide the plugin control period
-              impl_->control_period_ = rclcpp::Duration(
-                std::chrono::duration_cast<std::chrono::nanoseconds>(
-                  std::chrono::duration<double>(1.0 / udpate_rate)));
-
-              // Check the period against the simulation period
-              if (impl_->control_period_ < gazebo_period) {
-                RCLCPP_ERROR_STREAM(
-                  impl_->model_nh_->get_logger(),
-                  "Desired controller update period (" << impl_->control_period_.seconds() <<
-                    " s) is faster than the gazebo simulation period (" <<
-                    gazebo_period.seconds() << " s).");
-              } else if (impl_->control_period_ > gazebo_period) {
-                RCLCPP_WARN_STREAM(
-                  impl_->model_nh_->get_logger(),
-                  " Desired controller update period (" << impl_->control_period_.seconds() <<
-                    " s) is slower than the gazebo simulation period (" <<
-                    gazebo_period.seconds() << " s).");
-              }
-            } else {
-              for (auto controller_type_it : controller_manager_params_it.second) {
-                auto controller_type = controller_type_it.second.as<std::string>();
-                auto controller = impl_->controller_manager_->load_controller(
-                  controller_name,
-                  controller_type);
-                impl_->controllers_.push_back(controller);
-                load_params_from_yaml(
-                  controller->get_node(),
-                  impl_->param_file_,
-                  controller_name);
-                controller->configure();
-                start_controllers.push_back(controller_name);
-              }
-            }
-          }
-        }
-        break;
-      }
-    }
-
-    auto switch_future = std::async(
-      std::launch::async,
-      &controller_manager::ControllerManager::switch_controller,
-      impl_->controller_manager_,
-      start_controllers, stop_controllers,
-      2, true, rclcpp::Duration(0, 0));  // STRICT_: 2
-    while (std::future_status::timeout == switch_future.wait_for(std::chrono::milliseconds(100))) {
-      impl_->controller_manager_->update();
-    }
-    controller_interface::return_type result = switch_future.get();
-    if (result != controller_interface::return_type::SUCCESS) {
-      RCLCPP_ERROR(impl_->model_nh_->get_logger(), "Error initializing the joint_state_controller");
-    }
   } catch (pluginlib::LibraryLoadException & ex) {
     RCLCPP_ERROR(
       impl_->model_nh_->get_logger(), "Failed to create robot simulation interface loader: %s ",
       ex.what());
   }
+
+  for (unsigned int i = 0; i < control_hardware.size(); i++) {
+    std::string robot_hw_sim_type_str_ = control_hardware[i].hardware_class_type;
+    auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
+      impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
+
+    rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
+    if (!gazeboSystem->initSim(
+        node_ros2,
+        impl_->parent_model_,
+        control_hardware[i],
+        sdf))
+    {
+      RCLCPP_FATAL(
+        impl_->model_nh_->get_logger(), "Could not initialize robot simulation interface");
+      return;
+    }
+
+    resource_manager_->import_component(std::move(gazeboSystem));
+  }
+
+  impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+
+  // Create the controller manager
+  RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
+  impl_->controller_manager_.reset(
+    new controller_manager::ControllerManager(
+      std::move(resource_manager_),
+      impl_->executor_,
+      "controller_manager"));
+  impl_->executor_->add_node(impl_->controller_manager_);
+
+  if (!impl_->controller_manager_->has_parameter("update_rate")) {
+    RCLCPP_ERROR_STREAM(
+      impl_->model_nh_->get_logger(), "controller manager doesn't have an update_rate parameter");
+    return;
+  }
+
+  auto cm_update_rate = impl_->controller_manager_->get_parameter("update_rate").as_int();
+  impl_->control_period_ = rclcpp::Duration(
+    std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::duration<double>(1.0 / static_cast<double>(cm_update_rate))));
+  // Check the period against the simulation period
+  if (impl_->control_period_ < gazebo_period) {
+    RCLCPP_ERROR_STREAM(
+      impl_->model_nh_->get_logger(),
+      "Desired controller update period (" << impl_->control_period_.seconds() <<
+        " s) is faster than the gazebo simulation period (" <<
+        gazebo_period.seconds() << " s).");
+  } else if (impl_->control_period_ > gazebo_period) {
+    RCLCPP_WARN_STREAM(
+      impl_->model_nh_->get_logger(),
+      " Desired controller update period (" << impl_->control_period_.seconds() <<
+        " s) is slower than the gazebo simulation period (" <<
+        gazebo_period.seconds() << " s).");
+  }
+
+  auto spin = [this]()
+    {
+      while (rclcpp::ok()) {
+        impl_->executor_->spin_once();
+      }
+    };
+  impl_->thread_executor_spin_ = std::thread(spin);
 
   // Listen to the update event. This event is broadcast every simulation iteration.
   impl_->update_connection_ =
