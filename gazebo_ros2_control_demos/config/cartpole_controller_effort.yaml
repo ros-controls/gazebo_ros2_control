@@ -12,4 +12,3 @@ effort_controllers:
   ros__parameters:
     joints:
       - slider_to_cart
-    interface_name: position
