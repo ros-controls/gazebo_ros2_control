@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2021-04-19)
+------------------
 * Remove Unnecessary parameter in demo (`#68 <https://github.com/ros-simulation/gazebo_ros2_control//issues/68>`_)
 * Add effort_controller exec_depend on demos (`#69 <https://github.com/ros-simulation/gazebo_ros2_control//issues/69>`_)
 * add ros parameters file to node context (`#60 <https://github.com/ros-simulation/gazebo_ros2_control//issues/60>`_)

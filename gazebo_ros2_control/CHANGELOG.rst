@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.2 (2021-04-19)
+------------------
 * add ros parameters file to node context (`#60 <https://github.com/ros-simulation/gazebo_ros2_control//issues/60>`_)
   Co-authored-by: ahcorde <ahcorde@gmail.com>
 * Expose include path (`#58 <https://github.com/ros-simulation/gazebo_ros2_control//issues/58>`_)
