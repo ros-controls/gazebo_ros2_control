@@ -127,13 +127,13 @@ bool GazeboSystem::initSim(
     std::string joint_name = this->dataPtr->joint_names_[j] = hardware_info.joints[j].name;
 
     gazebo::physics::JointPtr simjoint = parent_model->GetJoint(joint_name);
+    this->dataPtr->sim_joints_.push_back(simjoint);
     if (!simjoint) {
       RCLCPP_WARN_STREAM(
         this->nh_->get_logger(), "Skipping joint in the URDF named '" << joint_name <<
           "' which is not in the gazebo model.");
       continue;
     }
-    this->dataPtr->sim_joints_.push_back(simjoint);
 
     // Accept this joint and continue configuration
     RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Loading joint: " << joint_name);
@@ -183,6 +183,7 @@ bool GazeboSystem::initSim(
       }
     }
   }
+
   return true;
 }
 
@@ -268,9 +269,11 @@ hardware_interface::return_type GazeboSystem::stop()
 hardware_interface::return_type GazeboSystem::read()
 {
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
-    this->dataPtr->joint_position_[j] = this->dataPtr->sim_joints_[j]->Position(0);
-    this->dataPtr->joint_velocity_[j] = this->dataPtr->sim_joints_[j]->GetVelocity(0);
-    this->dataPtr->joint_effort_[j] = this->dataPtr->sim_joints_[j]->GetForce(0u);
+    if (this->dataPtr->sim_joints_[j]) {
+      this->dataPtr->joint_position_[j] = this->dataPtr->sim_joints_[j]->Position(0);
+      this->dataPtr->joint_velocity_[j] = this->dataPtr->sim_joints_[j]->GetVelocity(0);
+      this->dataPtr->joint_effort_[j] = this->dataPtr->sim_joints_[j]->GetForce(0u);
+    }
   }
   return hardware_interface::return_type::OK;
 }
@@ -283,6 +286,9 @@ hardware_interface::return_type GazeboSystem::write()
   rclcpp::Duration sim_period = sim_time_ros - this->dataPtr->last_update_sim_time_ros_;
 
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
+    if (this->dataPtr->sim_joints_[j]) {
+
+
     if (this->dataPtr->joint_control_methods_[j] & POSITION) {
       this->dataPtr->sim_joints_[j]->SetPosition(
         0, this->dataPtr->joint_position_cmd_[j],
@@ -297,6 +303,7 @@ hardware_interface::return_type GazeboSystem::write()
       const double effort =
         this->dataPtr->joint_effort_cmd_[j];
       this->dataPtr->sim_joints_[j]->SetForce(0, effort);
+    }
     }
   }
 
