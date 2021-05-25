@@ -202,25 +202,31 @@ GazeboSystem::export_state_interfaces()
   std::vector<hardware_interface::StateInterface> state_interfaces;
 
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    state_interfaces.emplace_back(
-      hardware_interface::StateInterface(
-        this->dataPtr->joint_names_[i],
-        hardware_interface::HW_IF_POSITION,
-        &this->dataPtr->joint_position_[i]));
+    if (this->dataPtr->sim_joints_[i]) {
+      state_interfaces.emplace_back(
+        hardware_interface::StateInterface(
+          this->dataPtr->joint_names_[i],
+          hardware_interface::HW_IF_POSITION,
+          &this->dataPtr->joint_position_[i]));
+    }
   }
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    state_interfaces.emplace_back(
-      hardware_interface::StateInterface(
-        this->dataPtr->joint_names_[i],
-        hardware_interface::HW_IF_VELOCITY,
-        &this->dataPtr->joint_velocity_[i]));
+    if (this->dataPtr->sim_joints_[i]) {
+      state_interfaces.emplace_back(
+        hardware_interface::StateInterface(
+          this->dataPtr->joint_names_[i],
+          hardware_interface::HW_IF_VELOCITY,
+          &this->dataPtr->joint_velocity_[i]));
+    }    
   }
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    state_interfaces.emplace_back(
-      hardware_interface::StateInterface(
-        this->dataPtr->joint_names_[i],
-        hardware_interface::HW_IF_EFFORT,
-        &this->dataPtr->joint_effort_[i]));
+    if (this->dataPtr->sim_joints_[i]) {
+      state_interfaces.emplace_back(
+        hardware_interface::StateInterface(
+          this->dataPtr->joint_names_[i],
+          hardware_interface::HW_IF_EFFORT,
+          &this->dataPtr->joint_effort_[i]));
+    }
   }
   return state_interfaces;
 }
@@ -231,25 +237,31 @@ GazeboSystem::export_command_interfaces()
   std::vector<hardware_interface::CommandInterface> command_interfaces;
 
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    command_interfaces.emplace_back(
-      hardware_interface::CommandInterface(
-        this->dataPtr->joint_names_[i],
-        hardware_interface::HW_IF_POSITION,
-        &this->dataPtr->joint_position_cmd_[i]));
+    if (this->dataPtr->sim_joints_[i]) {
+      command_interfaces.emplace_back(
+        hardware_interface::CommandInterface(
+          this->dataPtr->joint_names_[i],
+          hardware_interface::HW_IF_POSITION,
+          &this->dataPtr->joint_position_cmd_[i]));
+    }
   }
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    command_interfaces.emplace_back(
-      hardware_interface::CommandInterface(
-        this->dataPtr->joint_names_[i],
-        hardware_interface::HW_IF_VELOCITY,
-        &this->dataPtr->joint_velocity_cmd_[i]));
+    if (this->dataPtr->sim_joints_[i]) {
+      command_interfaces.emplace_back(
+        hardware_interface::CommandInterface(
+          this->dataPtr->joint_names_[i],
+          hardware_interface::HW_IF_VELOCITY,
+          &this->dataPtr->joint_velocity_cmd_[i]));
+    }      
   }
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    command_interfaces.emplace_back(
-      hardware_interface::CommandInterface(
-        this->dataPtr->joint_names_[i],
-        hardware_interface::HW_IF_EFFORT,
-        &this->dataPtr->joint_effort_cmd_[i]));
+    if (this->dataPtr->sim_joints_[i]) {    
+      command_interfaces.emplace_back(
+        hardware_interface::CommandInterface(
+          this->dataPtr->joint_names_[i],
+          hardware_interface::HW_IF_EFFORT,
+          &this->dataPtr->joint_effort_cmd_[i]));
+    }
   }
   return command_interfaces;
 }
