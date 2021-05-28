@@ -299,7 +299,6 @@ hardware_interface::return_type GazeboSystem::write()
 
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     if (this->dataPtr->sim_joints_[j]) {
-
       if (this->dataPtr->joint_control_methods_[j] & POSITION) {
         this->dataPtr->sim_joints_[j]->SetPosition(
           0, this->dataPtr->joint_position_cmd_[j],
