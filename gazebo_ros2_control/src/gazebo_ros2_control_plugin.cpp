@@ -315,7 +315,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   impl_->stop_ = false;
   auto spin = [this]()
     {
-      while (rclcpp::ok() && ! impl_->stop_) {
+      while (rclcpp::ok() && !impl_->stop_) {
         impl_->executor_->spin_once();
       }
     };
