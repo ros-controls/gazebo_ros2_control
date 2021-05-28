@@ -102,7 +102,7 @@ public:
   // Thread where the executor will sping
   std::thread thread_executor_spin_;
 
-  // Flag to stop the executor thread when gazebo exits
+  // Flag to stop the executor thread when this plugin is exiting
   bool stop_;
   
   // Controller manager
@@ -126,6 +126,7 @@ GazeboRosControlPlugin::GazeboRosControlPlugin()
 
 GazeboRosControlPlugin::~GazeboRosControlPlugin()
 {
+  // Stop controller manager thread
   impl_->stop_ = true;
   impl_->executor_->remove_node(impl_->controller_manager_);
   impl_->executor_->cancel();
@@ -133,7 +134,6 @@ GazeboRosControlPlugin::~GazeboRosControlPlugin()
   
   // Disconnect from gazebo events
   impl_->update_connection_.reset();
-
 }
 
 // Overloaded Gazebo entry point
