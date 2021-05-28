@@ -104,7 +104,7 @@ public:
 
   // Flag to stop the executor thread when this plugin is exiting
   bool stop_;
-  
+
   // Controller manager
   std::shared_ptr<controller_manager::ControllerManager> controller_manager_;
 
@@ -116,7 +116,6 @@ public:
 
   // Last time the update method was called
   rclcpp::Time last_update_sim_time_ros_;
-  
 };
 
 GazeboRosControlPlugin::GazeboRosControlPlugin()
@@ -131,7 +130,7 @@ GazeboRosControlPlugin::~GazeboRosControlPlugin()
   impl_->executor_->remove_node(impl_->controller_manager_);
   impl_->executor_->cancel();
   impl_->thread_executor_spin_.join();
-  
+
   // Disconnect from gazebo events
   impl_->update_connection_.reset();
 }
