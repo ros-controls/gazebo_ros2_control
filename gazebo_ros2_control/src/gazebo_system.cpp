@@ -217,7 +217,7 @@ GazeboSystem::export_state_interfaces()
           this->dataPtr->joint_names_[i],
           hardware_interface::HW_IF_VELOCITY,
           &this->dataPtr->joint_velocity_[i]));
-    }    
+    }
   }
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
     if (this->dataPtr->sim_joints_[i]) {
@@ -252,10 +252,10 @@ GazeboSystem::export_command_interfaces()
           this->dataPtr->joint_names_[i],
           hardware_interface::HW_IF_VELOCITY,
           &this->dataPtr->joint_velocity_cmd_[i]));
-    }      
+    }
   }
   for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {    
+    if (this->dataPtr->sim_joints_[i]) {
       command_interfaces.emplace_back(
         hardware_interface::CommandInterface(
           this->dataPtr->joint_names_[i],
