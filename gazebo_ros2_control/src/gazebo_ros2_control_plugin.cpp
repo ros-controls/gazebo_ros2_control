@@ -102,6 +102,9 @@ public:
   // Thread where the executor will sping
   std::thread thread_executor_spin_;
 
+  // Flag to stop the executor thread when this plugin is exiting
+  bool stop_;
+
   // Controller manager
   std::shared_ptr<controller_manager::ControllerManager> controller_manager_;
 
@@ -122,6 +125,12 @@ GazeboRosControlPlugin::GazeboRosControlPlugin()
 
 GazeboRosControlPlugin::~GazeboRosControlPlugin()
 {
+  // Stop controller manager thread
+  impl_->stop_ = true;
+  impl_->executor_->remove_node(impl_->controller_manager_);
+  impl_->executor_->cancel();
+  impl_->thread_executor_spin_.join();
+
   // Disconnect from gazebo events
   impl_->update_connection_.reset();
 }
@@ -303,9 +312,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         gazebo_period.seconds() << " s).");
   }
 
+  impl_->stop_ = false;
   auto spin = [this]()
     {
-      while (rclcpp::ok()) {
+      while (rclcpp::ok() && !impl_->stop_) {
         impl_->executor_->spin_once();
       }
     };
