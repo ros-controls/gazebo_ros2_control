@@ -200,6 +200,35 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // So we have to parse the plugin file manually and set it to the node's context.
   auto rcl_context = impl_->model_nh_->get_node_base_interface()->get_context()->get_rcl_context();
   std::vector<std::string> arguments = {"--ros-args", "--params-file", impl_->param_file_.c_str()};
+  if (sdf->HasElement("ros")) {
+    sdf = sdf->GetElement("ros");
+
+    // Set namespace if tag is present
+    if (sdf->HasElement("namespace")) {
+      std::string ns = sdf->GetElement("namespace")->Get<std::string>();
+      // prevent exception: namespace must be absolute, it must lead with a '/'
+      if (ns.empty() || ns[0] != '/') {
+        ns = '/' + ns;
+      }
+      std::string ns_arg = std::string("__ns:=") + ns;
+      arguments.push_back(RCL_REMAP_FLAG);
+      arguments.push_back(ns_arg);
+    }
+
+    // Get list of remapping rules from SDF
+    if (sdf->HasElement("remapping")) {
+      sdf::ElementPtr argument_sdf = sdf->GetElement("remapping");
+
+      arguments.push_back(RCL_ROS_ARGS_FLAG);
+      while (argument_sdf) {
+        std::string argument = argument_sdf->Get<std::string>();
+        arguments.push_back(RCL_REMAP_FLAG);
+        arguments.push_back(argument);
+        argument_sdf = argument_sdf->GetNextElement("remapping");
+      }
+    }
+  }
+
   std::vector<const char *> argv;
   for (const auto & arg : arguments) {
     argv.push_back(reinterpret_cast<const char *>(arg.data()));
