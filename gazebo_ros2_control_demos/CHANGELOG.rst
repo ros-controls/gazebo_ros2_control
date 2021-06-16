@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.3 (2021-06-16)
+------------------
 * Update code with recent change in ros2_control (`#81 <https://github.com/ros-simulation/gazebo_ros2_control/issues/81>`_)
 * Adding ros2_control dependency to demos (`#74 <https://github.com/ros-simulation/gazebo_ros2_control/issues/74>`_) (`#76 <https://github.com/ros-simulation/gazebo_ros2_control/issues/76>`_)
 * Contributors: Alejandro Hernández Cordero, Ron Marrero
