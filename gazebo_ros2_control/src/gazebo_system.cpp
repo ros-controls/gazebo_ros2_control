@@ -15,6 +15,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "gazebo_ros2_control/gazebo_system.hpp"
 
@@ -60,23 +61,11 @@ public:
   /// \brief vector with the current cmd joint effort
   std::vector<double> joint_effort_cmd_;
 
-  /// \brief The current positions of the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_pos_state_;
+  /// \brief state interfaces that will be exported to the Resource Manager
+  std::vector<hardware_interface::StateInterface> state_interfaces_;
 
-  /// \brief The current velocities of the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_vel_state_;
-
-  /// \brief The current effort forces applied to the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_eff_state_;
-
-  /// \brief The position command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_pos_cmd_;
-
-  /// \brief The velocity command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_vel_cmd_;
-
-  /// \brief The effort command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_eff_cmd_;
+  /// \brief command interfaces that will be exported to the Resource Manager
+  std::vector<hardware_interface::CommandInterface> command_interfaces_;
 };
 
 namespace gazebo_ros2_control
@@ -100,15 +89,9 @@ bool GazeboSystem::initSim(
   this->dataPtr->joint_position_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_effort_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_pos_state_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_vel_state_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_eff_state_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_pos_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_vel_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_eff_cmd_.resize(this->dataPtr->n_dof_);
 
   gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->Physics();
 
@@ -145,41 +128,53 @@ bool GazeboSystem::initSim(
       if (hardware_info.joints[j].command_interfaces[i].name == "position") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
         this->dataPtr->joint_control_methods_[j] |= POSITION;
-        this->dataPtr->joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_cmd_[j]);
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_POSITION,
+          &this->dataPtr->joint_position_cmd_[j]);
       }
       if (hardware_info.joints[j].command_interfaces[i].name == "velocity") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
         this->dataPtr->joint_control_methods_[j] |= VELOCITY;
-        this->dataPtr->joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_VELOCITY,
+          &this->dataPtr->joint_velocity_cmd_[j]);
       }
       if (hardware_info.joints[j].command_interfaces[i].name == "effort") {
         this->dataPtr->joint_control_methods_[j] |= EFFORT;
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
-        this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_EFFORT,
+          &this->dataPtr->joint_effort_cmd_[j]);
       }
     }
 
-    RCLCPP_INFO_STREAM(
-      this->nh_->get_logger(), "\tState:");
+    RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\tState:");
+
     // register the state handles
     for (unsigned int i = 0; i < hardware_info.joints[j].state_interfaces.size(); i++) {
       if (hardware_info.joints[j].state_interfaces[i].name == "position") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
-        this->dataPtr->joint_pos_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_[j]);
+        this->dataPtr->state_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_POSITION,
+          &this->dataPtr->joint_position_[j]);
       }
       if (hardware_info.joints[j].state_interfaces[i].name == "velocity") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
-        this->dataPtr->joint_vel_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_[j]);
+        this->dataPtr->state_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_VELOCITY,
+          &this->dataPtr->joint_velocity_[j]);
       }
       if (hardware_info.joints[j].state_interfaces[i].name == "effort") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
-        this->dataPtr->joint_eff_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_[j]);
+        this->dataPtr->state_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_EFFORT,
+          &this->dataPtr->joint_effort_[j]);
       }
     }
   }
@@ -199,71 +194,13 @@ GazeboSystem::configure(const hardware_interface::HardwareInfo & actuator_info)
 std::vector<hardware_interface::StateInterface>
 GazeboSystem::export_state_interfaces()
 {
-  std::vector<hardware_interface::StateInterface> state_interfaces;
-
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      state_interfaces.emplace_back(
-        hardware_interface::StateInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_POSITION,
-          &this->dataPtr->joint_position_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      state_interfaces.emplace_back(
-        hardware_interface::StateInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_VELOCITY,
-          &this->dataPtr->joint_velocity_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      state_interfaces.emplace_back(
-        hardware_interface::StateInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_EFFORT,
-          &this->dataPtr->joint_effort_[i]));
-    }
-  }
-  return state_interfaces;
+  return std::move(this->dataPtr->state_interfaces_);
 }
 
 std::vector<hardware_interface::CommandInterface>
 GazeboSystem::export_command_interfaces()
 {
-  std::vector<hardware_interface::CommandInterface> command_interfaces;
-
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_POSITION,
-          &this->dataPtr->joint_position_cmd_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_VELOCITY,
-          &this->dataPtr->joint_velocity_cmd_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_EFFORT,
-          &this->dataPtr->joint_effort_cmd_[i]));
-    }
-  }
-  return command_interfaces;
+  return std::move(this->dataPtr->command_interfaces_);
 }
 
 hardware_interface::return_type GazeboSystem::start()
