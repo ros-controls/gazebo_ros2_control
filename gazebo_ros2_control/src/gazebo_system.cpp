@@ -291,7 +291,8 @@ void GazeboSystem::registerSensors(
 
   this->dataPtr->imu_sensor_data_.resize(this->dataPtr->sim_imu_sensors_.size());
   this->dataPtr->ft_sensor_data_.resize(this->dataPtr->sim_ft_sensors_.size());
-  this->dataPtr->n_sensors_ = this->dataPtr->sim_imu_sensors_.size() + this->dataPtr->sim_ft_sensors_.size();
+  this->dataPtr->n_sensors_ = this->dataPtr->sim_imu_sensors_.size() +
+    this->dataPtr->sim_ft_sensors_.size();
 
   for (unsigned int i = 0; i < imu_components_.size(); i++) {
     const std::string & sensor_name = imu_components_[i].name;
@@ -315,9 +316,9 @@ void GazeboSystem::registerSensors(
 
       size_t data_index = interface_name_map.at(state_interface.name);
       this->dataPtr->state_interfaces_.emplace_back(
-          sensor_name,
-          state_interface.name,
-          &this->dataPtr->imu_sensor_data_[i][data_index]);
+        sensor_name,
+        state_interface.name,
+        &this->dataPtr->imu_sensor_data_[i][data_index]);
     }
   }
   for (unsigned int i = 0; i < ft_sensor_components_.size(); i++) {
@@ -338,9 +339,9 @@ void GazeboSystem::registerSensors(
 
       size_t data_index = interface_name_map.at(state_interface.name);
       this->dataPtr->state_interfaces_.emplace_back(
-          sensor_name,
-          state_interface.name,
-          &this->dataPtr->ft_sensor_data_[i][data_index]);
+        sensor_name,
+        state_interface.name,
+        &this->dataPtr->ft_sensor_data_[i][data_index]);
     }
   }
 }
