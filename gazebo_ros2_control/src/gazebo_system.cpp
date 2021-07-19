@@ -28,8 +28,12 @@ public:
   GazeboSystemPrivate() = default;
 
   ~GazeboSystemPrivate() = default;
+
   /// \brief Degrees od freedom.
   size_t n_dof_;
+
+  /// \brief Number of sensors.
+  size_t n_sensors_;
 
   /// \brief Gazebo Model Ptr.
   gazebo::physics::ModelPtr parent_model_;
@@ -97,6 +101,30 @@ bool GazeboSystem::initSim(
 
   this->nh_ = model_nh;
   this->dataPtr->parent_model_ = parent_model;
+
+  gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->Physics();
+
+  std::string physics_type_ = physics->GetType();
+  if (physics_type_.empty()) {
+    RCLCPP_ERROR(this->nh_->get_logger(), "No physics engine configured in Gazebo.");
+    return false;
+  }
+
+  registerJoints(hardware_info, parent_model);
+  registerSensors(hardware_info, parent_model);
+
+  if (this->dataPtr->n_dof_ == 0 && this->dataPtr->n_sensors_ == 0) {
+    RCLCPP_WARN_STREAM(this->nh_->get_logger(), "There is no joint or sensor available");
+    return false;
+  }
+
+  return true;
+}
+
+void GazeboSystem::registerJoints(
+  const hardware_interface::HardwareInfo & hardware_info,
+  gazebo::physics::ModelPtr parent_model)
+{
   this->dataPtr->n_dof_ = hardware_info.joints.size();
 
   this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
@@ -107,19 +135,6 @@ bool GazeboSystem::initSim(
   this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
-
-  gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->Physics();
-
-  std::string physics_type_ = physics->GetType();
-  if (physics_type_.empty()) {
-    RCLCPP_ERROR(this->nh_->get_logger(), "No physics engine configured in Gazebo.");
-    return false;
-  }
-
-  if (this->dataPtr->n_dof_ == 0) {
-    RCLCPP_WARN_STREAM(this->nh_->get_logger(), "There is not joint available ");
-    return false;
-  }
 
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     std::string joint_name = this->dataPtr->joint_names_[j] = hardware_info.joints[j].name;
@@ -193,10 +208,6 @@ bool GazeboSystem::initSim(
       }
     }
   }
-
-  registerSensors(hardware_info, parent_model);
-
-  return true;
 }
 
 void GazeboSystem::registerSensors(
@@ -280,6 +291,7 @@ void GazeboSystem::registerSensors(
 
   this->dataPtr->imu_sensor_data_.resize(this->dataPtr->sim_imu_sensors_.size());
   this->dataPtr->ft_sensor_data_.resize(this->dataPtr->sim_ft_sensors_.size());
+  this->dataPtr->n_sensors_ = this->dataPtr->sim_imu_sensors_.size() + this->dataPtr->sim_ft_sensors_.size();
 
   for (unsigned int i = 0; i < imu_components_.size(); i++) {
     const std::string & sensor_name = imu_components_[i].name;
