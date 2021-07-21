@@ -48,6 +48,26 @@
     <limit effort="1000.0" lower="-15" upper="15" velocity="30"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
+  <link name="imu">
+    <inertial>
+      <mass value="0.1"/>
+      <inertia ixx="1.0" ixy="0" ixz="0" iyy="1.0" iyz="0" izz="1.0"/>
+    </inertial>
+  </link>
+  <joint name="cart_to_imu" type="fixed">
+    <origin xyz="0.0 0.0 0.0"/>
+    <parent link="cart"/>
+    <child link="imu"/>
+    <dynamics damping="0.0" friction="0.0"/>
+  </joint>
+
+  <gazebo reference="imu">
+    <sensor name="cart_imu_sensor" type="imu">
+      <always_on>1</always_on>
+      <update_rate>10.0</update_rate>
+    </sensor>
+  </gazebo>
+
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
       <plugin>gazebo_ros2_control/GazeboSystem</plugin>
@@ -61,7 +81,20 @@
       <state_interface name="velocity"/>
       <state_interface name="effort"/>
     </joint>
+    <sensor name="cart_imu_sensor">
+      <state_interface name="orientation.x"/>
+      <state_interface name="orientation.y"/>
+      <state_interface name="orientation.z"/>
+      <state_interface name="orientation.w"/>
+      <state_interface name="angular_velocity.x"/>
+      <state_interface name="angular_velocity.y"/>
+      <state_interface name="angular_velocity.z"/>
+      <state_interface name="linear_acceleration.x"/>
+      <state_interface name="linear_acceleration.y"/>
+      <state_interface name="linear_acceleration.z"/>
+    </sensor>
   </ros2_control>
+
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller_velocity.yaml</parameters>

@@ -67,6 +67,14 @@ public:
     sdf::ElementPtr sdf) override;
 
 private:
+  void registerJoints(
+    const hardware_interface::HardwareInfo & hardware_info,
+    gazebo::physics::ModelPtr parent_model);
+
+  void registerSensors(
+    const hardware_interface::HardwareInfo & hardware_info,
+    gazebo::physics::ModelPtr parent_model);
+
   /// \brief Private data class
   std::unique_ptr<GazeboSystemPrivate> dataPtr;
 };

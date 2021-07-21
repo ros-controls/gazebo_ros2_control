@@ -48,7 +48,6 @@
     <limit effort="1000.0" lower="-15" upper="15" velocity="30"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
-
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
       <plugin>gazebo_ros2_control/GazeboSystem</plugin>
