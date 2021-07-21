@@ -16,6 +16,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "gazebo_ros2_control/gazebo_system.hpp"
 #include "gazebo/sensors/ImuSensor.hh"
@@ -27,8 +28,12 @@ public:
   GazeboSystemPrivate() = default;
 
   ~GazeboSystemPrivate() = default;
+
   /// \brief Degrees od freedom.
   size_t n_dof_;
+
+  /// \brief Number of sensors.
+  size_t n_sensors_;
 
   /// \brief Gazebo Model Ptr.
   gazebo::physics::ModelPtr parent_model_;
@@ -63,32 +68,11 @@ public:
   /// \brief vector with the current cmd joint effort
   std::vector<double> joint_effort_cmd_;
 
-  /// \brief The current positions of the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_pos_state_;
-
-  /// \brief The current velocities of the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_vel_state_;
-
-  /// \brief The current effort forces applied to the joints
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> joint_eff_state_;
-
-  /// \brief The position command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_pos_cmd_;
-
-  /// \brief The velocity command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_vel_cmd_;
-
-  /// \brief The effort command interfaces of the joints
-  std::vector<std::shared_ptr<hardware_interface::CommandInterface>> joint_eff_cmd_;
-
   /// \brief handles to the imus from within Gazebo
   std::vector<gazebo::sensors::ImuSensorPtr> sim_imu_sensors_;
 
   /// \brief An array per IMU with 4 orientation, 3 angular velocity and 3 linear acceleration
   std::vector<std::array<double, 10>> imu_sensor_data_;
-
-  /// \brief The ROS2 Control state interface for the current imu readings
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> imu_state_;
 
   /// \brief handles to the FT sensors from within Gazebo
   std::vector<gazebo::sensors::ForceTorqueSensorPtr> sim_ft_sensors_;
@@ -96,8 +80,11 @@ public:
   /// \brief An array per FT sensor for 3D force and torquee
   std::vector<std::array<double, 6>> ft_sensor_data_;
 
-  /// \brief The ROS2 Control state interface for the current FT sensor readings
-  std::vector<std::shared_ptr<hardware_interface::StateInterface>> ft_sensor_state_;
+  /// \brief state interfaces that will be exported to the Resource Manager
+  std::vector<hardware_interface::StateInterface> state_interfaces_;
+
+  /// \brief command interfaces that will be exported to the Resource Manager
+  std::vector<hardware_interface::CommandInterface> command_interfaces_;
 };
 
 namespace gazebo_ros2_control
@@ -114,22 +101,6 @@ bool GazeboSystem::initSim(
 
   this->nh_ = model_nh;
   this->dataPtr->parent_model_ = parent_model;
-  this->dataPtr->n_dof_ = hardware_info.joints.size();
-
-  this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_control_methods_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_position_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_velocity_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_effort_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_pos_state_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_vel_state_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_eff_state_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_pos_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_vel_cmd_.resize(this->dataPtr->n_dof_);
-  this->dataPtr->joint_eff_cmd_.resize(this->dataPtr->n_dof_);
 
   gazebo::physics::PhysicsEnginePtr physics = gazebo::physics::get_world()->Physics();
 
@@ -139,10 +110,31 @@ bool GazeboSystem::initSim(
     return false;
   }
 
-  if (this->dataPtr->n_dof_ == 0) {
-    RCLCPP_WARN_STREAM(this->nh_->get_logger(), "There is not joint available ");
+  registerJoints(hardware_info, parent_model);
+  registerSensors(hardware_info, parent_model);
+
+  if (this->dataPtr->n_dof_ == 0 && this->dataPtr->n_sensors_ == 0) {
+    RCLCPP_WARN_STREAM(this->nh_->get_logger(), "There is no joint or sensor available");
     return false;
   }
+
+  return true;
+}
+
+void GazeboSystem::registerJoints(
+  const hardware_interface::HardwareInfo & hardware_info,
+  gazebo::physics::ModelPtr parent_model)
+{
+  this->dataPtr->n_dof_ = hardware_info.joints.size();
+
+  this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_control_methods_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_position_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_velocity_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_effort_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
 
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     std::string joint_name = this->dataPtr->joint_names_[j] = hardware_info.joints[j].name;
@@ -166,48 +158,56 @@ bool GazeboSystem::initSim(
       if (hardware_info.joints[j].command_interfaces[i].name == "position") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
         this->dataPtr->joint_control_methods_[j] |= POSITION;
-        this->dataPtr->joint_pos_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_cmd_[j]);
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_POSITION,
+          &this->dataPtr->joint_position_cmd_[j]);
       }
       if (hardware_info.joints[j].command_interfaces[i].name == "velocity") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
         this->dataPtr->joint_control_methods_[j] |= VELOCITY;
-        this->dataPtr->joint_vel_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_cmd_[j]);
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_VELOCITY,
+          &this->dataPtr->joint_velocity_cmd_[j]);
       }
       if (hardware_info.joints[j].command_interfaces[i].name == "effort") {
         this->dataPtr->joint_control_methods_[j] |= EFFORT;
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
-        this->dataPtr->joint_eff_cmd_[j] = std::make_shared<hardware_interface::CommandInterface>(
-          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_cmd_[j]);
+        this->dataPtr->command_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_EFFORT,
+          &this->dataPtr->joint_effort_cmd_[j]);
       }
     }
 
-    RCLCPP_INFO_STREAM(
-      this->nh_->get_logger(), "\tState:");
+    RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\tState:");
+
     // register the state handles
     for (unsigned int i = 0; i < hardware_info.joints[j].state_interfaces.size(); i++) {
       if (hardware_info.joints[j].state_interfaces[i].name == "position") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
-        this->dataPtr->joint_pos_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-          joint_name, hardware_interface::HW_IF_POSITION, &this->dataPtr->joint_position_[j]);
+        this->dataPtr->state_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_POSITION,
+          &this->dataPtr->joint_position_[j]);
       }
       if (hardware_info.joints[j].state_interfaces[i].name == "velocity") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
-        this->dataPtr->joint_vel_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-          joint_name, hardware_interface::HW_IF_VELOCITY, &this->dataPtr->joint_velocity_[j]);
+        this->dataPtr->state_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_VELOCITY,
+          &this->dataPtr->joint_velocity_[j]);
       }
       if (hardware_info.joints[j].state_interfaces[i].name == "effort") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
-        this->dataPtr->joint_eff_state_[j] = std::make_shared<hardware_interface::StateInterface>(
-          joint_name, hardware_interface::HW_IF_EFFORT, &this->dataPtr->joint_effort_[j]);
+        this->dataPtr->state_interfaces_.emplace_back(
+          joint_name,
+          hardware_interface::HW_IF_EFFORT,
+          &this->dataPtr->joint_effort_[j]);
       }
     }
   }
-
-  registerSensors(hardware_info, parent_model);
-
-  return true;
 }
 
 void GazeboSystem::registerSensors(
@@ -291,6 +291,8 @@ void GazeboSystem::registerSensors(
 
   this->dataPtr->imu_sensor_data_.resize(this->dataPtr->sim_imu_sensors_.size());
   this->dataPtr->ft_sensor_data_.resize(this->dataPtr->sim_ft_sensors_.size());
+  this->dataPtr->n_sensors_ = this->dataPtr->sim_imu_sensors_.size() +
+    this->dataPtr->sim_ft_sensors_.size();
 
   for (unsigned int i = 0; i < imu_components_.size(); i++) {
     const std::string & sensor_name = imu_components_[i].name;
@@ -313,9 +315,10 @@ void GazeboSystem::registerSensors(
       RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << state_interface.name);
 
       size_t data_index = interface_name_map.at(state_interface.name);
-      this->dataPtr->imu_state_.emplace_back(
-        std::make_shared<hardware_interface::StateInterface>(
-          sensor_name, state_interface.name, &this->dataPtr->imu_sensor_data_[i][data_index]));
+      this->dataPtr->state_interfaces_.emplace_back(
+        sensor_name,
+        state_interface.name,
+        &this->dataPtr->imu_sensor_data_[i][data_index]);
     }
   }
   for (unsigned int i = 0; i < ft_sensor_components_.size(); i++) {
@@ -335,9 +338,10 @@ void GazeboSystem::registerSensors(
       RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << state_interface.name);
 
       size_t data_index = interface_name_map.at(state_interface.name);
-      this->dataPtr->ft_sensor_state_.emplace_back(
-        std::make_shared<hardware_interface::StateInterface>(
-          sensor_name, state_interface.name, &this->dataPtr->ft_sensor_data_[i][data_index]));
+      this->dataPtr->state_interfaces_.emplace_back(
+        sensor_name,
+        state_interface.name,
+        &this->dataPtr->ft_sensor_data_[i][data_index]);
     }
   }
 }
@@ -354,77 +358,13 @@ GazeboSystem::configure(const hardware_interface::HardwareInfo & actuator_info)
 std::vector<hardware_interface::StateInterface>
 GazeboSystem::export_state_interfaces()
 {
-  std::vector<hardware_interface::StateInterface> state_interfaces;
-
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      state_interfaces.emplace_back(
-        hardware_interface::StateInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_POSITION,
-          &this->dataPtr->joint_position_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      state_interfaces.emplace_back(
-        hardware_interface::StateInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_VELOCITY,
-          &this->dataPtr->joint_velocity_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      state_interfaces.emplace_back(
-        hardware_interface::StateInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_EFFORT,
-          &this->dataPtr->joint_effort_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->imu_state_.size(); i++) {
-    state_interfaces.emplace_back(*this->dataPtr->imu_state_[i]);
-  }
-  for (unsigned int i = 0; i < this->dataPtr->ft_sensor_state_.size(); i++) {
-    state_interfaces.emplace_back(*this->dataPtr->ft_sensor_state_[i]);
-  }
-  return state_interfaces;
+  return std::move(this->dataPtr->state_interfaces_);
 }
 
 std::vector<hardware_interface::CommandInterface>
 GazeboSystem::export_command_interfaces()
 {
-  std::vector<hardware_interface::CommandInterface> command_interfaces;
-
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_POSITION,
-          &this->dataPtr->joint_position_cmd_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_VELOCITY,
-          &this->dataPtr->joint_velocity_cmd_[i]));
-    }
-  }
-  for (unsigned int i = 0; i < this->dataPtr->joint_names_.size(); i++) {
-    if (this->dataPtr->sim_joints_[i]) {
-      command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(
-          this->dataPtr->joint_names_[i],
-          hardware_interface::HW_IF_EFFORT,
-          &this->dataPtr->joint_effort_cmd_[i]));
-    }
-  }
-  return command_interfaces;
+  return std::move(this->dataPtr->command_interfaces_);
 }
 
 hardware_interface::return_type GazeboSystem::start()
