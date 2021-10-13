@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
     RCLCPP_ERROR(node->get_logger(), "send goal call failed :(");
     return 1;
   }
-  RCLCPP_ERROR(node->get_logger(), "send goal call ok :)");
+  RCLCPP_INFO(node->get_logger(), "send goal call ok :)");
 
   rclcpp_action::ClientGoalHandle<control_msgs::action::FollowJointTrajectory>::SharedPtr
     goal_handle = goal_handle_future.get();
@@ -160,7 +160,7 @@ int main(int argc, char * argv[])
     RCLCPP_ERROR(node->get_logger(), "Goal was rejected by server");
     return 1;
   }
-  RCLCPP_ERROR(node->get_logger(), "Goal was accepted by server");
+  RCLCPP_INFO(node->get_logger(), "Goal was accepted by server");
 
   // Wait for the server to be done with the goal
   auto result_future = action_client->async_get_result(goal_handle);
