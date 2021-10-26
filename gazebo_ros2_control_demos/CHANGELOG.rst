@@ -2,6 +2,13 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix maintainer email (`#92 <https://github.com/ros-simulation/gazebo_ros2_control//issues/92>`_)
+* Add Imu and FT state interfaces (`#65 <https://github.com/ros-simulation/gazebo_ros2_control//issues/65>`_)
+  Co-authored-by: Jordan Palacios <jordan.palacios@pal-robotics.com>
+* Contributors: Alejandro Hernández Cordero, Victor Lopez
+
 0.0.3 (2021-06-16)
 ------------------
 * Update code with recent change in ros2_control (`#81 <https://github.com/ros-simulation/gazebo_ros2_control/issues/81>`_)
