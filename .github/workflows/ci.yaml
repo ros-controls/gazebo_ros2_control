@@ -41,7 +41,7 @@ jobs:
         . /opt/ros/galactic/local_setup.sh
         colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
         colcon test-result
-  build_prerelease:
+  build_testing:
     runs-on: ubuntu-latest
     container:
       image: osrf/ros:galactic-desktop
