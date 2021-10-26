@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.0.4 (2021-10-26)
+------------------
 * Added testing CI (`#93 <https://github.com/ros-simulation/gazebo_ros2_control//issues/93>`_)
   Co-authored-by: Bence Magyar <bence.magyar.robotics@gmail.com>
   Co-authored-by: Bence Magyar <bence.magyar.robotics@gmail.com>
