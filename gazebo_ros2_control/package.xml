@@ -4,7 +4,7 @@
   <version>0.0.3</version>
   <description>gazebo_ros2_control</description>
 
-  <maintainer email="ahcorde@osrfoundation.org">Alejandro Hernandez</maintainer>
+  <maintainer email="alejandro@osrfoundation.org">Alejandro Hernandez</maintainer>
 
   <license>BSD</license>
   <license>Apache License 2.0</license>
