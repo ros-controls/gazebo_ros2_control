@@ -369,9 +369,9 @@ void GazeboRosControlPrivate::Update()
   rclcpp::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   if (sim_period >= control_period_) {
-    last_update_sim_time_ros_ = sim_time_ros;
     controller_manager_->read();
-    controller_manager_->update();
+    controller_manager_->update(sim_time_ros, sim_period);
+    last_update_sim_time_ros_ = sim_time_ros;
   }
 
   // Always set commands on joints, otherwise at low control frequencies the joints tremble
