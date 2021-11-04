@@ -67,7 +67,7 @@ def generate_launch_description():
     )
 
     load_imu_sensor_broadcaster = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_start_controller', 'imu_sensor_broadcaster'],
+        cmd=['ros2', 'control', 'load_controller', 'imu_sensor_broadcaster'],
         output='screen'
     )
 

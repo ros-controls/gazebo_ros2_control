@@ -302,7 +302,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       return;
     }
 
-    resource_manager_->import_component(std::move(gazeboSystem));
+    resource_manager_->import_component(std::move(gazeboSystem), control_hardware[i]);
   }
 
   impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
