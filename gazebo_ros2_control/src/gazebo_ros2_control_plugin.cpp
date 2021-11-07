@@ -115,7 +115,7 @@ public:
   rclcpp::Duration control_period_ = rclcpp::Duration(1, 0);
 
   // Last time the update method was called
-  rclcpp::Time last_update_sim_time_ros_;
+  rclcpp::Time last_update_sim_time_ros_ = rclcpp::Time((int64_t)0, RCL_ROS_TIME);
 };
 
 GazeboRosControlPlugin::GazeboRosControlPlugin()
@@ -365,7 +365,7 @@ void GazeboRosControlPrivate::Update()
 {
   // Get the simulation time and period
   gazebo::common::Time gz_time_now = parent_model_->GetWorld()->SimTime();
-  rclcpp::Time sim_time_ros(gz_time_now.sec, gz_time_now.nsec);
+  rclcpp::Time sim_time_ros(gz_time_now.sec, gz_time_now.nsec, RCL_ROS_TIME);
   rclcpp::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   if (sim_period >= control_period_) {
@@ -383,7 +383,7 @@ void GazeboRosControlPrivate::Update()
 void GazeboRosControlPrivate::Reset()
 {
   // Reset timing variables to not pass negative update periods to controllers on world reset
-  last_update_sim_time_ros_ = rclcpp::Time();
+  last_update_sim_time_ros_ = rclcpp::Time((int64_t)0, RCL_ROS_TIME);
 }
 
 // Get the URDF XML from the parameter server
