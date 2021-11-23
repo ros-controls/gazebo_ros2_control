@@ -165,6 +165,11 @@ void GazeboSystem::registerJoints(
           joint_name,
           hardware_interface::HW_IF_POSITION,
           &this->dataPtr->joint_position_cmd_[j]);
+        auto it = hardware_info.joints[j].parameters.find("initial_position");
+        if (it != hardware_info.joints[j].parameters.end())
+        {
+          this->dataPtr->joint_position_cmd_[j] = std::stod(it->second);
+        }
       }
       if (hardware_info.joints[j].command_interfaces[i].name == "velocity") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
