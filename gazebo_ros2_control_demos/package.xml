@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>gazebo_ros2_control_demos</name>
-  <version>0.0.6</version>
+  <version>0.0.7</version>
   <description>gazebo_ros2_control_demos</description>
 
   <maintainer email="alejandro@osrfoundation.org">Alejandro Hernandez</maintainer>
