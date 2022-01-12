@@ -79,7 +79,9 @@ include
       <param name="min">-1000</param>
       <param name="max">1000</param>
     </command_interface>
-    <state_interface name="position"/>
+    <state_interface name="position">
+      <param name="initial_value">1.0</param>
+    </state_interface>
     <state_interface name="velocity"/>
     <state_interface name="effort"/>
   </joint>
@@ -186,6 +188,7 @@ You can run some of the configuration running the following commands:
 
 ```bash
 ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
+ros2 launch gazebo_ros2_control_demos cart_example_position_initial_position.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
 ```
