@@ -1,4 +1,4 @@
-FROM osrf/ros:galactic-desktop
+FROM osrf/ros:rolling-desktop
 
 # Make sure everything is up to date before building from source
 RUN apt-get update \
@@ -16,11 +16,11 @@ RUN mkdir -p /home/ros2_ws/src \
     && cd /home/ros2_ws/src/ \
     && git clone https://github.com/ros-simulation/gazebo_ros2_control \
     && rosdep fix-permissions && rosdep update \
-    && rosdep install --from-paths ./ -i -y --rosdistro galactic \
+    && rosdep install --from-paths ./ -i -y --rosdistro rolling \
       --ignore-src
 
 RUN cd /home/ros2_ws/ \
-  && . /opt/ros/galactic/setup.sh \
+  && . /opt/ros/rolling/setup.sh \
   && colcon build --merge-install
 
 COPY entrypoint.sh /entrypoint.sh
