@@ -188,7 +188,6 @@ You can run some of the configuration running the following commands:
 
 ```bash
 ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
-ros2 launch gazebo_ros2_control_demos cart_example_position_initial_position.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
 ```
