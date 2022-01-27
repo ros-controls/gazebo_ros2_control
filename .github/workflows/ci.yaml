@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:galactic-desktop
+      image: osrf/ros:rolling-desktop
     steps:
     - uses: actions/checkout@v2
     - name: Setup colcon workspace
@@ -26,25 +26,25 @@ jobs:
           python3-colcon-ros
         cd /home/ros2_ws/src/
         rosdep update
-        rosdep install --from-paths ./ -i -y --rosdistro galactic \
+        rosdep install --from-paths ./ -i -y --rosdistro rolling \
           --ignore-src
     - name: Build project
       id: build
       run: |
         cd /home/ros2_ws/
-        . /opt/ros/galactic/local_setup.sh
+        . /opt/ros/rolling/local_setup.sh
         colcon build --packages-up-to gazebo_ros2_control_demos
     - name: Run tests
       id: test
       run: |
         cd /home/ros2_ws/
-        . /opt/ros/galactic/local_setup.sh
+        . /opt/ros/rolling/local_setup.sh
         colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
         colcon test-result
   build_testing:
     runs-on: ubuntu-latest
     container:
-      image: osrf/ros:galactic-desktop
+      image: osrf/ros:rolling-desktop
     steps:
     - uses: actions/checkout@v2
     - name: Setup colcon workspace
@@ -62,18 +62,18 @@ jobs:
           python3-colcon-ros
         cd /home/ros2_ws/src/
         rosdep update
-        rosdep install --from-paths ./ -i -y --rosdistro galactic \
+        rosdep install --from-paths ./ -i -y --rosdistro rolling \
           --ignore-src
     - name: Build project
       id: build
       run: |
         cd /home/ros2_ws/
-        . /opt/ros/galactic/local_setup.sh
+        . /opt/ros/rolling/local_setup.sh
         colcon build --packages-up-to gazebo_ros2_control_demos
     - name: Run tests
       id: test
       run: |
         cd /home/ros2_ws/
-        . /opt/ros/galactic/local_setup.sh
+        . /opt/ros/rolling/local_setup.sh
         colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
         colcon test-result
