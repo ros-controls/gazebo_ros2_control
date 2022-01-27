@@ -159,17 +159,14 @@ void GazeboSystem::registerJoints(
     RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\tState:");
 
     auto get_initial_value = [this](const hardware_interface::InterfaceInfo & interface_info) {
-      if (!interface_info.initial_value.empty())
-      {
-        double value = std::stod(interface_info.initial_value);
-        RCLCPP_INFO(this->nh_->get_logger(), "\t\t\t found initial value: %f", value);
-        return value;
-      }
-      else
-      {
-        return 0.0;
-      }
-    };
+        if (!interface_info.initial_value.empty()) {
+          double value = std::stod(interface_info.initial_value);
+          RCLCPP_INFO(this->nh_->get_logger(), "\t\t\t found initial value: %f", value);
+          return value;
+        } else {
+          return 0.0;
+        }
+      };
 
     double initial_position = std::numeric_limits<double>::quiet_NaN();
     double initial_velocity = std::numeric_limits<double>::quiet_NaN();
@@ -217,8 +214,7 @@ void GazeboSystem::registerJoints(
           joint_name,
           hardware_interface::HW_IF_POSITION,
           &this->dataPtr->joint_position_cmd_[j]);
-        if (!std::isnan(initial_position))
-        {
+        if (!std::isnan(initial_position)) {
           this->dataPtr->joint_position_cmd_[j] = initial_position;
         }
       }
@@ -229,8 +225,7 @@ void GazeboSystem::registerJoints(
           joint_name,
           hardware_interface::HW_IF_VELOCITY,
           &this->dataPtr->joint_velocity_cmd_[j]);
-        if (!std::isnan(initial_velocity))
-        {
+        if (!std::isnan(initial_velocity)) {
           this->dataPtr->joint_velocity_cmd_[j] = initial_velocity;
         }
       }
@@ -241,8 +236,7 @@ void GazeboSystem::registerJoints(
           joint_name,
           hardware_interface::HW_IF_EFFORT,
           &this->dataPtr->joint_effort_cmd_[j]);
-        if (!std::isnan(initial_effort))
-        {
+        if (!std::isnan(initial_effort)) {
           this->dataPtr->joint_effort_cmd_[j] = initial_effort;
         }
       }
