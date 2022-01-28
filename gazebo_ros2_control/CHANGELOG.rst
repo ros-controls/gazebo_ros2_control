@@ -2,6 +2,11 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.8 (2022-01-28)
+------------------
+* Enable setting default position of the simulated robot using ros2_control URDF tag. (`#100 <https://github.com/ros-simulation/gazebo_ros2_control//issues/100>`_)
+* Contributors: Denis Štogl
+
 0.0.7 (2021-12-03)
 ------------------
 * Pass ROS time instead of SYSTEM time to update function (`#97 <https://github.com/ros-simulation/gazebo_ros2_control//issues/97>`_)
