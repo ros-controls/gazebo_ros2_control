@@ -28,11 +28,11 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
 struct MimicJoint
-  {
-    std::size_t joint_index;
-    std::size_t mimicked_joint_index;
-    double multiplier = 1.0;
-  };
+{
+  std::size_t joint_index;
+  std::size_t mimicked_joint_index;
+  double multiplier = 1.0;
+};
 
 class gazebo_ros2_control::GazeboSystemPrivate
 {
@@ -170,35 +170,31 @@ void GazeboSystem::registerJoints(
     std::string suffix = "";
 
     // check if joint is mimicked
-    if (joint_info.parameters.find("mimic") != joint_info.parameters.end())
-    {
+    if (joint_info.parameters.find("mimic") != joint_info.parameters.end()) {
       const auto mimicked_joint = joint_info.parameters.at("mimic");
       const auto mimicked_joint_it = std::find_if(
         hardware_info.joints.begin(), hardware_info.joints.end(),
         [&mimicked_joint](const hardware_interface::ComponentInfo & info) {
-             return info.name == mimicked_joint;
+          return info.name == mimicked_joint;
         });
-      if (mimicked_joint_it == hardware_info.joints.end())
-      {
+      if (mimicked_joint_it == hardware_info.joints.end()) {
         throw std::runtime_error(
-          std::string("Mimicked joint '") + mimicked_joint + "' not found");
+                std::string("Mimicked joint '") + mimicked_joint + "' not found");
       }
       MimicJoint mimic_joint;
       mimic_joint.joint_index = j;
-      mimic_joint.mimicked_joint_index = std::distance(hardware_info.joints.begin(), mimicked_joint_it);
+      mimic_joint.mimicked_joint_index = std::distance(
+        hardware_info.joints.begin(), mimicked_joint_it);
       auto param_it = joint_info.parameters.find("multiplier");
-      if (param_it != joint_info.parameters.end())
-      {
+      if (param_it != joint_info.parameters.end()) {
         mimic_joint.multiplier = std::stod(joint_info.parameters.at("multiplier"));
-      }
-      else
-      {
+      } else {
         mimic_joint.multiplier = 1.0;
       }
       RCLCPP_INFO_STREAM(
         this->nh_->get_logger(),
         "Joint '" << joint_name << "'is mimicing joint '" << mimicked_joint << "' with mutiplier: "
-        << mimic_joint.multiplier);
+                  << mimic_joint.multiplier);
       this->dataPtr->mimic_joints_.push_back(mimic_joint);
       suffix = "_mimic";
     }
@@ -505,21 +501,24 @@ hardware_interface::return_type GazeboSystem::write()
   rclcpp::Duration sim_period = sim_time_ros - this->dataPtr->last_update_sim_time_ros_;
 
   // set values of all mimic joints with respect to mimicked joint
-  for (const auto & mimic_joint : this->dataPtr->mimic_joints_)
-  {
+  for (const auto & mimic_joint : this->dataPtr->mimic_joints_) {
     if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & POSITION &&
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & POSITION
-    ) {
+      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & POSITION)
+    {
       this->dataPtr->joint_position_cmd_[mimic_joint.joint_index] =
-        mimic_joint.multiplier * this->dataPtr->joint_position_cmd_[mimic_joint.mimicked_joint_index];
+        mimic_joint.multiplier *
+        this->dataPtr->joint_position_cmd_[mimic_joint.mimicked_joint_index];
     }
     if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & VELOCITY &&
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & VELOCITY) {
+      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & VELOCITY)
+    {
       this->dataPtr->joint_velocity_cmd_[mimic_joint.joint_index] =
-        mimic_joint.multiplier * this->dataPtr->joint_velocity_cmd_[mimic_joint.mimicked_joint_index];
+        mimic_joint.multiplier *
+        this->dataPtr->joint_velocity_cmd_[mimic_joint.mimicked_joint_index];
     }
     if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & EFFORT &&
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & VELOCITY) {
+      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & VELOCITY)
+    {
       this->dataPtr->joint_effort_cmd_[mimic_joint.joint_index] =
         mimic_joint.multiplier * this->dataPtr->joint_effort_cmd_[mimic_joint.mimicked_joint_index];
     }
