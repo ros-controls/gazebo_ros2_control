@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<robot name="prallel_gripper">
+<robot name="gripper">
   <link name="world"/>
   <link name="base">
     <visual>
