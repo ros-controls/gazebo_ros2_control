@@ -517,7 +517,7 @@ hardware_interface::return_type GazeboSystem::write()
         this->dataPtr->joint_velocity_cmd_[mimic_joint.mimicked_joint_index];
     }
     if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & EFFORT &&
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & VELOCITY)
+      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & EFFORT)
     {
       this->dataPtr->joint_effort_cmd_[mimic_joint.joint_index] =
         mimic_joint.multiplier * this->dataPtr->joint_effort_cmd_[mimic_joint.mimicked_joint_index];
