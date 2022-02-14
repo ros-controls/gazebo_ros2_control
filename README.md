@@ -94,8 +94,7 @@ To use `mimic` joints in `gazebo_ros2_control` you should define its parameters 
 We should include:
 
 - `<mimic>` tag to the mimicked joint ([detailed manual](https://wiki.ros.org/urdf/XML/joint))
-- `mimic` and `multiplier` parameters to joint definition in `<ros2_control>` tag,
-the `offset` parameter is not implemented yet
+- `mimic`, and optional `multiplier`+`offset` parameters to joint definition in `<ros2_control>` tag
 
 As an example, `left_finger_joint` mimics the position of `right_finger_joint`
 ```xml
@@ -119,6 +118,7 @@ As an example, `left_finger_joint` mimics the position of `right_finger_joint`
 <joint name="left_finger_joint">
   <param name="mimic">right_finger_joint</param>
   <param name="multiplier">1</param>
+  <param name="offset">0</param>
   <command_interface name="position"/>
   <state_interface name="position"/>
   <state_interface name="velocity"/>
@@ -136,6 +136,7 @@ You can specify a mimicked joint independent of the combination of command inter
 <joint name="left_finger_joint">
   <param name="mimic">right_finger_joint</param>
   <param name="multiplier">1</param>
+  <param name="offset">0</param>
   <command_interface name="position"/>
   <state_interface name="position"/>
   <state_interface name="velocity"/>

@@ -86,6 +86,7 @@
     <joint name="left_finger_joint">
       <param name="mimic">right_finger_joint</param>
       <param name="multiplier">1</param>
+      <param name="offset">0</param>
       <command_interface name="position"/>
       <state_interface name="position"/>
       <state_interface name="velocity"/>
