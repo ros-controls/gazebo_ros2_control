@@ -19,14 +19,13 @@ from launch.actions import ExecuteProcess, IncludeLaunchDescription
 from launch.actions import RegisterEventHandler, OpaqueFunction, DeclareLaunchArgument
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 import xacro
 import os
 from ament_index_python.packages import get_package_share_directory
+
 
 # evaluates LaunchConfigurations in context for use with
 # xacro.process_file(). Returns a list of launch actions to be included in
@@ -46,7 +45,9 @@ def evaluate_xacro(context, *args, **kwargs):
         name='robot_state_publisher',
         output='screen',
         parameters=[{
-            'robot_description': xacro.process_file(xacro_path, mappings={'effort': use_effort}).toxml()
+            'robot_description':
+                xacro.process_file(xacro_path,
+                                   mappings={'effort': use_effort}).toxml()
         }])
     return [robot_state_publisher_node]
 
