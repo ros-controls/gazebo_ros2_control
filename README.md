@@ -267,7 +267,7 @@ The following example shows parallel gripper with mimic joint:
 
 
 ```bash
-ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py
+ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
 ```
 
 Send example commands:
@@ -277,11 +277,12 @@ ros2 run gazebo_ros2_control_demos example_gripper
 ```
 
 To demonstrate the setup of the initial position and a position-mimicked joint in
-case of an effort interface on joint 1, add the launch parameter
+case of an effort command interface of the joint to be mimicked, run
 
 ```bash
-ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py use_effort:=true
+ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_effort.launch.py
 ```
+instead.
 
 
 

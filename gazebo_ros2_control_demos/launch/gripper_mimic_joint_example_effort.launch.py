@@ -15,44 +15,36 @@
 # Author: Denis Stogl
 
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, IncludeLaunchDescription
-from launch.actions import RegisterEventHandler, OpaqueFunction, DeclareLaunchArgument
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-import xacro
-import os
-from ament_index_python.packages import get_package_share_directory
-
-
-# evaluates LaunchConfigurations in context for use with
-# xacro.process_file(). Returns a list of launch actions to be included in
-# launch description
-def evaluate_xacro(context, *args, **kwargs):
-
-    use_effort = LaunchConfiguration('use_effort').perform(context)
-    print(use_effort)
-    xacro_path = os.path.join(
-        get_package_share_directory('gazebo_ros2_control_demos'),
-        'urdf',
-        'test_gripper_mimic_joint.xacro.urdf')
-
-    robot_state_publisher_node = Node(
-        package='robot_state_publisher',
-        executable='robot_state_publisher',
-        name='robot_state_publisher',
-        output='screen',
-        parameters=[{
-            'robot_description':
-                xacro.process_file(xacro_path,
-                                   mappings={'effort': use_effort}).toxml()
-        }])
-    return [robot_state_publisher_node]
 
 
 def generate_launch_description():
+
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name='xacro')]),
+            " ",
+            PathJoinSubstitution(
+                [FindPackageShare(
+                    'gazebo_ros2_control_demos'),
+                    'urdf',
+                    'test_gripper_mimic_joint_effort.xacro.urdf']
+            ),
+        ]
+    )
+    robot_description = {"robot_description": robot_description_content}
+
+    node_robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen',
+        parameters=[robot_description]
+    )
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -78,13 +70,8 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        DeclareLaunchArgument(
-            'use_effort',
-            default_value='False',
-            description='Use effort instead of position command interface'),
-
         RegisterEventHandler(
-            event_handler=OnProcessExit(
+          event_handler=OnProcessExit(
                 target_action=spawn_entity,
                 on_exit=[load_joint_state_controller],
             )
@@ -96,8 +83,6 @@ def generate_launch_description():
             )
         ),
         gazebo,
-        # add OpaqueFunction to evaluate xacro file in context and pass to any
-        # nodes that need it
-        OpaqueFunction(function=evaluate_xacro),
+        node_robot_state_publisher,
         spawn_entity,
     ])

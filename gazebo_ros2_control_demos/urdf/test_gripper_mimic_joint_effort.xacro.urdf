@@ -71,12 +71,7 @@
       <plugin>gazebo_ros2_control/GazeboSystem</plugin>
     </hardware>
     <joint name="right_finger_joint">
-      <xacro:if value="$(arg effort)">
-        <command_interface name="effort"/>
-      </xacro:if>
-      <xacro:unless value="$(arg effort)">
-        <command_interface name="position"/>
-      </xacro:unless>
+      <command_interface name="effort"/>
       <state_interface name="position">
         <param name="initial_value">0.15</param>
       </state_interface>
@@ -96,12 +91,7 @@
 
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <xacro:if value="$(arg effort)">
         <parameters>$(find gazebo_ros2_control_demos)/config/gripper_controller_effort.yaml</parameters>
-      </xacro:if>
-      <xacro:unless value="$(arg effort)">
-        <parameters>$(find gazebo_ros2_control_demos)/config/gripper_controller_position.yaml</parameters>
-      </xacro:unless>
     </plugin>
   </gazebo>
 </robot>
