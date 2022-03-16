@@ -28,6 +28,8 @@
 
 namespace gazebo_ros2_control
 {
+using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
+
 // Forward declaration
 class GazeboSystemPrivate;
 
