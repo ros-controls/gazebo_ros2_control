@@ -49,7 +49,6 @@ ament_target_dependencies(gazebo_hardware_plugins
   gazebo_dev
   hardware_interface
   rclcpp
-  urdf
 )
 
 ## Install
