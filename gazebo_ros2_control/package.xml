@@ -26,7 +26,6 @@
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>urdf</depend>
   <depend>yaml_cpp_vendor</depend>
 
   <test_depend>ament_lint_common</test_depend>

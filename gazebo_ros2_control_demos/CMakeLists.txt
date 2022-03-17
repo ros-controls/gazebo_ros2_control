@@ -23,7 +23,6 @@ find_package(std_msgs REQUIRED)
 install(DIRECTORY
   launch
   config
-  urdf
   DESTINATION share/${PROJECT_NAME}/
 )
 

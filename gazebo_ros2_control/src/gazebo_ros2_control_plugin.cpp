@@ -50,7 +50,6 @@
 #include "hardware_interface/component_parser.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
-#include "urdf/model.h"
 #include "yaml-cpp/yaml.h"
 
 using namespace std::chrono_literals;
