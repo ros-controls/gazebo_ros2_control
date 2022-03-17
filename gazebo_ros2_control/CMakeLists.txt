@@ -9,7 +9,6 @@ find_package(gazebo_ros REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(urdf REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 
 # Default to C++14
@@ -37,7 +36,6 @@ ament_target_dependencies(${PROJECT_NAME}
   hardware_interface
   pluginlib
   rclcpp
-  urdf
   yaml_cpp_vendor
 )
 
