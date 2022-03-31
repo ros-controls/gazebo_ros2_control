@@ -196,6 +196,18 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       impl_->model_nh_->get_logger(), "No parameter file provided. Configuration might be wrong");
   }
 
+  std::string controllerManagerNodeName{"controller_manager"};
+
+  std::string controllerManagerPrefixNodeName =
+    sdf->Get<std::string>("controller_manager_prefix_node_name");
+  if (!controllerManagerPrefixNodeName.empty()) {
+    controllerManagerNodeName = controllerManagerPrefixNodeName + "_" + controllerManagerNodeName;
+  }
+
+    std::string controllerManagerNodeNameNamespace{""};
+    controllerManagerNodeNameNamespace = sdf->Get<std::string>("controller_manager_namespace");
+
+
   // There's currently no direct way to set parameters to the plugin's node
   // So we have to parse the plugin file manually and set it to the node's context.
   auto rcl_context = impl_->model_nh_->get_node_base_interface()->get_context()->get_rcl_context();
@@ -313,7 +325,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     new controller_manager::ControllerManager(
       std::move(resource_manager_),
       impl_->executor_,
-      "controller_manager"));
+      controllerManagerNodeName,
+      controllerManagerNodeNameNamespace));
   impl_->executor_->add_node(impl_->controller_manager_);
 
   if (!impl_->controller_manager_->has_parameter("update_rate")) {
