@@ -454,7 +454,7 @@ CallbackReturn GazeboSystem::on_deactivate(const rclcpp_lifecycle::State & previ
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type GazeboSystem::read()
+hardware_interface::return_type GazeboSystem::read(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     if (this->dataPtr->sim_joints_[j]) {
@@ -493,7 +493,7 @@ hardware_interface::return_type GazeboSystem::read()
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type GazeboSystem::write()
+hardware_interface::return_type GazeboSystem::write(const rclcpp::Time & time, const rclcpp::Duration & period)
 {
   // Get the simulation time and period
   gazebo::common::Time gz_time_now = this->dataPtr->parent_model_->GetWorld()->SimTime();
