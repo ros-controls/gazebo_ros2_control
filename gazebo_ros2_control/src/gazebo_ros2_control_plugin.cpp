@@ -50,7 +50,6 @@
 #include "hardware_interface/component_parser.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
-#include "urdf/model.h"
 #include "yaml-cpp/yaml.h"
 
 using namespace std::chrono_literals;
@@ -369,14 +368,15 @@ void GazeboRosControlPrivate::Update()
   rclcpp::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   if (sim_period >= control_period_) {
-    controller_manager_->read();
+    controller_manager_->read(sim_time_ros, sim_period);
     controller_manager_->update(sim_time_ros, sim_period);
     last_update_sim_time_ros_ = sim_time_ros;
   }
 
   // Always set commands on joints, otherwise at low control frequencies the joints tremble
   // as they are updated at a fraction of gazebo sim time
-  controller_manager_->write();
+  // use same time as for read and update call - this is how it is done is ros2_control_node
+  controller_manager_->write(sim_time_ros, sim_period);
 }
 
 // Called on world reset

@@ -28,8 +28,6 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-// URDF
-#include "urdf/model.h"
 
 namespace gazebo_ros2_control
 {
