@@ -2,6 +2,12 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.0 (2022-05-27)
+------------------
+* Declare dependency of gazebo_hardware_plugins to urdf in CMakeLists.txt (`#117 <https://github.com/ros-simulation/gazebo_ros2_control/issues/117>`_) (`#119 <https://github.com/ros-simulation/gazebo_ros2_control/issues/119>`_)
+  Co-authored-by: Martin Wudenka <Martin.Wudenka@gmx.de>
+* Contributors: Alejandro Hernández Cordero
+
 0.0.4 (2021-10-26)
 ------------------
 * fix maintainer email (`#92 <https://github.com/ros-simulation/gazebo_ros2_control//issues/92>`_)

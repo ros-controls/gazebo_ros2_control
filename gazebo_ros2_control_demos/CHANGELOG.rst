@@ -2,6 +2,11 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.0 (2022-05-27)
+------------------
+* Added diff drive example (`#113 <https://github.com/ros-simulation/gazebo_ros2_control/issues/113>`_)
+* Contributors: Alejandro Hernández Cordero
+
 0.0.4 (2021-10-26)
 ------------------
 * fix maintainer email (`#92 <https://github.com/ros-simulation/gazebo_ros2_control//issues/92>`_)
