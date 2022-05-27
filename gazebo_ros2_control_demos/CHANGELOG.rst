@@ -2,6 +2,16 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.3.0 (2022-05-27)
+------------------
+* [Forward port main] Added diff drive example (`#113 <https://github.com/ros-simulation/gazebo_ros2_control/issues/113>`_) (`#129 <https://github.com/ros-simulation/gazebo_ros2_control/issues/129>`_)
+* Merge pull request `#120 <https://github.com/ros-simulation/gazebo_ros2_control/issues/120>`_ from ros-simulation/ahcorde/main/117
+  Adapted to Humble
+* make linters happy
+* Update to Humble API
+* Support for mimic joints and example with gripper. (`#107 <https://github.com/ros-simulation/gazebo_ros2_control/issues/107>`_)
+* Contributors: Alejandro Hernández Cordero, Denis Štogl, ahcorde
+
 0.0.8 (2022-01-28)
 ------------------
 * Enable setting default position of the simulated robot using ros2_control URDF tag. (`#100 <https://github.com/ros-simulation/gazebo_ros2_control//issues/100>`_)
