@@ -5,12 +5,13 @@
   <description>gazebo_ros2_control_demos</description>
 
   <maintainer email="alejandro@osrfoundation.org">Alejandro Hernandez</maintainer>
+  <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
 
   <license>Apache License 2.0</license>
 
   <url type="website">http://ros.org/wiki/gazebo_ros_control</url>
-  <url type="bugtracker">https://github.com/ros-simulation/gazebo_ros2_control/issues</url>
-  <url type="repository">https://github.com/ros-simulation/gazebo_ros2_control</url>
+  <url type="bugtracker">https://github.com/ros-controls/gazebo_ros2_control/issues</url>
+  <url type="repository">https://github.com/ros-controls/gazebo_ros2_control</url>
 
   <author>Alejandro Hernández</author>
 
