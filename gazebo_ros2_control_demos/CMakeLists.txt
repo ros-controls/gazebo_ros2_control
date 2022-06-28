@@ -47,7 +47,7 @@ ament_target_dependencies(example_effort
   std_msgs
 )
 
-add_executable(example_gripper examples/example_gripper)
+add_executable(example_gripper examples/example_gripper.cpp)
 ament_target_dependencies(example_gripper
   rclcpp
   std_msgs
