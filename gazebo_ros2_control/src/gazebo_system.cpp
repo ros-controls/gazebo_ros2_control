@@ -457,29 +457,41 @@ GazeboSystem::perform_command_mode_switch(
   const std::vector<std::string> & stop_interfaces)
 {
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
-    for (const std::string & key : stop_interfaces) {
+    for (const std::string & interface_name : stop_interfaces) {
       // Clear joint control method bits corresponding to stop interfaces
-      if (key == (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_POSITION)) {
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_POSITION))
+      {
         this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(VELOCITY & EFFORT);
       }
-      if (key == (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_VELOCITY)) {
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_VELOCITY))
+      {
         this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(POSITION & EFFORT);
       }
-      if (key == (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_EFFORT)) {
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_EFFORT))
+      {
         this->dataPtr->joint_control_methods_[j] &=
           static_cast<ControlMethod_>(POSITION & VELOCITY);
       }
     }
 
     // Set joint control method bits corresponding to start interfaces
-    for (const std::string & key : start_interfaces) {
-      if (key == (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_POSITION)) {
+    for (const std::string & interface_name : start_interfaces) {
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_POSITION))
+      {
         this->dataPtr->joint_control_methods_[j] |= POSITION;
       }
-      if (key == (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_VELOCITY)) {
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_VELOCITY))
+      {
         this->dataPtr->joint_control_methods_[j] |= VELOCITY;
       }
-      if (key == (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_EFFORT)) {
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_EFFORT))
+      {
         this->dataPtr->joint_control_methods_[j] |= EFFORT;
       }
     }
