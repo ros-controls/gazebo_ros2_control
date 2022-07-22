@@ -259,10 +259,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // setup actuators and mechanism control node.
   // This call will block if ROS is not properly initialized.
   std::string urdf_string;
-  std::vector<hardware_interface::HardwareInfo> control_hardware;
+  std::vector<hardware_interface::HardwareInfo> control_hardware_info;
   try {
     urdf_string = impl_->getURDF(impl_->robot_description_);
-    control_hardware = hardware_interface::parse_control_resources_from_urdf(urdf_string);
+    control_hardware_info = hardware_interface::parse_control_resources_from_urdf(urdf_string);
   } catch (const std::runtime_error & ex) {
     RCLCPP_ERROR_STREAM(
       impl_->model_nh_->get_logger(),
@@ -284,8 +284,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       ex.what());
   }
 
-  for (unsigned int i = 0; i < control_hardware.size(); i++) {
-    std::string robot_hw_sim_type_str_ = control_hardware[i].hardware_class_type;
+  for (unsigned int i = 0; i < control_hardware_info.size(); i++) {
+    std::string robot_hw_sim_type_str_ = control_hardware_info[i].hardware_class_type;
     auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
       impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
 
@@ -293,7 +293,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     if (!gazeboSystem->initSim(
         node_ros2,
         impl_->parent_model_,
-        control_hardware[i],
+        control_hardware_info[i],
         sdf))
     {
       RCLCPP_FATAL(
@@ -301,13 +301,14 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       return;
     }
 
-    resource_manager_->import_component(std::move(gazeboSystem), control_hardware[i]);
-  }
+    resource_manager_->import_component(std::move(gazeboSystem), control_hardware_info[i]);
 
-  rclcpp_lifecycle::State state(
-    lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE,
-    hardware_interface::lifecycle_state_names::ACTIVE);
-  resource_manager_->set_component_state("GazeboSystem", state);
+    // activate all components
+    rclcpp_lifecycle::State state(
+      lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE,
+      hardware_interface::lifecycle_state_names::ACTIVE);
+    resource_manager_->set_component_state(control_hardware_info[i].name, state);
+  }
 
   impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
 
