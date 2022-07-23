@@ -38,7 +38,7 @@ def generate_launch_description():
 
     xacro_file = os.path.join(gazebo_ros2_control_demos_path,
                               'urdf',
-                              'test_diff_drive.xacro.urdf')
+                              'test_tricycle_drive.xacro.urdf')
 
     doc = xacro.parse(open(xacro_file))
     xacro.process_doc(doc)
@@ -53,7 +53,7 @@ def generate_launch_description():
 
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
-                                   '-entity', 'diffbot'],
+                                   '-entity', 'tricycle'],
                         output='screen')
 
     load_joint_state_controller = Node(
@@ -64,12 +64,22 @@ def generate_launch_description():
         ],
     )
 
-    load_diff_drive_base_controller = Node(
+    load_tricycle_controller = Node(
         package="controller_manager",
         executable="spawner",
         arguments=[
-            "diff_drive_base_controller",
+            "tricycle_controller",
         ],
+    )
+
+    rviz = Node(
+        package="rviz2",
+        executable="rviz2",
+        arguments=[
+            "-d",
+            os.path.join(gazebo_ros2_control_demos_path, "config/config.rviz"),
+        ],
+        output="screen",
     )
 
     return LaunchDescription([
@@ -82,10 +92,11 @@ def generate_launch_description():
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=load_joint_state_controller,
-                on_exit=[load_diff_drive_base_controller],
+                on_exit=[load_tricycle_controller],
             )
         ),
         gazebo,
+        rviz,
         node_robot_state_publisher,
         spawn_entity,
     ])
