@@ -56,20 +56,16 @@ def generate_launch_description():
                                    '-entity', 'diffbot'],
                         output='screen')
 
-    load_joint_state_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "joint_state_broadcaster",
-        ],
+    load_joint_state_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_state_broadcaster'],
+        output='screen'
     )
 
-    load_diff_drive_base_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "diff_drive_base_controller",
-        ],
+    load_diff_drive_base_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'diff_drive_base_controller'],
+        output='screen'
     )
 
     return LaunchDescription([
