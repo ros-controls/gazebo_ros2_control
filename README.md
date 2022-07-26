@@ -224,7 +224,7 @@ ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
 ros2 launch gazebo_ros2_control_demos diff_drive_example.launch.py
-ros2 launch gazebo_ros2_control_demos tricycle_drive_example.launch.py
+ros2 launch gazebo_ros2_control_demos tricycle_drive.launch.py
 ```
 
 Send example commands:
