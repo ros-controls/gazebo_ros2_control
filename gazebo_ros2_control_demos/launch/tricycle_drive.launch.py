@@ -56,20 +56,16 @@ def generate_launch_description():
                                    '-entity', 'tricycle'],
                         output='screen')
 
-    load_joint_state_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "joint_state_broadcaster",
-        ],
+    load_joint_state_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_state_broadcaster'],
+        output='screen'
     )
 
-    load_tricycle_controller = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "tricycle_controller",
-        ],
+    load_tricycle_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'tricycle_controller'],
+        output='screen'
     )
 
     rviz = Node(
