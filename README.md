@@ -235,7 +235,7 @@ When the Gazebo world is launched you can run some of the following commads to m
 ros2 run gazebo_ros2_control_demos example_position
 ros2 run gazebo_ros2_control_demos example_velocity
 ros2 run gazebo_ros2_control_demos example_effort
-ros2 run ign_ros2_control_demos example_diff_drive
+ros2 run gazebo_ros2_control_demos example_diff_drive
 ros2 run gazebo_ros2_control_demos example_tricycle_drive
 ```
 
