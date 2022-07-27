@@ -312,7 +312,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     new controller_manager::ControllerManager(
       std::move(resource_manager_),
       impl_->executor_,
-      "controller_manager"));
+      "controller_manager",
+      impl_->model_nh_->get_namespace()));
   impl_->executor_->add_node(impl_->controller_manager_);
 
   if (!impl_->controller_manager_->has_parameter("update_rate")) {
