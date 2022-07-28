@@ -57,6 +57,11 @@ public:
   hardware_interface::return_type read() override;
 
   // Documentation Inherited
+  hardware_interface::return_type perform_command_mode_switch(
+    const std::vector<std::string> & start_interfaces,
+    const std::vector<std::string> & stop_interfaces) override;
+
+  // Documentation Inherited
   hardware_interface::return_type write() override;
 
   // Documentation Inherited
