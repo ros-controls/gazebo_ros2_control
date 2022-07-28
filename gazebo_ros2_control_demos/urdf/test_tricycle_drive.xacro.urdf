@@ -65,7 +65,6 @@
     </inertial>
   </link>
 
-
   <joint name="left_wheel_joint" type="continuous">
     <origin xyz="-0.8 0.5 -0.2" rpy="-1.57 0 0" />
     <parent link="chassis" />
