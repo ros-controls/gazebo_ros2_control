@@ -151,7 +151,6 @@
     <axis xyz="0 0 1" />
   </joint>
 
-
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
       <plugin>gazebo_ros2_control/GazeboSystem</plugin>
