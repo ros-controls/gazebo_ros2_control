@@ -187,7 +187,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // So we have to parse the plugin file manually and set it to the node's context.
   auto rcl_context = impl_->model_nh_->get_node_base_interface()->get_context()->get_rcl_context();
   std::vector<std::string> arguments = {"--ros-args"};
-  
+
   if (sdf->HasElement("parameters")) {
     sdf::ElementPtr argument_sdf = sdf->GetElement("parameters");
     while (argument_sdf) {
