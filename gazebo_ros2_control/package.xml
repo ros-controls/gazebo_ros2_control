@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>gazebo_ros2_control</name>
-  <version>0.0.5</version>
+  <version>0.1.0</version>
   <description>gazebo_ros2_control</description>
 
   <maintainer email="alejandro@osrfoundation.org">Alejandro Hernandez</maintainer>
@@ -26,7 +26,6 @@
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>urdf</depend>
   <depend>yaml_cpp_vendor</depend>
 
   <test_depend>ament_lint_common</test_depend>
