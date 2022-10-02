@@ -53,8 +53,11 @@ public:
   /// \brief last time the write method was called.
   rclcpp::Time last_update_sim_time_ros_;
 
-  /// \brief vector with the joint's names.
+  /// \brief vector with the joint's names that have state interfaces.
   std::vector<std::string> joint_names_;
+
+  /// \brief vector with the joint's names that have command interfaces.
+  std::vector<std::string> joint_names_cmd_;
 
   /// \brief vector with the control method defined in the URDF for each joint.
   std::vector<GazeboSystemInterface::ControlMethod> joint_control_methods_;
@@ -143,6 +146,7 @@ void GazeboSystem::registerJoints(
   this->dataPtr->n_dof_ = hardware_info.joints.size();
 
   this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->joint_names_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_control_methods_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_position_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_.resize(this->dataPtr->n_dof_);
@@ -153,7 +157,25 @@ void GazeboSystem::registerJoints(
 
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     auto & joint_info = hardware_info.joints[j];
-    std::string joint_name = this->dataPtr->joint_names_[j] = joint_info.name;
+    std::string joint_name = joint_info.name;
+    if (!joint_info.state_interfaces.empty())
+    {
+      this->dataPtr->joint_names_[j] = joint_info.name;
+    }
+    else
+    {
+      // set to empty string if no state interfaces for this index
+      this->dataPtr->joint_names_[j] =  "";
+    }
+    if (!joint_info.command_interfaces.empty())
+    {
+      this->dataPtr->joint_names_cmd_[j] = joint_info.name;
+    }
+    else
+    {
+      // set to empty string if no state interfaces for this index
+      this->dataPtr->joint_names_cmd_[j] =  "";
+    }
 
     gazebo::physics::JointPtr simjoint = parent_model->GetJoint(joint_name);
     this->dataPtr->sim_joints_.push_back(simjoint);
@@ -468,20 +490,20 @@ GazeboSystem::perform_command_mode_switch(
   const std::vector<std::string> & start_interfaces,
   const std::vector<std::string> & stop_interfaces)
 {
-  for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
+  for (unsigned int j = 0; j < this->dataPtr->joint_names_cmd_.size(); j++) {
     for (const std::string & interface_name : stop_interfaces) {
       // Clear joint control method bits corresponding to stop interfaces
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+      if (interface_name == (this->dataPtr->joint_names_cmd_[j] + "/" +
         hardware_interface::HW_IF_POSITION))
       {
         this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(VELOCITY & EFFORT);
       }
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+      if (interface_name == (this->dataPtr->joint_names_cmd_[j] + "/" +
         hardware_interface::HW_IF_VELOCITY))
       {
         this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(POSITION & EFFORT);
       }
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+      if (interface_name == (this->dataPtr->joint_names_cmd_[j] + "/" +
         hardware_interface::HW_IF_EFFORT))
       {
         this->dataPtr->joint_control_methods_[j] &=
@@ -491,17 +513,17 @@ GazeboSystem::perform_command_mode_switch(
 
     // Set joint control method bits corresponding to start interfaces
     for (const std::string & interface_name : start_interfaces) {
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+      if (interface_name == (this->dataPtr->joint_names_cmd_[j] + "/" +
         hardware_interface::HW_IF_POSITION))
       {
         this->dataPtr->joint_control_methods_[j] |= POSITION;
       }
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+      if (interface_name == (this->dataPtr->joint_names_cmd_[j] + "/" +
         hardware_interface::HW_IF_VELOCITY))
       {
         this->dataPtr->joint_control_methods_[j] |= VELOCITY;
       }
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+      if (interface_name == (this->dataPtr->joint_names_cmd_[j] + "/" +
         hardware_interface::HW_IF_EFFORT))
       {
         this->dataPtr->joint_control_methods_[j] |= EFFORT;
@@ -522,7 +544,7 @@ hardware_interface::return_type GazeboSystem::read(
   const rclcpp::Duration & period)
 {
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
-    if (this->dataPtr->sim_joints_[j]) {
+    if (this->dataPtr->sim_joints_[j] && !this->dataPtr->joint_names_[j].empty()) {
       this->dataPtr->joint_position_[j] = this->dataPtr->sim_joints_[j]->Position(0);
       this->dataPtr->joint_velocity_[j] = this->dataPtr->sim_joints_[j]->GetVelocity(0);
       this->dataPtr->joint_effort_[j] = this->dataPtr->sim_joints_[j]->GetForce(0u);
@@ -591,8 +613,8 @@ hardware_interface::return_type GazeboSystem::write(
     }
   }
 
-  for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
-    if (this->dataPtr->sim_joints_[j]) {
+  for (unsigned int j = 0; j < this->dataPtr->joint_names_cmd_.size(); j++) {
+    if (this->dataPtr->sim_joints_[j] && !this->dataPtr->joint_names_cmd_[j].empty()) {
       if (this->dataPtr->joint_control_methods_[j] & POSITION) {
         this->dataPtr->sim_joints_[j]->SetPosition(0, this->dataPtr->joint_position_cmd_[j], true);
       }
