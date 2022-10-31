@@ -14,24 +14,22 @@
 
 import os
 
+import xacro
 from ament_index_python.packages import get_package_share_directory
-
-
-from launch import LaunchDescription
-from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
-from launch.event_handlers import OnProcessExit
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-
 from launch_ros.actions import Node
 
-import xacro
+from launch import LaunchDescription
+from launch.actions import (ExecuteProcess, IncludeLaunchDescription,
+                            RegisterEventHandler)
+from launch.event_handlers import OnProcessExit
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
 def generate_launch_description():
     gazebo = IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
-             )
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
+    )
 
     gazebo_ros2_control_demos_path = os.path.join(
         get_package_share_directory('gazebo_ros2_control_demos'))
@@ -68,11 +66,16 @@ def generate_launch_description():
         output='screen'
     )
 
+    set_use_sim_time_to_controller_manager = ExecuteProcess(
+        cmd=['ros2', 'param', 'set', '/controller_manager', 'use_sim_time', 'true'],
+        output='screen')
+
     return LaunchDescription([
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=spawn_entity,
-                on_exit=[load_joint_state_controller],
+                on_exit=[load_joint_state_controller,
+                         set_use_sim_time_to_controller_manager],
             )
         ),
         RegisterEventHandler(
