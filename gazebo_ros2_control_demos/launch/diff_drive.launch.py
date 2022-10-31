@@ -14,15 +14,17 @@
 
 import os
 
-import xacro
 from ament_index_python.packages import get_package_share_directory
-from launch_ros.actions import Node
+
 
 from launch import LaunchDescription
-from launch.actions import (ExecuteProcess, IncludeLaunchDescription,
-                            RegisterEventHandler)
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+from launch_ros.actions import Node
+
+import xacro
 
 
 def generate_launch_description():
@@ -65,7 +67,7 @@ def generate_launch_description():
              'diff_drive_base_controller'],
         output='screen'
     )
-
+    
     set_use_sim_time_to_controller_manager = ExecuteProcess(
         cmd=['ros2', 'param', 'set', '/controller_manager', 'use_sim_time', 'true'],
         output='screen')
@@ -75,7 +77,7 @@ def generate_launch_description():
             event_handler=OnProcessExit(
                 target_action=spawn_entity,
                 on_exit=[load_joint_state_controller,
-                         set_use_sim_time_to_controller_manager],
+                	  set_use_sim_time_to_controller_manager],
             )
         ),
         RegisterEventHandler(
@@ -88,3 +90,4 @@ def generate_launch_description():
         node_robot_state_publisher,
         spawn_entity,
     ])
+
