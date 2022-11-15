@@ -7,6 +7,22 @@ Changelog for package gazebo_ros2_control
 * Declare dependency of gazebo_hardware_plugins to urdf in CMakeLists.txt (`#117 <https://github.com/ros-simulation/gazebo_ros2_control/issues/117>`_)
 * Contributors: Martin Wudenka
 
+0.1.1 (2022-11-15)
+------------------
+* Enable loading params from multiple yaml files (`#149 <https://github.com/ros-controls/gazebo_ros2_control/issues/149>`_) (`#151 <https://github.com/ros-controls/gazebo_ros2_control/issues/151>`_)
+  Co-authored-by: Tony Najjar <tony.najjar@logivations.com>
+* [Backport Foxy] Support for mimic joints and example with gripper. (`#121 <https://github.com/ros-controls/gazebo_ros2_control/issues/121>`_)
+* [backport Foxy] `#136 <https://github.com/ros-controls/gazebo_ros2_control/issues/136>`_ `#147 <https://github.com/ros-controls/gazebo_ros2_control/issues/147>`_ `#139 <https://github.com/ros-controls/gazebo_ros2_control/issues/139>`_ `#134 <https://github.com/ros-controls/gazebo_ros2_control/issues/134>`_ (`#150 <https://github.com/ros-controls/gazebo_ros2_control/issues/150>`_)
+  Co-authored-by: Keegan Sotebeer <ksotebeer95@gmail.com>
+  Co-authored-by: Maciej Bednarczyk <83034299+mcbed@users.noreply.github.com>
+  Co-authored-by: Bence Magyar <bence.magyar.robotics@gmail.com>
+* Contributors: Alejandro Hernández Cordero, Leander Stephen D'Souza
+
+0.1.0 (2022-05-27)
+------------------
+* Declare dependency of gazebo_hardware_plugins to urdf in CMakeLists.txt (`#117 <https://github.com/ros-simulation/gazebo_ros2_control/issues/117>`_) (`#119 <https://github.com/ros-simulation/gazebo_ros2_control/issues/119>`_)
+  Co-authored-by: Martin Wudenka <Martin.Wudenka@gmx.de>
+
 0.0.7 (2021-12-03)
 ------------------
 * Pass ROS time instead of SYSTEM time to update function (`#97 <https://github.com/ros-simulation/gazebo_ros2_control//issues/97>`_)

@@ -88,6 +88,60 @@ include
 </ros2_control>
 ```
 
+### Using mimic joints in simulation
+
+To use `mimic` joints in `gazebo_ros2_control` you should define its parameters to your URDF.
+We should include:
+
+- `<mimic>` tag to the mimicked joint ([detailed manual(https://wiki.ros.org/urdf/XML/joint))
+- `mimic` and `multiplier` parameters to joint definition in `<ros2_control>` tag
+
+```xml
+<joint name="left_finger_joint" type="prismatic">
+	<mimic joint="right_finger_joint"/>
+	<axis xyz="0 1 0"/>
+	<origin xyz="0.0 0.48 1" rpy="0.0 0.0 3.1415926535"/>
+	<parent link="base"/>
+	<child link="finger_left"/>
+	<limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
+</joint>
+
+<joint name="right_finger_joint" type="prismatic">
+	<axis xyz="0 1 0"/>
+	<origin xyz="0.0 -0.48 1" rpy="0.0 0.0 0.0"/>
+	<parent link="base"/>
+	<child link="finger_right"/>
+	<limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
+</joint>
+```
+
+```xml
+<ros2_control name="GazeboSystem" type="system">
+
+	<hardware>
+		<plugin>gazebo_ros2_control/GazeboSystem</plugin>
+	</hardware>
+
+	<joint name="right_finger_joint">
+		<command_interface name="position"/>
+		<state_interface name="position"/>
+		<state_interface name="velocity"/>
+		<state_interface name="effort"/>
+	</joint>
+
+	<joint name="left_finger_joint">
+		<param name="mimic">right_finger_joint</param>
+		<param name="multiplier">1</param>
+		<command_interface name="position"/>
+		<state_interface name="position"/>
+		<state_interface name="velocity"/>
+		<state_interface name="effort"/>
+	</joint>
+
+</ros2_control>
+```
+
+
 ## Add the gazebo_ros2_control plugin
 
 In addition to the `ros2_control` tags, a Gazebo plugin needs to be added to your URDF that
@@ -191,17 +245,34 @@ ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
 ros2 launch gazebo_ros2_control_demos diff_drive_example.launch.py
+ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py
 ```
 
 Send example commands:
 
-When the Gazebo world is launched you can run some of the following commads to move the cart.
+When the Gazebo world is launched you can run some of the following commands to move the cart.
 
 ```bash
 ros2 run gazebo_ros2_control_demos example_position
 ros2 run gazebo_ros2_control_demos example_velocity
 ros2 run gazebo_ros2_control_demos example_effort
 ros2 run ign_ros2_control_demos example_diff_drive
+ros2 run gazebo_ros2_control_demos example_gripper
+```
+
+The following example shows parallel gripper with mimic joint:
+
+![](img/gripper.gif)
+
+
+```bash
+ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py
+```
+
+Send example commands:
+
+```bash
+ros2 run gazebo_ros2_control_demos example_gripper
 ```
 
 #### Gazebo + Moveit2 + ROS 2
@@ -209,7 +280,7 @@ ros2 run ign_ros2_control_demos example_diff_drive
 This example works with [ROS 2 Foxy](https://index.ros.org/doc/ros2/Installation/Foxy/).
 You should install Moveit2 from sources, the instructions are available in this [link](https://moveit.ros.org/install-moveit2/source/).
 
-The repository with all the required packages are in the [gazebo_ros_demos](https://github.com/ros-simulation/gazebo_ros_demos/tree/ahcorde/port/ros2).
+The repository with all the required packages are in the [gazebo_ros_demos](https://github.com/ros-controls/gazebo_ros_demos/tree/ahcorde/port/ros2).
 
 ```bash
 ros2 launch rrbot_moveit_demo_nodes rrbot_demo.launch.py
