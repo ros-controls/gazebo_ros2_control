@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2022-11-15)
+------------------
 * Enable loading params from multiple yaml files (`#149 <https://github.com/ros-controls/gazebo_ros2_control/issues/149>`_) (`#151 <https://github.com/ros-controls/gazebo_ros2_control/issues/151>`_)
   Co-authored-by: Tony Najjar <tony.najjar@logivations.com>
 * [Backport Foxy] Support for mimic joints and example with gripper. (`#121 <https://github.com/ros-controls/gazebo_ros2_control/issues/121>`_)

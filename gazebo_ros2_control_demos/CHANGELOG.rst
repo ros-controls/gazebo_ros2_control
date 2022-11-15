@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2022-11-15)
+------------------
 * Adding simulation time parameter for the controller manager (`#138 <https://github.com/ros-controls/gazebo_ros2_control/issues/138>`_) (`#158 <https://github.com/ros-controls/gazebo_ros2_control/issues/158>`_)
   Co-authored-by: Eslam Salah <eslamsalahelsheikh@gmail.com>
 * [backport Foxy] `#136 <https://github.com/ros-controls/gazebo_ros2_control/issues/136>`_ `#147 <https://github.com/ros-controls/gazebo_ros2_control/issues/147>`_ `#139 <https://github.com/ros-controls/gazebo_ros2_control/issues/139>`_ `#134 <https://github.com/ros-controls/gazebo_ros2_control/issues/134>`_ (`#150 <https://github.com/ros-controls/gazebo_ros2_control/issues/150>`_)
