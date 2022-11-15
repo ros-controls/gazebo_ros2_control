@@ -2,6 +2,16 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Adding simulation time parameter for the controller manager (`#138 <https://github.com/ros-controls/gazebo_ros2_control/issues/138>`_) (`#158 <https://github.com/ros-controls/gazebo_ros2_control/issues/158>`_)
+  Co-authored-by: Eslam Salah <eslamsalahelsheikh@gmail.com>
+* [backport Foxy] `#136 <https://github.com/ros-controls/gazebo_ros2_control/issues/136>`_ `#147 <https://github.com/ros-controls/gazebo_ros2_control/issues/147>`_ `#139 <https://github.com/ros-controls/gazebo_ros2_control/issues/139>`_ `#134 <https://github.com/ros-controls/gazebo_ros2_control/issues/134>`_ (`#150 <https://github.com/ros-controls/gazebo_ros2_control/issues/150>`_)
+  Co-authored-by: Keegan Sotebeer <ksotebeer95@gmail.com>
+  Co-authored-by: Maciej Bednarczyk <83034299+mcbed@users.noreply.github.com>
+  Co-authored-by: Bence Magyar <bence.magyar.robotics@gmail.com>
+* Contributors: Alejandro Hernández Cordero, Bence Magyar, Leander Stephen D'Souza
+
 0.1.0 (2022-05-27)
 ------------------
 * Added diff drive example (`#113 <https://github.com/ros-simulation/gazebo_ros2_control/issues/113>`_)
