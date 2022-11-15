@@ -201,7 +201,7 @@ void GazeboSystem::registerJoints(
       RCLCPP_INFO_STREAM(
         this->nh_->get_logger(),
         "Joint '" << joint_name << "'is mimicing joint '" << mimicked_joint <<
-          "' with mutiplier: " << mimic_joint.multiplier <<
+          "' with multiplier: " << mimic_joint.multiplier <<
           "' and offset: " << mimic_joint.offset);
       this->dataPtr->mimic_joints_.push_back(mimic_joint);
       suffix = "_mimic";
@@ -260,7 +260,6 @@ void GazeboSystem::registerJoints(
     for (unsigned int i = 0; i < joint_info.command_interfaces.size(); i++) {
       if (joint_info.command_interfaces[i].name == "position") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
-        this->dataPtr->joint_control_methods_[j] |= POSITION;
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name + suffix,
           hardware_interface::HW_IF_POSITION,
@@ -269,9 +268,12 @@ void GazeboSystem::registerJoints(
           this->dataPtr->joint_position_cmd_[j] = initial_position;
         }
       }
+      // independently of existence of command interface set initial value if defined
+      if (!std::isnan(initial_position)) {
+        this->dataPtr->sim_joints_[j]->SetPosition(0, initial_position, true);
+      }
       if (joint_info.command_interfaces[i].name == "velocity") {
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
-        this->dataPtr->joint_control_methods_[j] |= VELOCITY;
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name + suffix,
           hardware_interface::HW_IF_VELOCITY,
@@ -280,8 +282,11 @@ void GazeboSystem::registerJoints(
           this->dataPtr->joint_velocity_cmd_[j] = initial_velocity;
         }
       }
+      // independently of existence of command interface set initial value if defined
+      if (!std::isnan(initial_velocity)) {
+        this->dataPtr->sim_joints_[j]->SetVelocity(0, initial_velocity);
+      }
       if (joint_info.command_interfaces[i].name == "effort") {
-        this->dataPtr->joint_control_methods_[j] |= EFFORT;
         RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t effort");
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name + suffix,
@@ -290,6 +295,10 @@ void GazeboSystem::registerJoints(
         if (!std::isnan(initial_effort)) {
           this->dataPtr->joint_effort_cmd_[j] = initial_effort;
         }
+      }
+      // independently of existence of command interface set initial value if defined
+      if (!std::isnan(initial_effort)) {
+        this->dataPtr->sim_joints_[j]->SetForce(0, initial_effort);
       }
     }
   }
@@ -462,7 +471,58 @@ CallbackReturn GazeboSystem::on_deactivate(const rclcpp_lifecycle::State & previ
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type GazeboSystem::read()
+hardware_interface::return_type
+GazeboSystem::perform_command_mode_switch(
+  const std::vector<std::string> & start_interfaces,
+  const std::vector<std::string> & stop_interfaces)
+{
+  for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
+    for (const std::string & interface_name : stop_interfaces) {
+      // Clear joint control method bits corresponding to stop interfaces
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_POSITION))
+      {
+        this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(VELOCITY & EFFORT);
+      }
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_VELOCITY))
+      {
+        this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(POSITION & EFFORT);
+      }
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_EFFORT))
+      {
+        this->dataPtr->joint_control_methods_[j] &=
+          static_cast<ControlMethod_>(POSITION & VELOCITY);
+      }
+    }
+
+    // Set joint control method bits corresponding to start interfaces
+    for (const std::string & interface_name : start_interfaces) {
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_POSITION))
+      {
+        this->dataPtr->joint_control_methods_[j] |= POSITION;
+      }
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_VELOCITY))
+      {
+        this->dataPtr->joint_control_methods_[j] |= VELOCITY;
+      }
+      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
+        hardware_interface::HW_IF_EFFORT))
+      {
+        this->dataPtr->joint_control_methods_[j] |= EFFORT;
+      }
+    }
+  }
+
+  return hardware_interface::return_type::OK;
+}
+
+hardware_interface::return_type GazeboSystem::read(
+  const rclcpp::Time & time,
+  const rclcpp::Duration & period)
 {
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     if (this->dataPtr->sim_joints_[j]) {
@@ -501,7 +561,9 @@ hardware_interface::return_type GazeboSystem::read()
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type GazeboSystem::write()
+hardware_interface::return_type GazeboSystem::write(
+  const rclcpp::Time & time,
+  const rclcpp::Duration & period)
 {
   // Get the simulation time and period
   gazebo::common::Time gz_time_now = this->dataPtr->parent_model_->GetWorld()->SimTime();
@@ -556,18 +618,13 @@ hardware_interface::return_type GazeboSystem::write()
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     if (this->dataPtr->sim_joints_[j]) {
       if (this->dataPtr->joint_control_methods_[j] & POSITION) {
-        this->dataPtr->sim_joints_[j]->SetPosition(
-          0, this->dataPtr->joint_position_cmd_[j],
-          true);
+        this->dataPtr->sim_joints_[j]->SetPosition(0, this->dataPtr->joint_position_cmd_[j], true);
       }
       if (this->dataPtr->joint_control_methods_[j] & VELOCITY) {
-        this->dataPtr->sim_joints_[j]->SetVelocity(
-          0,
-          this->dataPtr->joint_velocity_cmd_[j]);
+        this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
       }
       if (this->dataPtr->joint_control_methods_[j] & EFFORT) {
-        const double effort = this->dataPtr->joint_effort_cmd_[j];
-        this->dataPtr->sim_joints_[j]->SetForce(0, effort);
+        this->dataPtr->sim_joints_[j]->SetForce(0, this->dataPtr->joint_effort_cmd_[j]);
       }
     }
   }

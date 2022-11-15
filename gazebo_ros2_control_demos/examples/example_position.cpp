@@ -27,13 +27,12 @@ rclcpp_action::ResultCode common_resultcode = rclcpp_action::ResultCode::UNKNOWN
 int common_action_result_code = control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL;
 
 void common_goal_response(
-  std::shared_future<rclcpp_action::ClientGoalHandle
-  <control_msgs::action::FollowJointTrajectory>::SharedPtr> future)
+  rclcpp_action::ClientGoalHandle
+  <control_msgs::action::FollowJointTrajectory>::SharedPtr goal_handle)
 {
   RCLCPP_DEBUG(
     node->get_logger(), "common_goal_response time: %f",
     rclcpp::Clock().now().seconds());
-  auto goal_handle = future.get();
   if (!goal_handle) {
     common_goal_accepted = false;
     printf("Goal rejected\n");

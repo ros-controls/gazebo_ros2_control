@@ -28,7 +28,7 @@ def generate_launch_description():
     robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name='xacro')]),
-            " ",
+            ' ',
             PathJoinSubstitution(
                 [FindPackageShare(
                     'gazebo_ros2_control_demos'),
@@ -37,7 +37,7 @@ def generate_launch_description():
             ),
         ]
     )
-    robot_description = {"robot_description": robot_description_content}
+    robot_description = {'robot_description': robot_description_content}
 
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -48,7 +48,7 @@ def generate_launch_description():
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [FindPackageShare("gazebo_ros"), "/launch", "/gazebo.launch.py"]
+            [FindPackageShare('gazebo_ros'), '/launch', '/gazebo.launch.py']
         ),
     )
 
@@ -58,13 +58,13 @@ def generate_launch_description():
                         output='screen')
 
     load_joint_state_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'start',
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster'],
         output='screen'
     )
 
     load_gripper_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'start',
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'gripper_controller'],
         output='screen'
     )

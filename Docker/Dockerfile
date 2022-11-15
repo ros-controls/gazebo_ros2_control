@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 
 RUN mkdir -p /home/ros2_ws/src \
     && cd /home/ros2_ws/src/ \
-    && git clone https://github.com/ros-simulation/gazebo_ros2_control \
+    && git clone https://github.com/ros-controls/gazebo_ros2_control \
     && rosdep fix-permissions && rosdep update \
     && rosdep install --from-paths ./ -i -y --rosdistro rolling \
       --ignore-src

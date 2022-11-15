@@ -2,6 +2,31 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.0 (2022-08-09)
+------------------
+* fix demo launch
+* Fix setting initial values if command interfaces are not defined. (`#110 <https://github.com/ros-simulation/gazebo_ros2_control/issues/110>`_)
+* Contributors: Bence Magyar, Denis Štogl, Maciej Bednarczyk
+
+0.3.1 (2022-07-05)
+------------------
+* Fixed CMake source file extension (`#140 <https://github.com/ros-simulation/gazebo_ros2_control/issues/140>`_)
+* Adding simulation time parameter for the controller manager (`#138 <https://github.com/ros-simulation/gazebo_ros2_control/issues/138>`_)
+  Adding the simulation parameter so that the controller manager uses the simulation time instead of the ROS time.  The '/odom' and corresponding tf will only be published if this parameter is set to true.
+* Adjust repo URL (`#134 <https://github.com/ros-simulation/gazebo_ros2_control/issues/134>`_)
+* Changed launch variable name (`#130 <https://github.com/ros-simulation/gazebo_ros2_control/issues/130>`_)
+* Contributors: Alejandro Hernández Cordero, Bence Magyar, Eslam Salah, Jakub "Deli" Delicat
+
+0.3.0 (2022-05-27)
+------------------
+* [Forward port main] Added diff drive example (`#113 <https://github.com/ros-simulation/gazebo_ros2_control/issues/113>`_) (`#129 <https://github.com/ros-simulation/gazebo_ros2_control/issues/129>`_)
+* Merge pull request `#120 <https://github.com/ros-simulation/gazebo_ros2_control/issues/120>`_ from ros-simulation/ahcorde/main/117
+  Adapted to Humble
+* make linters happy
+* Update to Humble API
+* Support for mimic joints and example with gripper. (`#107 <https://github.com/ros-simulation/gazebo_ros2_control/issues/107>`_)
+* Contributors: Alejandro Hernández Cordero, Denis Štogl, ahcorde
+
 0.0.8 (2022-01-28)
 ------------------
 * Enable setting default position of the simulated robot using ros2_control URDF tag. (`#100 <https://github.com/ros-simulation/gazebo_ros2_control//issues/100>`_)

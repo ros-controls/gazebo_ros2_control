@@ -38,7 +38,7 @@ def generate_launch_description():
 
     xacro_file = os.path.join(gazebo_ros2_control_demos_path,
                               'urdf',
-                              'test_cart_effort.xacro.urdf')
+                              'test_diff_drive.xacro.urdf')
 
     doc = xacro.parse(open(xacro_file))
     xacro.process_doc(doc)
@@ -53,7 +53,7 @@ def generate_launch_description():
 
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
-                                   '-entity', 'cartpole'],
+                                   '-entity', 'diffbot'],
                         output='screen')
 
     load_joint_state_controller = ExecuteProcess(
@@ -62,8 +62,9 @@ def generate_launch_description():
         output='screen'
     )
 
-    load_joint_trajectory_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'effort_controllers'],
+    load_diff_drive_base_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'diff_drive_base_controller'],
         output='screen'
     )
 
@@ -77,7 +78,7 @@ def generate_launch_description():
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=load_joint_state_controller,
-                on_exit=[load_joint_trajectory_controller],
+                on_exit=[load_diff_drive_base_controller],
             )
         ),
         gazebo,

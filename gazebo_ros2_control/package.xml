@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>gazebo_ros2_control</name>
-  <version>0.0.8</version>
+  <version>0.4.0</version>
   <description>gazebo_ros2_control</description>
 
   <maintainer email="alejandro@osrfoundation.org">Alejandro Hernandez</maintainer>
@@ -10,8 +10,8 @@
   <license>Apache License 2.0</license>
 
   <url type="website">http://ros.org/wiki/gazebo_ros_control</url>
-  <url type="bugtracker">https://github.com/ros-simulation/gazebo_ros2_control/issues</url>
-  <url type="repository">https://github.com/ros-simulation/gazebo_ros2_control/</url>
+  <url type="bugtracker">https://github.com/ros-controls/gazebo_ros2_control/issues</url>
+  <url type="repository">https://github.com/ros-controls/gazebo_ros2_control/</url>
 
   <author>Jonathan Bohren</author>
   <author>Dave Coleman</author>
@@ -26,7 +26,6 @@
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>urdf</depend>
   <depend>yaml_cpp_vendor</depend>
 
   <test_depend>ament_lint_common</test_depend>

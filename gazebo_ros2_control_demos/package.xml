@@ -1,29 +1,34 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>gazebo_ros2_control_demos</name>
-  <version>0.0.8</version>
+  <version>0.4.0</version>
   <description>gazebo_ros2_control_demos</description>
 
   <maintainer email="alejandro@osrfoundation.org">Alejandro Hernandez</maintainer>
+  <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
 
   <license>Apache License 2.0</license>
 
   <url type="website">http://ros.org/wiki/gazebo_ros_control</url>
-  <url type="bugtracker">https://github.com/ros-simulation/gazebo_ros2_control/issues</url>
-  <url type="repository">https://github.com/ros-simulation/gazebo_ros2_control</url>
+  <url type="bugtracker">https://github.com/ros-controls/gazebo_ros2_control/issues</url>
+  <url type="repository">https://github.com/ros-controls/gazebo_ros2_control</url>
 
   <author>Alejandro Hernández</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>control_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>rclcpp_action</build_depend>
   <build_depend>std_msgs</build_depend>
 
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>control_msgs</exec_depend>
+  <exec_depend>diff_drive_controller</exec_depend>
+  <exec_depend>tricycle_controller</exec_depend>
   <exec_depend>effort_controllers</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>gazebo_ros2_control</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>hardware_interface</exec_depend>
