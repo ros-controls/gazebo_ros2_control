@@ -509,6 +509,11 @@ GazeboSystem::perform_command_mode_switch(
     }
   }
 
+  // mimic joint has the same control mode as mimicked joint
+  for (const auto & mimic_joint : this->dataPtr->mimic_joints_) {
+    this->dataPtr->joint_control_methods_[mimic_joint.joint_index] =
+      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index];
+  }
   return hardware_interface::return_type::OK;
 }
 
