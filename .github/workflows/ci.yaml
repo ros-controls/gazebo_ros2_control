@@ -12,6 +12,10 @@ jobs:
       image: osrf/ros:foxy-desktop
     steps:
     - uses: actions/checkout@v2
+    - uses: actions/setup-python@v3
+    - uses: pre-commit/action@v3.0.0
+      with:
+        extra_args: --all-files
     - name: Setup colcon workspace
       id: configure
       run: |
