@@ -163,7 +163,7 @@ robot hardware interfaces between `ros2_control` and Gazebo.
 The `gazebo_ros2_control` `<plugin>` tag also has the following optional child elements:
 
  - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
- - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
+ - `<robot_param_node>`: Name of the node where the `robot_param` is located, default to `robot_state_publisher`
  - `<parameters>`: YAML file with the configuration of the controllers
 
 #### Default gazebo_ros2_control Behavior
