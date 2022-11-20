@@ -31,6 +31,7 @@ struct MimicJoint
 {
   std::size_t joint_index;
   std::size_t mimicked_joint_index;
+  gazebo_ros2_control::GazeboSystemInterface::ControlMethod control_method;
   double multiplier = 1.0;
   double offset = 0.0;
 };
@@ -186,6 +187,17 @@ void GazeboSystem::registerJoints(
       mimic_joint.joint_index = j;
       mimic_joint.mimicked_joint_index = std::distance(
         hardware_info.joints.begin(), mimicked_joint_it);
+      for (unsigned int i = 0; i < joint_info.command_interfaces.size(); i++) {
+        if (joint_info.command_interfaces[i].name == "position") {
+          mimic_joint.control_method |= POSITION;
+        }
+        if (joint_info.command_interfaces[i].name == "velocity") {
+          mimic_joint.control_method |= VELOCITY;
+        }
+        if (joint_info.command_interfaces[i].name == "effort") {
+          mimic_joint.control_method |= EFFORT;
+        }
+      }
       auto param_it = joint_info.parameters.find("multiplier");
       if (param_it != joint_info.parameters.end()) {
         mimic_joint.multiplier = std::stod(joint_info.parameters.at("multiplier"));
@@ -520,7 +532,7 @@ GazeboSystem::perform_command_mode_switch(
   // mimic joint has the same control mode as mimicked joint
   for (const auto & mimic_joint : this->dataPtr->mimic_joints_) {
     this->dataPtr->joint_control_methods_[mimic_joint.joint_index] =
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index];
+      mimic_joint.control_method;
   }
   return hardware_interface::return_type::OK;
 }
