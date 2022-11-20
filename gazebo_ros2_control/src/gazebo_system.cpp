@@ -91,7 +91,7 @@ public:
   /// \brief handles to the FT sensors from within Gazebo
   std::vector<gazebo::sensors::ForceTorqueSensorPtr> sim_ft_sensors_;
 
-  /// \brief An array per FT sensor for 3D force and torquee
+  /// \brief An array per FT sensor for 3D force and torque
   std::vector<std::array<double, 6>> ft_sensor_data_;
 
   /// \brief state interfaces that will be exported to the Resource Manager
@@ -212,7 +212,7 @@ void GazeboSystem::registerJoints(
       }
       RCLCPP_INFO_STREAM(
         this->nh_->get_logger(),
-        "Joint '" << joint_name << "'is mimicing joint '" << mimicked_joint <<
+        "Joint '" << joint_name << "'is mimicking joint '" << mimicked_joint <<
           "' with multiplier: " << mimic_joint.multiplier <<
           "' and offset: " << mimic_joint.offset);
       this->dataPtr->mimic_joints_.push_back(mimic_joint);
