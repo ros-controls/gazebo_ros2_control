@@ -100,24 +100,47 @@ We should include:
 
 ```xml
 <joint name="left_finger_joint" type="prismatic">
-  <mimic joint="right_finger_joint"/>
-  <axis xyz="0 1 0"/>
-  <origin xyz="0.0 0.48 1" rpy="0.0 0.0 3.1415926535"/>
-  <parent link="base"/>
-  <child link="finger_left"/>
-  <limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
+	<mimic joint="right_finger_joint"/>
+	<axis xyz="0 1 0"/>
+	<origin xyz="0.0 0.48 1" rpy="0.0 0.0 3.1415926535"/>
+	<parent link="base"/>
+	<child link="finger_left"/>
+	<limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
+</joint>
+
+<joint name="right_finger_joint" type="prismatic">
+	<axis xyz="0 1 0"/>
+	<origin xyz="0.0 -0.48 1" rpy="0.0 0.0 0.0"/>
+	<parent link="base"/>
+	<child link="finger_right"/>
+	<limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
 </joint>
 ```
 
 ```xml
-<joint name="left_finger_joint">
-  <param name="mimic">right_finger_joint</param>
-  <param name="multiplier">1</param>
-  <command_interface name="position"/>
-  <state_interface name="position"/>
-  <state_interface name="velocity"/>
-  <state_interface name="effort"/>
-</joint>
+<ros2_control name="GazeboSystem" type="system">
+
+	<hardware>
+		<plugin>gazebo_ros2_control/GazeboSystem</plugin>
+	</hardware>
+
+	<joint name="right_finger_joint">
+		<command_interface name="position"/>
+		<state_interface name="position"/>
+		<state_interface name="velocity"/>
+		<state_interface name="effort"/>
+	</joint>
+
+	<joint name="left_finger_joint">
+		<param name="mimic">right_finger_joint</param>
+		<param name="multiplier">1</param>
+		<command_interface name="position"/>
+		<state_interface name="position"/>
+		<state_interface name="velocity"/>
+		<state_interface name="effort"/>
+	</joint>
+
+</ros2_control>
 ```
 
 
@@ -142,7 +165,7 @@ robot hardware interfaces between `ros2_control` and Gazebo.
 The `gazebo_ros2_control` `<plugin>` tag also has the following optional child elements:
 
  - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
- - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
+ - `<robot_param_node>`: Name of the node where the `robot_param` is located, default to `robot_state_publisher`
  - `<parameters>`: YAML file with the configuration of the controllers
 
 #### Default gazebo_ros2_control Behavior
@@ -223,13 +246,14 @@ You can run some of the configuration running the following commands:
 ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
-ros2 launch gazebo_ros2_control_demos diff_drive.launch.py
 ros2 launch gazebo_ros2_control_demos tricycle_drive.launch.py
+ros2 launch gazebo_ros2_control_demos diff_drive_example.launch.py
+ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py
 ```
 
 Send example commands:
 
-When the Gazebo world is launched you can run some of the following commads to move the cart.
+When the Gazebo world is launched you can run some of the following commands to move the cart.
 
 ```bash
 ros2 run gazebo_ros2_control_demos example_position
