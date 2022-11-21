@@ -247,7 +247,7 @@ ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
 ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
 ros2 launch gazebo_ros2_control_demos tricycle_drive.launch.py
-ros2 launch gazebo_ros2_control_demos diff_drive_example.launch.py
+ros2 launch gazebo_ros2_control_demos diff_drive.launch.py
 ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py
 ```
 
@@ -261,6 +261,7 @@ ros2 run gazebo_ros2_control_demos example_velocity
 ros2 run gazebo_ros2_control_demos example_effort
 ros2 run gazebo_ros2_control_demos example_diff_drive
 ros2 run gazebo_ros2_control_demos example_tricycle_drive
+ros2 run gazebo_ros2_control_demos example_gripper
 ```
 
 The following example shows parallel gripper with mimic joint:
