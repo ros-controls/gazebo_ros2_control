@@ -1,5 +1,9 @@
 # gazebo_ros2_control
 
+ROS2 Distro | Build Status | Package build |
+:---------: | :----: | :----------: |
+[![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) |  [![Build Status](http://build.ros2.org/buildStatus/icon?job=Fdev__gazebo_ros2_control__ubuntu_focal_amd64)](http://build.ros2.org/job/Fdev__gazebo_ros2_control__ubuntu_focal_amd64) |  [![Build Status](http://build.ros2.org/buildStatus/icon?job=Fbin_uF64__gazebo_ros2_control__ubuntu_focal_amd64__binary)](http://build.ros2.org/job/Fbin_uF64__gazebo_ros2_control__ubuntu_focal_amd64__binary) |
+
 This is a ROS 2 package for integrating the `ros2_control` controller architecture with the [Gazebo](http://gazebosim.org/) simulator.
 
 This package provides a Gazebo plugin which instantiates a `ros2_control` controller manager and connects it to a Gazebo model.
@@ -255,7 +259,7 @@ When the Gazebo world is launched you can run some of the following commands to 
 ros2 run gazebo_ros2_control_demos example_position
 ros2 run gazebo_ros2_control_demos example_velocity
 ros2 run gazebo_ros2_control_demos example_effort
-ros2 run ign_ros2_control_demos example_diff_drive
+ros2 run gazebo_ros2_control_demos example_diff_drive
 ```
 The following example shows parallel gripper with mimic joint:
 
