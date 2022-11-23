@@ -32,11 +32,9 @@ Changelog for package gazebo_ros2_control_demos
 0.0.4 (2021-10-26)
 ------------------
 * fix maintainer email (`#92 <https://github.com/ros-simulation/gazebo_ros2_control//issues/92>`_)
-* Galactic: Pass time and period to update function (`#88 <https://github.com/ros-simulation/gazebo_ros2_control//issues/88>`_)
-* Update severity of msgs to proper level (`#91 <https://github.com/ros-simulation/gazebo_ros2_control//issues/91>`_)
 * Add Imu and FT state interfaces (`#65 <https://github.com/ros-simulation/gazebo_ros2_control//issues/65>`_)
   Co-authored-by: Jordan Palacios <jordan.palacios@pal-robotics.com>
-* Contributors: Alejandro Hernández Cordero, Andy McEvoy, Bence Magyar, Victor Lopez
+* Contributors: Alejandro Hernández Cordero, Victor Lopez
 
 0.0.3 (2021-06-16)
 ------------------
