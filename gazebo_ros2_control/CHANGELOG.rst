@@ -35,15 +35,11 @@ Changelog for package gazebo_ros2_control
 
 0.0.4 (2021-10-26)
 ------------------
-* Added testing CI (`#93 <https://github.com/ros-simulation/gazebo_ros2_control//issues/93>`_)
-  Co-authored-by: Bence Magyar <bence.magyar.robotics@gmail.com>
-  Co-authored-by: Bence Magyar <bence.magyar.robotics@gmail.com>
 * fix maintainer email (`#92 <https://github.com/ros-simulation/gazebo_ros2_control//issues/92>`_)
-* Galactic: Pass time and period to update function (`#88 <https://github.com/ros-simulation/gazebo_ros2_control//issues/88>`_)
 * Export interfaces created in init (`#83 <https://github.com/ros-simulation/gazebo_ros2_control//issues/83>`_)
 * Add Imu and FT state interfaces (`#65 <https://github.com/ros-simulation/gazebo_ros2_control//issues/65>`_)
   Co-authored-by: Jordan Palacios <jordan.palacios@pal-robotics.com>
-* Contributors: Alejandro Hernández Cordero, Bence Magyar, Błażej Sowa, Victor Lopez
+* Contributors: Alejandro Hernández Cordero, Błażej Sowa, Victor Lopez
 
 0.0.3 (2021-06-16)
 ------------------
