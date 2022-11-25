@@ -1,5 +1,9 @@
 # gazebo_ros2_control
 
+ROS2 Distro | Build Status | Package build |
+:---------: | :----: | :----------: |
+[![Licence](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) |  [![Build Status](http://build.ros2.org/buildStatus/icon?job=Gdev__gazebo_ros2_control__ubuntu_focal_amd64)](http://build.ros2.org/job/Gdev__gazebo_ros2_control__ubuntu_focal_amd64) |  [![Build Status](http://build.ros2.org/buildStatus/icon?job=Gbin_uF64__gazebo_ros2_control__ubuntu_focal_amd64__binary)](http://build.ros2.org/job/Gbin_uF64__gazebo_ros2_control__ubuntu_focal_amd64__binary) |
+
 This is a ROS 2 package for integrating the `ros2_control` controller architecture with the [Gazebo](http://gazebosim.org/) simulator.
 
 This package provides a Gazebo plugin which instantiates a `ros2_control` controller manager and connects it to a Gazebo model.
