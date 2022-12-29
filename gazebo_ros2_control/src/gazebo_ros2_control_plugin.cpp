@@ -420,14 +420,13 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
 
   // search and wait for robot_description on param server
   while (urdf_string.empty()) {
-    std::string search_param_name;
     RCLCPP_DEBUG(model_nh_->get_logger(), "param_name %s", param_name.c_str());
 
     try {
       auto f = parameters_client->get_parameters({param_name});
       f.wait();
       std::vector<rclcpp::Parameter> values = f.get();
-      urdf_string = values[0].as_string();
+      urdf_string = values.at(0).as_string();
     } catch (const std::exception & e) {
       RCLCPP_ERROR(model_nh_->get_logger(), "%s", e.what());
     }
@@ -437,7 +436,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
     } else {
       RCLCPP_ERROR(
         model_nh_->get_logger(), "gazebo_ros2_control plugin is waiting for model"
-        " URDF in parameter [%s] on the ROS param server.", search_param_name.c_str());
+        " URDF in parameter [%s] on the ROS param server.", param_name.c_str());
     }
     usleep(100000);
   }
