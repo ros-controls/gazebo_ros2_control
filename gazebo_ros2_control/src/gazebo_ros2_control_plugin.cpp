@@ -42,6 +42,9 @@
 #include "gazebo_ros2_control/gazebo_ros2_control_plugin.hpp"
 #include "gazebo_ros2_control/gazebo_system.hpp"
 
+#include "gazebo/msgs/msgs.hh"
+#include "gazebo/physics/physics.hh"
+
 #include "pluginlib/class_loader.hpp"
 
 #include "rclcpp/rclcpp.hpp"
@@ -73,8 +76,11 @@ public:
   // Get the URDF XML from the parameter server
   std::string getURDF(std::string param_name) const;
 
-  // Node Handles
+  // Node Handle
   gazebo_ros::Node::SharedPtr model_nh_;
+
+  // Gazebo transport handle
+  gazebo::transport::NodePtr transport_nh_;
 
   // Pointer to the model
   gazebo::physics::ModelPtr parent_model_;
@@ -134,6 +140,10 @@ GazeboRosControlPlugin::~GazeboRosControlPlugin()
 // Overloaded Gazebo entry point
 void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::ElementPtr sdf)
 {
+  // Create and init a new Gazebo transport node
+  impl_->transport_nh_ = boost::shared_ptr<gazebo::transport::Node>(new gazebo::transport::Node());
+  impl_->transport_nh_->Init(parent->GetName());
+
   RCLCPP_INFO_STREAM(
     rclcpp::get_logger("gazebo_ros2_control"),
     "Loading gazebo_ros2_control plugin");
@@ -295,6 +305,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     if (!gazeboSystem->initSim(
         node_ros2,
         impl_->parent_model_,
+        impl_->transport_nh_,
         control_hardware_info[i],
         sdf))
     {

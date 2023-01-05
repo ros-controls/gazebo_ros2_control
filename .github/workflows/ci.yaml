@@ -28,6 +28,7 @@ jobs:
         rosdep update
         rosdep install --from-paths ./ -i -y --rosdistro rolling \
           --ignore-src
+        apt-get upgrade -q -y --with-new-pkgs ros-rolling-rcl
     - name: Build project
       id: build
       run: |
@@ -46,7 +47,7 @@ jobs:
     container:
       image: osrf/ros:rolling-desktop
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v2
     - name: Setup colcon workspace
       id: configure
       run: |
@@ -64,6 +65,7 @@ jobs:
         rosdep update
         rosdep install --from-paths ./ -i -y --rosdistro rolling \
           --ignore-src
+        apt-get upgrade -q -y --with-new-pkgs ros-rolling-rcl
     - name: Build project
       id: build
       run: |
