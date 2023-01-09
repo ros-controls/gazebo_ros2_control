@@ -254,16 +254,11 @@ Send example commands:
 ros2 run gazebo_ros2_control_demos example_gripper
 ```
 
-The following example shows a cart with a pendulum arm. This uses the effort command interface for the cart's degree of freedom on the rail, and the physics of the passive joint of the pendulum is solved correctly. 
+The following example shows a cart with a pendulum arm. This uses the effort command interface for the cart's
+degree of freedom on the rail, and the physics of the passive joint of the pendulum is solved correctly. 
 ```bash
 ros2 launch gazebo_ros2_control_demos pendulum_example_effort.launch.py
 ros2 run gazebo_ros2_control_demos example_effort
-```
-*Attention*: If the position or velocity command interface is used instead, the motion of the pendulum is not calculated correctly and does not move at all, see the following example. This also holds true if a mimicked joint with position or velocity interface is used.
-```bash
-ros2 launch gazebo_ros2_control_demos pendulum_example_position.launch.py
-ros2 run gazebo_ros2_control_demos example_position
-```
 
 
 
