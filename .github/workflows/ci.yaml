@@ -11,7 +11,7 @@ jobs:
     container:
       image: osrf/ros:rolling-desktop
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup colcon workspace
       id: configure
       run: |
@@ -46,7 +46,7 @@ jobs:
     container:
       image: osrf/ros:rolling-desktop
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup colcon workspace
       id: configure
       run: |
