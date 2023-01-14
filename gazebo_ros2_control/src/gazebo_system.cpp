@@ -31,7 +31,9 @@ struct MimicJoint
 {
   std::size_t joint_index;
   std::size_t mimicked_joint_index;
+  gazebo_ros2_control::GazeboSystemInterface::ControlMethod control_method;
   double multiplier = 1.0;
+  double offset = 0.0;
 };
 
 class gazebo_ros2_control::GazeboSystemPrivate
@@ -89,7 +91,7 @@ public:
   /// \brief handles to the FT sensors from within Gazebo
   std::vector<gazebo::sensors::ForceTorqueSensorPtr> sim_ft_sensors_;
 
-  /// \brief An array per FT sensor for 3D force and torquee
+  /// \brief An array per FT sensor for 3D force and torque
   std::vector<std::array<double, 6>> ft_sensor_data_;
 
   /// \brief state interfaces that will be exported to the Resource Manager
@@ -185,16 +187,34 @@ void GazeboSystem::registerJoints(
       mimic_joint.joint_index = j;
       mimic_joint.mimicked_joint_index = std::distance(
         hardware_info.joints.begin(), mimicked_joint_it);
+      for (unsigned int i = 0; i < joint_info.command_interfaces.size(); i++) {
+        if (joint_info.command_interfaces[i].name == "position") {
+          mimic_joint.control_method |= POSITION;
+        }
+        if (joint_info.command_interfaces[i].name == "velocity") {
+          mimic_joint.control_method |= VELOCITY;
+        }
+        if (joint_info.command_interfaces[i].name == "effort") {
+          mimic_joint.control_method |= EFFORT;
+        }
+      }
       auto param_it = joint_info.parameters.find("multiplier");
       if (param_it != joint_info.parameters.end()) {
         mimic_joint.multiplier = std::stod(joint_info.parameters.at("multiplier"));
       } else {
         mimic_joint.multiplier = 1.0;
       }
+      param_it = joint_info.parameters.find("offset");
+      if (param_it != joint_info.parameters.end()) {
+        mimic_joint.offset = std::stod(joint_info.parameters.at("offset"));
+      } else {
+        mimic_joint.offset = 0.0;
+      }
       RCLCPP_INFO_STREAM(
         this->nh_->get_logger(),
-        "Joint '" << joint_name << "'is mimicing joint '" << mimicked_joint <<
-          "' with mutiplier: " << mimic_joint.multiplier);
+        "Joint '" << joint_name << "'is mimicking joint '" << mimicked_joint <<
+          "' with multiplier: " << mimic_joint.multiplier <<
+          "' and offset: " << mimic_joint.offset);
       this->dataPtr->mimic_joints_.push_back(mimic_joint);
       suffix = "_mimic";
     }
@@ -512,7 +532,7 @@ GazeboSystem::perform_command_mode_switch(
   // mimic joint has the same control mode as mimicked joint
   for (const auto & mimic_joint : this->dataPtr->mimic_joints_) {
     this->dataPtr->joint_control_methods_[mimic_joint.joint_index] =
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index];
+      mimic_joint.control_method;
   }
   return hardware_interface::return_type::OK;
 }
@@ -569,25 +589,46 @@ hardware_interface::return_type GazeboSystem::write(
 
   // set values of all mimic joints with respect to mimicked joint
   for (const auto & mimic_joint : this->dataPtr->mimic_joints_) {
-    if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & POSITION &&
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & POSITION)
-    {
-      this->dataPtr->joint_position_cmd_[mimic_joint.joint_index] =
-        mimic_joint.multiplier *
-        this->dataPtr->joint_position_cmd_[mimic_joint.mimicked_joint_index];
+    if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & POSITION) {
+      if (this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & POSITION) {
+        // mimic position with identical joint_position_cmd
+        this->dataPtr->joint_position_cmd_[mimic_joint.joint_index] =
+          mimic_joint.offset + mimic_joint.multiplier *
+          this->dataPtr->joint_position_cmd_[mimic_joint.mimicked_joint_index];
+      } else {
+        // mimic position, if mimicked joint is velocity- or effort-controlled
+        this->dataPtr->joint_position_cmd_[mimic_joint.joint_index] =
+          mimic_joint.offset + mimic_joint.multiplier *
+          this->dataPtr->joint_position_[mimic_joint.mimicked_joint_index];
+      }
     }
-    if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & VELOCITY &&
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & VELOCITY)
-    {
-      this->dataPtr->joint_velocity_cmd_[mimic_joint.joint_index] =
-        mimic_joint.multiplier *
-        this->dataPtr->joint_velocity_cmd_[mimic_joint.mimicked_joint_index];
+
+    if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & VELOCITY) {
+      if (this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & VELOCITY) {
+        // mimic velocity with identical joint_velocity_cmd_
+        this->dataPtr->joint_velocity_cmd_[mimic_joint.joint_index] =
+          mimic_joint.offset + mimic_joint.multiplier *
+          this->dataPtr->joint_velocity_cmd_[mimic_joint.mimicked_joint_index];
+      } else {
+        // mimic velocity, if mimicked joint is position- or effort-controlled
+        this->dataPtr->joint_velocity_cmd_[mimic_joint.joint_index] =
+          mimic_joint.offset + mimic_joint.multiplier *
+          this->dataPtr->joint_velocity_[mimic_joint.mimicked_joint_index];
+      }
     }
-    if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & EFFORT &&
-      this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & EFFORT)
-    {
-      this->dataPtr->joint_effort_cmd_[mimic_joint.joint_index] =
-        mimic_joint.multiplier * this->dataPtr->joint_effort_cmd_[mimic_joint.mimicked_joint_index];
+
+    if (this->dataPtr->joint_control_methods_[mimic_joint.joint_index] & EFFORT) {
+      if (this->dataPtr->joint_control_methods_[mimic_joint.mimicked_joint_index] & EFFORT) {
+        // mimic effort with identical joint_effort_cmd_
+        this->dataPtr->joint_effort_cmd_[mimic_joint.joint_index] =
+          mimic_joint.offset + mimic_joint.multiplier *
+          this->dataPtr->joint_effort_cmd_[mimic_joint.mimicked_joint_index];
+      } else {
+        // mimic effort, if mimicked joint is velocity- or position-controlled
+        this->dataPtr->joint_effort_cmd_[mimic_joint.joint_index] =
+          mimic_joint.offset + mimic_joint.multiplier *
+          this->dataPtr->joint_effort_[mimic_joint.mimicked_joint_index];
+      }
     }
   }
 

@@ -95,9 +95,10 @@ include
 To use `mimic` joints in `gazebo_ros2_control` you should define its parameters to your URDF.
 We should include:
 
-- `<mimic>` tag to the mimicked joint ([detailed manual(https://wiki.ros.org/urdf/XML/joint))
-- `mimic` and `multiplier` parameters to joint definition in `<ros2_control>` tag
+- `<mimic>` tag to the mimicked joint ([detailed manual](https://wiki.ros.org/urdf/XML/joint))
+- `mimic`, and optional `multiplier`+`offset` parameters to joint definition in `<ros2_control>` tag
 
+As an example, `left_finger_joint` mimics the position of `right_finger_joint`
 ```xml
 <joint name="left_finger_joint" type="prismatic">
   <mimic joint="right_finger_joint"/>
@@ -110,15 +111,42 @@ We should include:
 ```
 
 ```xml
+<joint name="right_finger_joint">
+  <command_interface name="position"/>
+  <state_interface name="position"/>
+  <state_interface name="velocity"/>
+  <state_interface name="effort"/>
+</joint>
 <joint name="left_finger_joint">
   <param name="mimic">right_finger_joint</param>
   <param name="multiplier">1</param>
+  <param name="offset">0</param>
   <command_interface name="position"/>
   <state_interface name="position"/>
   <state_interface name="velocity"/>
   <state_interface name="effort"/>
 </joint>
 ```
+You can specify a mimicked joint independent of the combination of command interfaces. E.g., if you use an effort command interface for joint 1 but want to let joint 2 mimic the position of joint 1, set
+```xml
+<joint name="right_finger_joint">
+  <command_interface name="effort"/>
+  <state_interface name="position"/>
+  <state_interface name="velocity"/>
+  <state_interface name="effort"/>
+</joint>
+<joint name="left_finger_joint">
+  <param name="mimic">right_finger_joint</param>
+  <param name="multiplier">1</param>
+  <param name="offset">0</param>
+  <command_interface name="position"/>
+  <state_interface name="position"/>
+  <state_interface name="velocity"/>
+  <state_interface name="effort"/>
+</joint>
+```
+Be aware that these mimicked joints do not preserve any conservation of energy, i.e.,
+the necessary effort of joint 1 won't be changed.
 
 
 ## Add the gazebo_ros2_control plugin
@@ -245,7 +273,7 @@ The following example shows parallel gripper with mimic joint:
 
 
 ```bash
-ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py
+ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
 ```
 
 Send example commands:
@@ -253,6 +281,16 @@ Send example commands:
 ```bash
 ros2 run gazebo_ros2_control_demos example_gripper
 ```
+
+To demonstrate the setup of the initial position and a position-mimicked joint in
+case of an effort command interface of the joint to be mimicked, run
+
+```bash
+ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_effort.launch.py
+```
+instead.
+
+
 
 #### Gazebo + Moveit2 + ROS 2
 
