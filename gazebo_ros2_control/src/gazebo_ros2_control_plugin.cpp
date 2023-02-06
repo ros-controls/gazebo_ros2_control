@@ -348,6 +348,9 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         " s) is slower than the gazebo simulation period (" <<
         gazebo_period.seconds() << " s).");
   }
+  // Force setting of use_sime_time parameter
+  impl_->controller_manager_->set_parameter(
+    rclcpp::Parameter("use_sim_time", rclcpp::ParameterValue(true)));
 
   impl_->stop_ = false;
   auto spin = [this]()
