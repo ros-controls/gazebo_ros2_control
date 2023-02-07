@@ -2,6 +2,11 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add tricycle controller demo (`#145 <https://github.com/ros-controls/gazebo_ros2_control/issues/145>`_)
+* Contributors: Tony Najjar
+
 0.4.0 (2022-08-09)
 ------------------
 * fix demo launch
