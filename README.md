@@ -211,6 +211,32 @@ cart_pole_controller:
     write_op_modes:
        - slider_to_cart
 ```
+#### Multiple Namespaces
+The gazebo_ros2_control plugin can be launched in multiple namespaces. This is useful if it is desired to have multiple robots of the same description running at the same time. 
+If the namespace is to be defined in the URDF file, then you can use the `<namespace>` tag as detailed below:
+```xml
+<gazebo>
+  <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+    <parameters> $(arg control_yaml) </parameters>
+    <ros>
+      <namespace>r1</namespace>
+      <remapping>/tf:=tf</remapping>
+      <remapping>/tf_static:=tf_static</remapping>
+      <remapping>diffdrive_controller/odom:=odom</remapping>
+    </ros>
+  </plugin>
+</gazebo>
+```
+Where `r1` is the namespace that the plugin nodes will be run in. Please note that the remapping of `/tf` and `/tf_static` is recommended only if you want to have a separate TF buffer for each namespace, e.g `/r1/tf`
+
+A second method for launching in namespaces is by using the Gazebo `spawn_entity.py` tool and setting the `-robot_namespace` parameter to the script:
+
+```ros2 run gazebo_ros spawn_entity.py -entity robot_1 -robot_namespace r1 -topic robot_description```
+    
+The script calls the `spawn_entity` service to spawn an entity named `robot_1` in the namespace `r1`.  It is assumed that a robot description is being published by a `robot_state_publisher` node on the topic `robot_description`, this will also be used for the `gazebo_ros2_control` plugin. 
+
+The `spawn_entity.py` script will rewrite the robot description to include a namespace for every plugin tag. Please note that this method will apply a namespace to every plugin in the robot description. It will also overwrite any existing namespaces set in the description file.
+
 #### Executing the examples
 
 There are some examples in the `gazebo_ros2_control_demos` package. These examples allow to launch a cart in a 30 meter rail.
