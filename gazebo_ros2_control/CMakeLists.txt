@@ -62,8 +62,18 @@ ament_export_include_directories(
   include
 )
 
-ament_export_dependencies(ament_cmake)
-ament_export_dependencies(rclcpp)
+ament_export_dependencies(
+  ament_cmake
+  angles
+  controller_manager
+  gazebo_dev
+  gazebo_ros
+  hardware_interface
+  pluginlib
+  rclcpp
+  yaml_cpp_vendor
+)
+
 ament_export_libraries(
   ${PROJECT_NAME}
   gazebo_hardware_plugins
