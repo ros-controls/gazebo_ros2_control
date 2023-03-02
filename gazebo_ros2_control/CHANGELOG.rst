@@ -2,6 +2,14 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Export all dependencies (`#183 <https://github.com/ros-controls/gazebo_ros2_control/issues/183>`_)
+  The ament_export_dependencies exports dependencies to downstream
+  packages. This is necessary so that the user of the library does
+  not have to call find_package for those dependencies.
+* Contributors: Adrian Zwiener
+
 0.4.1 (2023-02-07)
 ------------------
 * Force setting use_sim_time parameter when using plugin. (`#171 <https://github.com/ros-controls/gazebo_ros2_control/issues/171>`_)
