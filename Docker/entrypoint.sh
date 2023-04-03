@@ -1,5 +1,5 @@
 #!/bin/sh
 
-. /opt/ros/rolling/setup.sh
+. /opt/ros/humble/setup.sh
 . /home/ros2_ws/install/setup.sh
 exec "$@"

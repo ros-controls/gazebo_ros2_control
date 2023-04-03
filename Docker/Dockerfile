@@ -1,4 +1,4 @@
-FROM osrf/ros:rolling-desktop
+FROM osrf/ros:humble-desktop
 
 # Make sure everything is up to date before building from source
 RUN apt-get update \
@@ -14,13 +14,13 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 
 RUN mkdir -p /home/ros2_ws/src \
     && cd /home/ros2_ws/src/ \
-    && git clone https://github.com/ros-controls/gazebo_ros2_control \
+    && git clone -b humble https://github.com/ros-controls/gazebo_ros2_control \
     && rosdep fix-permissions && rosdep update \
-    && rosdep install --from-paths ./ -i -y --rosdistro rolling \
+    && rosdep install --from-paths ./ -i -y --rosdistro humble \
       --ignore-src
 
 RUN cd /home/ros2_ws/ \
-  && . /opt/ros/rolling/setup.sh \
+  && . /opt/ros/humble/setup.sh \
   && colcon build --merge-install
 
 COPY entrypoint.sh /entrypoint.sh
