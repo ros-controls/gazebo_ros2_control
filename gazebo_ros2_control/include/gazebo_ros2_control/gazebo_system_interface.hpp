@@ -44,6 +44,7 @@ public:
   : mFlags(original.mFlags) {}
   ~SafeEnum() = default;
 
+  SafeEnum & operator=(const SafeEnum & original) = default;
   SafeEnum & operator|=(ENUM addValue) {mFlags |= addValue; return *this;}
   SafeEnum operator|(ENUM addValue) {SafeEnum result(*this); result |= addValue; return result;}
   SafeEnum & operator&=(ENUM maskValue) {mFlags &= maskValue; return *this;}
