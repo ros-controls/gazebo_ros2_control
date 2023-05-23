@@ -2,6 +2,11 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add copy operator to SafeEnum (`#197 <https://github.com/ros-controls/gazebo_ros2_control/issues/197>`_) (`#198 <https://github.com/ros-controls/gazebo_ros2_control/issues/198>`_)
+* Contributors: mergify[bot]
+
 0.4.2 (2023-03-02)
 ------------------
 * Export all dependencies (`#183 <https://github.com/ros-controls/gazebo_ros2_control/issues/183>`_)

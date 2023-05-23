@@ -2,6 +2,11 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Clean shutdown position example (`#196 <https://github.com/ros-controls/gazebo_ros2_control/issues/196>`_) (`#199 <https://github.com/ros-controls/gazebo_ros2_control/issues/199>`_)
+* Contributors: mergify[bot]
+
 0.4.2 (2023-03-02)
 ------------------
 
