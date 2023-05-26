@@ -39,10 +39,6 @@ ament_target_dependencies(${PROJECT_NAME}
   yaml_cpp_vendor
 )
 
-if("$ENV{ROS_DISTRO}" STREQUAL "rolling")
-  add_definitions(-DROLLING)
-endif()
-
 add_library(gazebo_hardware_plugins SHARED
   src/gazebo_system.cpp
 )
