@@ -61,7 +61,7 @@ class GazeboSystemInterface
   : public hardware_interface::SystemInterface
 {
 public:
-  /// \brief Initilize the system interface
+  /// \brief Initialize the system interface
   /// param[in] model_nh pointer to the ros2 node
   /// param[in] parent_model pointer to the model
   /// param[in] control_hardware vector filled with information about robot's control resources
