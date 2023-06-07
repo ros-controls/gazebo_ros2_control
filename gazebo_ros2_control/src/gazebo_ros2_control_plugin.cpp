@@ -444,7 +444,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
     usleep(100000);
   }
   RCLCPP_INFO(
-    model_nh_->get_logger(), "Recieved urdf from param server, parsing...");
+    model_nh_->get_logger(), "Received urdf from param server, parsing...");
 
   return urdf_string;
 }
