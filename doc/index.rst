@@ -16,7 +16,7 @@ This package provides a Gazebo plugin which instantiates a *ros2_control* contro
 .. image:: img/gazebo_ros2_control_diff_drive.gif
   :alt: DiffBot
 
-Usage 
+Usage
 ======
 
 Modifying or building your own
@@ -44,7 +44,6 @@ To run the demo
   .. code-block:: shell
 
     gzclient
-  
 
 2. Using Rocker
 
@@ -57,11 +56,9 @@ To run the demo
   .. code-block:: shell
 
     rocker --x11 --nvidia --name gazebo_ros2_control_demo gazebo_ros2_control:latest
-  
-  
+
   The following commands allow to move the cart in the rail:
 
-  
   .. code-block:: shell
 
     docker exec -it gazebo_ros2_control_demo bash
@@ -199,7 +196,7 @@ robot model is loaded. For example, the following XML will load the default plug
 Set up controllers
 -----------------------------------------------------------
 
-Use the tag `<parameters>` inside `<plugin>` to set the YAML file with the controller configuration.
+Use the tag ``<parameters>`` inside ``<plugin>`` to set the YAML file with the controller configuration.
 
 .. code-block:: xml
 
@@ -210,7 +207,7 @@ Use the tag `<parameters>` inside `<plugin>` to set the YAML file with the contr
   <gazebo>
 
 This controller publishes the state of all resources registered to a
-`hardware_interface::StateInterface` to a topic of type `sensor_msgs/msg/JointState`.
+``hardware_interface::StateInterface`` to a topic of type ``sensor_msgs/msg/JointState``.
 The following is a basic configuration of the controller.
 
 .. code-block:: yaml
@@ -253,7 +250,7 @@ You can run some of the configuration running the following commands:
   ros2 launch gazebo_ros2_control_demos tricycle_drive.launch.py
 
 
-When the Gazebo world is launched you can run some of the following commads to move the cart.
+When the Gazebo world is launched you can run some of the following commands to move the cart.
 
 .. code-block:: shell
 
