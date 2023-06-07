@@ -142,7 +142,7 @@ robot hardware interfaces between `ros2_control` and Gazebo.
 The `gazebo_ros2_control` `<plugin>` tag also has the following optional child elements:
 
  - `<robot_param>`: The location of the `robot_description` (URDF) on the parameter server, defaults to `robot_description`
- - `<robot_param_node>`: Name of the node where the `robot_param` is located, defauls to `robot_state_publisher`
+ - `<robot_param_node>`: Name of the node where the `robot_param` is located, defaults to `robot_state_publisher`
  - `<parameters>`: YAML file with the configuration of the controllers
 
 #### Default gazebo_ros2_control Behavior
@@ -229,7 +229,7 @@ ros2 launch gazebo_ros2_control_demos tricycle_drive.launch.py
 
 Send example commands:
 
-When the Gazebo world is launched you can run some of the following commads to move the cart.
+When the Gazebo world is launched you can run some of the following commands to move the cart.
 
 ```bash
 ros2 run gazebo_ros2_control_demos example_position
