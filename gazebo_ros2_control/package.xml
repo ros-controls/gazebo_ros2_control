@@ -34,6 +34,5 @@
 
   <export>
     <build_type>ament_cmake</build_type>
-    <gazebo_ros2_control plugin="${prefix}/gazebo_hardware_plugins.xml"/>
   </export>
 </package>
