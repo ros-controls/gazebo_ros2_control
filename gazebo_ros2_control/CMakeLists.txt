@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5.0)
 project(gazebo_ros2_control)
 
 find_package(ament_cmake REQUIRED)
-find_package(service_msgs REQUIRED)
 find_package(angles REQUIRED)
 find_package(controller_manager REQUIRED)
 find_package(gazebo_dev REQUIRED)
@@ -31,7 +30,6 @@ add_library(${PROJECT_NAME} SHARED
 )
 ament_target_dependencies(${PROJECT_NAME}
   angles
-  service_msgs
   controller_manager
   gazebo_dev
   gazebo_ros
@@ -64,8 +62,18 @@ ament_export_include_directories(
   include
 )
 
-ament_export_dependencies(ament_cmake)
-ament_export_dependencies(rclcpp)
+ament_export_dependencies(
+  ament_cmake
+  angles
+  controller_manager
+  gazebo_dev
+  gazebo_ros
+  hardware_interface
+  pluginlib
+  rclcpp
+  yaml_cpp_vendor
+)
+
 ament_export_libraries(
   ${PROJECT_NAME}
   gazebo_hardware_plugins
