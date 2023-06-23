@@ -603,6 +603,7 @@ hardware_interface::return_type GazeboSystem::write(
     if (this->dataPtr->sim_joints_[j]) {
       if (this->dataPtr->joint_control_methods_[j] & POSITION) {
         this->dataPtr->sim_joints_[j]->SetPosition(0, this->dataPtr->joint_position_cmd_[j], true);
+        this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
       } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY) { // NOLINT
         this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
       } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) { // NOLINT
