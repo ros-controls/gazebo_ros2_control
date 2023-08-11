@@ -608,9 +608,6 @@ hardware_interface::return_type GazeboSystem::write(
         this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
       } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) { // NOLINT
         this->dataPtr->sim_joints_[j]->SetForce(0, this->dataPtr->joint_effort_cmd_[j]);
-      } else {
-        // Fallback case is a velocity command of zero
-        this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
       }
     }
   }
