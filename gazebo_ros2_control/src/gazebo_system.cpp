@@ -100,9 +100,6 @@ public:
 
   /// \brief mapping of mimicked joints to index of joint they mimic
   std::vector<MimicJoint> mimic_joints_;
-
-  /// \brief Gain which converts position error to a velocity command
-  double position_proportional_gain_;
 };
 
 namespace gazebo_ros2_control
@@ -126,17 +123,6 @@ bool GazeboSystem::initSim(
   if (physics_type_.empty()) {
     RCLCPP_ERROR(this->nh_->get_logger(), "No physics engine configured in Gazebo.");
     return false;
-  }
-
-  constexpr double default_gain = 0.1;
-  if (!this->nh_->get_parameter_or(
-      "position_proportional_gain",
-      this->dataPtr->position_proportional_gain_, default_gain))
-  {
-    RCLCPP_WARN_STREAM(
-      this->nh_->get_logger(),
-      "The position_proportional_gain parameter was not defined, defaulting to: " <<
-        default_gain);
   }
 
   registerJoints(hardware_info, parent_model);
