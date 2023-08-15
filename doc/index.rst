@@ -314,4 +314,3 @@ degree of freedom on the rail, and the physics of the passive joint of the pendu
 
   ros2 launch gazebo_ros2_control_demos pendulum_example_position.launch.py
   ros2 run gazebo_ros2_control_demos example_position
-
