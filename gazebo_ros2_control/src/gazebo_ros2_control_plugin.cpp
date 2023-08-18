@@ -287,14 +287,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   }
 
   for (unsigned int i = 0; i < control_hardware_info.size(); i++) {
-<<<<<<< HEAD
     std::string robot_hw_sim_type_str_ = control_hardware_info[i].hardware_class_type;
-    auto gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
-      impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
-
-    rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
-=======
-    std::string robot_hw_sim_type_str_ = control_hardware_info[i].hardware_plugin_name;
     RCLCPP_DEBUG(
       impl_->model_nh_->get_logger(), "Load hardware interface %s ...",
       robot_hw_sim_type_str_.c_str());
@@ -308,12 +301,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         ex.what());
       continue;
     }
-    rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(
-      impl_->model_nh_);
+    rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(impl_->model_nh_);
     RCLCPP_DEBUG(
       impl_->model_nh_->get_logger(), "Loaded hardware interface %s!",
       robot_hw_sim_type_str_.c_str());
->>>>>>> f8a475d (Catch pluginlib exceptions (#229))
     if (!gazeboSystem->initSim(
         node_ros2,
         impl_->parent_model_,
