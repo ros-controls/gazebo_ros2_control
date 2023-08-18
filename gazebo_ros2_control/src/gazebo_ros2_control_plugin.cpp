@@ -289,7 +289,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   for (unsigned int i = 0; i < control_hardware_info.size(); i++) {
     std::string robot_hw_sim_type_str_ = control_hardware_info[i].hardware_plugin_name;
     RCLCPP_DEBUG(
-      impl_->model_nh_->get_logger(), "Load hw interface %s ...",
+      impl_->model_nh_->get_logger(), "Load hardware interface %s ...",
       robot_hw_sim_type_str_.c_str());
     std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface> gazeboSystem;
     try {
@@ -304,7 +304,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(
       impl_->model_nh_);
     RCLCPP_DEBUG(
-      impl_->model_nh_->get_logger(), "Loaded hw interface %s!",
+      impl_->model_nh_->get_logger(), "Loaded hardware interface %s!",
       robot_hw_sim_type_str_.c_str());
     if (!gazeboSystem->initSim(
         node_ros2,
