@@ -2,6 +2,21 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.4 (2023-08-21)
+------------------
+* Set the C++ version to 17 (`#221 <https://github.com/ros-controls/gazebo_ros2_control/issues/221>`_) (`#228 <https://github.com/ros-controls/gazebo_ros2_control/issues/228>`_)
+  (cherry picked from commit 6da415cf82a75e2a5e9f9a41400957ad45b2be84)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Update diff_drive_controller.yaml (`#224 <https://github.com/ros-controls/gazebo_ros2_control/issues/224>`_) (`#225 <https://github.com/ros-controls/gazebo_ros2_control/issues/225>`_)
+  The wrong base frame is set. The name of the link in the URDF is chassis.
+  (cherry picked from commit c915939bfc13a43b2ab0e30029725f6c8023f3ca)
+  Co-authored-by: David V. Lu!! <davidvlu@gmail.com>
+* Add pre-commit and CI-format (`#206 <https://github.com/ros-controls/gazebo_ros2_control/issues/206>`_) (`#207 <https://github.com/ros-controls/gazebo_ros2_control/issues/207>`_)
+  * Add pre-commit and ci-format
+  (cherry picked from commit f2cf686a1a97cefc9b5e3daa115e0c4854ea5707)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Contributors: Alejandro Hernández Cordero, Christoph Fröhlich, mergify[bot]
+
 0.4.3 (2023-05-23)
 ------------------
 * Clean shutdown position example (`#196 <https://github.com/ros-controls/gazebo_ros2_control/issues/196>`_) (`#199 <https://github.com/ros-controls/gazebo_ros2_control/issues/199>`_)
