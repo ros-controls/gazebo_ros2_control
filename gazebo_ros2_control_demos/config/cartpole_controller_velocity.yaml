@@ -15,11 +15,7 @@ velocity_controller:
   ros__parameters:
     joints:
       - slider_to_cart
-    command_interfaces:
-      - velocity
-    state_interfaces:
-      - position
-      - velocity
+
 imu_sensor_broadcaster:
   ros__parameters:
     sensor_name: cart_imu_sensor
