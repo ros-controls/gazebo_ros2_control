@@ -3,7 +3,9 @@ name: Gazebo ros2 control CI
 on:
   pull_request:
   push:
-    branches: [ master ]
+    branches:
+      - master
+      - humble
 
 jobs:
   build:
