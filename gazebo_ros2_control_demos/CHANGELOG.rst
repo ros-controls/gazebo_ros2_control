@@ -2,6 +2,13 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.2 (2023-08-23)
+------------------
+* Set the C++ version to 17 (`#221 <https://github.com/ros-controls/gazebo_ros2_control/issues/221>`_)
+* Update diff_drive_controller.yaml (`#224 <https://github.com/ros-controls/gazebo_ros2_control/issues/224>`_)
+  The wrong base frame is set. The name of the link in the URDF is chassis.
+* Contributors: Alejandro Hernández Cordero, David V. Lu!!
+
 0.6.1 (2023-06-09)
 ------------------
 * Add pre-commit and CI-format (`#206 <https://github.com/ros-controls/gazebo_ros2_control/issues/206>`_)
