@@ -59,6 +59,9 @@ public:
   /// \brief vector with the control method defined in the URDF for each joint.
   std::vector<GazeboSystemInterface::ControlMethod> joint_control_methods_;
 
+  /// \brief vector with indication for actuated joints (vs. passive joints)
+  std::vector<bool> is_joint_actuated_;
+
   /// \brief handles to the joints from within Gazebo
   std::vector<gazebo::physics::JointPtr> sim_joints_;
 
@@ -144,6 +147,7 @@ void GazeboSystem::registerJoints(
 
   this->dataPtr->joint_names_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_control_methods_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->is_joint_actuated_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_position_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_effort_.resize(this->dataPtr->n_dof_);
@@ -293,6 +297,9 @@ void GazeboSystem::registerJoints(
         this->dataPtr->sim_joints_[j]->SetForce(0, initial_effort);
       }
     }
+
+    // check if joint is actuated (has command interfaces) or passive
+    this->dataPtr->is_joint_actuated_[j] = (joint_info.command_interfaces.size() > 0);
   }
 }
 
@@ -594,8 +601,8 @@ hardware_interface::return_type GazeboSystem::write(
         this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
       } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) { // NOLINT
         this->dataPtr->sim_joints_[j]->SetForce(0, this->dataPtr->joint_effort_cmd_[j]);
-      } else {
-        // Fallback case is a velocity command of zero
+      } else if (this->dataPtr->is_joint_actuated_[j]) {
+        // Fallback case is a velocity command of zero (only for actuated joints)
         this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
       }
     }
