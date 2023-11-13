@@ -308,7 +308,7 @@ degree of freedom on the rail, and the physics of the passive joint of the pendu
 
 .. note::
 
-  If the position or velocity command interface is used instead, the motion of the pendulum is not calculated correctly and does not move at all, see the following example. This also holds true if a mimicked joint with position or velocity interface is used.
+  If the position command interface is used instead, the motion of the pendulum is not calculated correctly and does not move at all, see the following example. This also holds true if a mimicked joint with position interface is used.
 
 .. code-block:: shell
 
