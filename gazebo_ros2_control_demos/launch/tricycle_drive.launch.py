@@ -69,13 +69,13 @@ def generate_launch_description():
     )
 
     rviz = Node(
-        package="rviz2",
-        executable="rviz2",
+        package='rviz2',
+        executable='rviz2',
         arguments=[
-            "-d",
-            os.path.join(gazebo_ros2_control_demos_path, "config/config.rviz"),
+            '-d',
+            os.path.join(gazebo_ros2_control_demos_path, 'config/config.rviz'),
         ],
-        output="screen",
+        output='screen',
     )
 
     return LaunchDescription([
