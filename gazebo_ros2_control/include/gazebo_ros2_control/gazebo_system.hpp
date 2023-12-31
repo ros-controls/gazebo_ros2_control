@@ -88,6 +88,9 @@ private:
 
   /// \brief Private data class
   std::unique_ptr<GazeboSystemPrivate> dataPtr;
+
+  // Should hold the joints if no control_mode is active
+  bool hold_joints_ = true;
 };
 
 }  // namespace gazebo_ros2_control
