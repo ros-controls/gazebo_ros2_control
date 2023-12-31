@@ -103,6 +103,9 @@ public:
 
   /// \brief mapping of mimicked joints to index of joint they mimic
   std::vector<MimicJoint> mimic_joints_;
+
+  // Should hold the joints if no control_mode is active
+  bool hold_joints_ = true;
 };
 
 namespace gazebo_ros2_control
@@ -129,16 +132,16 @@ bool GazeboSystem::initSim(
   }
 
   try {
-    hold_joints_ = this->nh_->get_parameter("hold_joints").as_bool();
+    this->dataPtr->hold_joints_ = this->nh_->get_parameter("hold_joints").as_bool();
   } catch (const std::exception & e) {
     RCLCPP_WARN(
       this->nh_->get_logger(),
       "Parameter 'hold_joints' not found, with error %s", e.what());
     RCLCPP_WARN_STREAM(
-      this->nh_->get_logger(), "Using default value: " << hold_joints_);
+      this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
   }
   RCLCPP_DEBUG_STREAM(
-    this->nh_->get_logger(), "hold_joints (system): " << hold_joints_ << std::endl);
+    this->nh_->get_logger(), "hold_joints (system): " << this->dataPtr->hold_joints_ << std::endl);
 
   registerJoints(hardware_info, parent_model);
   registerSensors(hardware_info, parent_model);
@@ -613,7 +616,7 @@ hardware_interface::return_type GazeboSystem::write(
         this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
       } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) { // NOLINT
         this->dataPtr->sim_joints_[j]->SetForce(0, this->dataPtr->joint_effort_cmd_[j]);
-      } else if (this->dataPtr->is_joint_actuated_[j] && hold_joints_) {
+      } else if (this->dataPtr->is_joint_actuated_[j] && this->dataPtr->hold_joints_) {
         // Fallback case is a velocity command of zero (only for actuated joints)
         this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
       }
