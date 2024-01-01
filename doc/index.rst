@@ -146,7 +146,7 @@ robot hardware interfaces between *ros2_control* and Gazebo Classic.
       <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
         <robot_param>robot_description</robot_param>
         <robot_param_node>robot_state_publisher</robot_param_node>
-        <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+        <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
       </plugin>
   </gazebo>
 
@@ -202,32 +202,18 @@ Use the tag ``<parameters>`` inside ``<plugin>`` to set the YAML file with the c
 
   <gazebo>
     <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-      <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+      <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
     </plugin>
   <gazebo>
 
-This controller publishes the state of all resources registered to a
-``hardware_interface::StateInterface`` to a topic of type ``sensor_msgs/msg/JointState``.
-The following is a basic configuration of the controller.
+The following is a basic configuration of the controllers:
 
-.. code-block:: yaml
+- ``joint_state_broadcaster``: This controller publishes the state of all resources registered to a ``hardware_interface::StateInterface`` to a topic of type ``sensor_msgs/msg/JointState``.
 
-  joint_state_controller:
-    ros__parameters:
-      type: joint_state_controller/JointStateController
+- ``joint_trajectory_controller``: This controller creates an action called ``/joint_trajectory_controller/follow_joint_trajectory`` of type ``control_msgs::action::FollowJointTrajectory``.
 
-
-This controller creates an action called ``/cart_pole_controller/follow_joint_trajectory`` of type ``control_msgs::action::FollowJointTrajectory``.
-
-.. code-block:: yaml
-
-  cart_pole_controller:
-    ros__parameters:
-      type: joint_trajectory_controller/JointTrajectoryController
-      joints:
-        - slider_to_cart
-      write_op_modes:
-        - slider_to_cart
+.. literalinclude:: ../gazebo_ros2_control_demos/config/cart_controller.yaml
+   :language: yaml
 
 gazebo_ros2_control_demos
 ==========================================
