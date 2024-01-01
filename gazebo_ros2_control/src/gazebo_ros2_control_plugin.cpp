@@ -314,8 +314,20 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       robot_hw_sim_type_str_.c_str());
     try {
       node_ros2->declare_parameter("hold_joints", rclcpp::ParameterValue(hold_joints));
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(impl_->model_nh_->get_logger(), "%s", e.what());
+    } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has already been declared, %s",
+        e.what());
+    } catch (const rclcpp::exceptions::InvalidParametersException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has invalid name, %s", e.what());
+    } catch (const rclcpp::exceptions::InvalidParameterValueException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value is invalid, %s", e.what());
+    } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value has wrong type, %s",
+        e.what());
     }
     if (!gazeboSystem->initSim(
         node_ros2,

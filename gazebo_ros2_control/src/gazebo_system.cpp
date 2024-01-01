@@ -133,10 +133,22 @@ bool GazeboSystem::initSim(
 
   try {
     this->dataPtr->hold_joints_ = this->nh_->get_parameter("hold_joints").as_bool();
-  } catch (const std::exception & e) {
-    RCLCPP_WARN(
+  } catch (rclcpp::exceptions::ParameterUninitializedException & ex) {
+    RCLCPP_ERROR(
       this->nh_->get_logger(),
-      "Parameter 'hold_joints' not found, with error %s", e.what());
+      "Parameter 'hold_joints' not initialized, with error %s", ex.what());
+    RCLCPP_WARN_STREAM(
+      this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
+  } catch (rclcpp::exceptions::ParameterNotDeclaredException & ex) {
+    RCLCPP_ERROR(
+      this->nh_->get_logger(),
+      "Parameter 'hold_joints' not declared, with error %s", ex.what());
+    RCLCPP_WARN_STREAM(
+      this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
+  } catch (rclcpp::ParameterTypeException & ex) {
+    RCLCPP_ERROR(
+      this->nh_->get_logger(),
+      "Parameter 'hold_joints' has wrong type: %s", ex.what());
     RCLCPP_WARN_STREAM(
       this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
   }
