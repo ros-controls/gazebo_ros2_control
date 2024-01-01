@@ -182,6 +182,12 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   } else {
     impl_->robot_description_node_ = "robot_state_publisher";  // default
   }
+  // Hold joints if no control mode is active?
+  bool hold_joints = true;  // default
+  if (sdf->HasElement("hold_joints")) {
+    hold_joints =
+      sdf->GetElement("hold_joints")->Get<bool>();
+  }
 
   // There's currently no direct way to set parameters to the plugin's node
   // So we have to parse the plugin file manually and set it to the node's context.
@@ -306,6 +312,23 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     RCLCPP_DEBUG(
       impl_->model_nh_->get_logger(), "Loaded hardware interface %s!",
       robot_hw_sim_type_str_.c_str());
+    try {
+      node_ros2->declare_parameter("hold_joints", rclcpp::ParameterValue(hold_joints));
+    } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has already been declared, %s",
+        e.what());
+    } catch (const rclcpp::exceptions::InvalidParametersException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has invalid name, %s", e.what());
+    } catch (const rclcpp::exceptions::InvalidParameterValueException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value is invalid, %s", e.what());
+    } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value has wrong type, %s",
+        e.what());
+    }
     if (!gazeboSystem->initSim(
         node_ros2,
         impl_->parent_model_,
