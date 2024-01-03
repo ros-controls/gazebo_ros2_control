@@ -189,6 +189,13 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       sdf->GetElement("hold_joints")->Get<bool>();
   }
 
+  // Get controller manager node name
+  std::string controllerManagerNodeName{"controller_manager"};
+
+  if (sdf->HasElement("controller_manager_name")) {
+    controllerManagerNodeName = sdf->GetElement("controller_manager_name")->Get<std::string>();
+  }
+
   // There's currently no direct way to set parameters to the plugin's node
   // So we have to parse the plugin file manually and set it to the node's context.
   auto rcl_context = impl_->model_nh_->get_node_base_interface()->get_context()->get_rcl_context();
@@ -360,7 +367,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     new controller_manager::ControllerManager(
       std::move(resource_manager_),
       impl_->executor_,
-      "controller_manager",
+      controllerManagerNodeName,
       impl_->model_nh_->get_namespace()));
   impl_->executor_->add_node(impl_->controller_manager_);
 
