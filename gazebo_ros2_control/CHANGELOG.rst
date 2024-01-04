@@ -2,6 +2,13 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.5 (2024-01-04)
+------------------
+* Fix stuck passive joints (`#237 <https://github.com/ros-controls/gazebo_ros2_control/issues/237>`_) (`#238 <https://github.com/ros-controls/gazebo_ros2_control/issues/238>`_)
+  (cherry picked from commit 5dba0f95a03b136f39145c846ec5ebbfb5a09599)
+  Co-authored-by: Johannes Huemer <johannes.huemer@ait.ac.at>
+* Contributors: mergify[bot]
+
 0.4.4 (2023-08-21)
 ------------------
 * Catch pluginlib exceptions (backport `#229 <https://github.com/ros-controls/gazebo_ros2_control/issues/229>`_) (`#230 <https://github.com/ros-controls/gazebo_ros2_control/issues/230>`_)

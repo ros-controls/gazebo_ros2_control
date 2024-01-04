@@ -2,6 +2,22 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.5 (2024-01-04)
+------------------
+* Rename cartpole (`#252 <https://github.com/ros-controls/gazebo_ros2_control/issues/252>`_) (`#254 <https://github.com/ros-controls/gazebo_ros2_control/issues/254>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  (cherry picked from commit b39074a4a1adf8a9319a6d4378ac26e2aa9e298a)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Replace double quotes with single ones (`#243 <https://github.com/ros-controls/gazebo_ros2_control/issues/243>`_) (`#244 <https://github.com/ros-controls/gazebo_ros2_control/issues/244>`_)
+  (cherry picked from commit f991075a672a26d42c49504e07f8dbb46dfcbb4a)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Cleanup controller config (`#232 <https://github.com/ros-controls/gazebo_ros2_control/issues/232>`_) (`#233 <https://github.com/ros-controls/gazebo_ros2_control/issues/233>`_)
+  * Remove wrong yaml entries
+  * Rename effort_controller
+  (cherry picked from commit 934621ee236dc9b32350b113c6b42a894bfbf092)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Contributors: mergify[bot]
+
 0.4.4 (2023-08-21)
 ------------------
 * Set the C++ version to 17 (`#221 <https://github.com/ros-controls/gazebo_ros2_control/issues/221>`_) (`#228 <https://github.com/ros-controls/gazebo_ros2_control/issues/228>`_)
