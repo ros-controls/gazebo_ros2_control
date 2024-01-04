@@ -1,11 +1,12 @@
-name: Gazebo ros2 control CI
+name: gazebo_ros2_control - Rolling
 
 on:
   pull_request:
+    branches:
+      - master
   push:
     branches:
       - master
-      - humble
 
 jobs:
   build:
