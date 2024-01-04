@@ -2,6 +2,18 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.3 (2024-01-04)
+------------------
+* Rename cartpole (`#252 <https://github.com/ros-controls/gazebo_ros2_control/issues/252>`_) (`#253 <https://github.com/ros-controls/gazebo_ros2_control/issues/253>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  (cherry picked from commit b39074a4a1adf8a9319a6d4378ac26e2aa9e298a)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Replace double quotes with single ones (`#243 <https://github.com/ros-controls/gazebo_ros2_control/issues/243>`_)
+* Cleanup controller config (`#232 <https://github.com/ros-controls/gazebo_ros2_control/issues/232>`_)
+  * Remove wrong yaml entries
+  * Rename effort_controller
+* Contributors: Christoph Fröhlich, mergify[bot]
+
 0.6.2 (2023-08-23)
 ------------------
 * Set the C++ version to 17 (`#221 <https://github.com/ros-controls/gazebo_ros2_control/issues/221>`_)
