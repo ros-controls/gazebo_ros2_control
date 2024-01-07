@@ -25,6 +25,7 @@
 #include "gazebo/sensors/SensorManager.hh"
 
 #include "hardware_interface/hardware_info.hpp"
+#include "hardware_interface/lexical_casts.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 
 struct MimicJoint
@@ -218,7 +219,7 @@ void GazeboSystem::registerJoints(
         hardware_info.joints.begin(), mimicked_joint_it);
       auto param_it = joint_info.parameters.find("multiplier");
       if (param_it != joint_info.parameters.end()) {
-        mimic_joint.multiplier = std::stod(joint_info.parameters.at("multiplier"));
+        mimic_joint.multiplier = hardware_interface::stod(joint_info.parameters.at("multiplier"));
       } else {
         mimic_joint.multiplier = 1.0;
       }
@@ -234,7 +235,7 @@ void GazeboSystem::registerJoints(
 
     auto get_initial_value = [this](const hardware_interface::InterfaceInfo & interface_info) {
         if (!interface_info.initial_value.empty()) {
-          double value = std::stod(interface_info.initial_value);
+          double value = hardware_interface::stod(interface_info.initial_value);
           RCLCPP_INFO(this->nh_->get_logger(), "\t\t\t found initial value: %f", value);
           return value;
         } else {
