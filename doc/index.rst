@@ -157,7 +157,7 @@ The *gazebo_ros2_control* ``<plugin>`` tag also has the following optional child
 * ``<robot_param_node>``: Name of the node where the ``robot_param`` is located, defaults to ``robot_state_publisher``
 * ``<parameters>``: YAML file with the configuration of the controllers
 * ``<hold_joints>``: if set to true (default), it will hold the joints' position if their interface was not claimed, e.g., the controller hasn't been activated yet.
-* ``<controller_manager_name>``: Set controller manager name (default: `controller_manager`)
+* ``<controller_manager_name>``: Set controller manager name (default: ``controller_manager``)
 
 Default gazebo_ros2_control Behavior
 -----------------------------------------------------------
