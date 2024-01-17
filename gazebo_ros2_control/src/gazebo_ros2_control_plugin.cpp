@@ -289,7 +289,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     std::make_unique<hardware_interface::ResourceManager>();
 
   try {
-    resource_manager_->load_urdf(urdf_string, false);
+    resource_manager_->load_urdf(urdf_string, false, false);
   } catch (...) {
     // This error should be normal as the resource manager is not supposed to load and initialize
     // them
