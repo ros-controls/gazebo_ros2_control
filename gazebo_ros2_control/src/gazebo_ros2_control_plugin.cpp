@@ -276,6 +276,13 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     std::make_unique<hardware_interface::ResourceManager>();
 
   try {
+    resource_manager_->load_urdf(urdf_string, false, false);
+  } catch (...) {
+    // This error should be normal as the resource manager is not supposed to load and initialize
+    // them
+    RCLCPP_ERROR(impl_->model_nh_->get_logger(), "Error initializing URDF to resource manager!");
+  }
+  try {
     impl_->robot_hw_sim_loader_.reset(
       new pluginlib::ClassLoader<gazebo_ros2_control::GazeboSystemInterface>(
         "gazebo_ros2_control",
