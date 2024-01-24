@@ -2,6 +2,16 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.1 (2024-01-24)
+------------------
+* Load the URDF to the resource_manager before parsing it to CM  (`#262 <https://github.com/ros-controls/gazebo_ros2_control//issues/262>`_)
+  * Load the URDF to the resource_manager before parsing it to CM constructor (fixes https://github.com/ros-controls/ros2_control/issues/1299)
+* Use lexical casts (`#260 <https://github.com/ros-controls/gazebo_ros2_control//issues/260>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Fix links in documentation (`#263 <https://github.com/ros-controls/gazebo_ros2_control//issues/263>`_)
+* Added controller manager xml argument (`#255 <https://github.com/ros-controls/gazebo_ros2_control//issues/255>`_)
+* Contributors: Alejandro Hernández Cordero, Christoph Fröhlich, Sai Kishor Kothakota, Silvio Traversaro
+
 0.7.0 (2024-01-04)
 ------------------
 * Add `hold_joints` parameter (`#251 <https://github.com/ros-controls/gazebo_ros2_control/issues/251>`_)

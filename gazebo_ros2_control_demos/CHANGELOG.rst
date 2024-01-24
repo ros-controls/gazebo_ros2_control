@@ -2,6 +2,9 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.1 (2024-01-24)
+------------------
+
 0.7.0 (2024-01-04)
 ------------------
 * replace Twist with TwistStamped (`#249 <https://github.com/ros-controls/gazebo_ros2_control/issues/249>`_)
