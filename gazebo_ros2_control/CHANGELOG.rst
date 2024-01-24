@@ -2,6 +2,18 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.6 (2024-01-24)
+------------------
+* Load the URDF to the resource_manager before parsing it to CM  (`#262 <https://github.com/ros-controls/gazebo_ros2_control//issues/262>`_) (`#266 <https://github.com/ros-controls/gazebo_ros2_control//issues/266>`_)
+  * Load the URDF to the resource_manager before parsing it to CM constructor (fixes https://github.com/ros-controls/ros2_control/issues/1299)
+  (cherry picked from commit f5baf71c4c7cb3c0a0af52f988c107b356c95ed0)
+  Co-authored-by: Sai Kishor Kothakota <saisastra3@gmail.com>
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Fix links in documentation (`#263 <https://github.com/ros-controls/gazebo_ros2_control//issues/263>`_) (`#264 <https://github.com/ros-controls/gazebo_ros2_control//issues/264>`_)
+  (cherry picked from commit d44b879615a539fc7c6c53707ec518df7bfd4f47)
+  Co-authored-by: Silvio Traversaro <silvio@traversaro.it>
+* Contributors: mergify[bot]
+
 0.4.5 (2024-01-04)
 ------------------
 * Fix stuck passive joints (`#237 <https://github.com/ros-controls/gazebo_ros2_control/issues/237>`_) (`#238 <https://github.com/ros-controls/gazebo_ros2_control/issues/238>`_)
