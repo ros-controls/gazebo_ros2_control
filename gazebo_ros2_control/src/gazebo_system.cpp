@@ -248,6 +248,7 @@ void GazeboSystem::registerJoints(
                 << " and state interface " << interface_info.name
                 << ". Actual value of parameter: " << interface_info.initial_value
                 << ". Initial value will be set to 0.0");
+            throw std::invalid_argument("Failed converting initial_value string");
           }
         }
         return initial_value;
