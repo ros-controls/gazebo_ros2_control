@@ -185,10 +185,9 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
   // Read urdf from ros parameter server
   std::string urdf_string;
-  urdf_string = impl_->getURDF(impl_->robot_description_);  
-  if (urdf_string.empty())
-  {
-    RCLCPP_ERROR_STREAM(impl_->model_nh_->get_logger(), "An empty URDF was passed. Exiting.");    
+  urdf_string = impl_->getURDF(impl_->robot_description_);
+  if (urdf_string.empty()) {
+    RCLCPP_ERROR_STREAM(impl_->model_nh_->get_logger(), "An empty URDF was passed. Exiting.");
     return;
   }
 
