@@ -209,15 +209,8 @@ void GazeboSystem::registerJoints(
       [this, joint_name](const hardware_interface::InterfaceInfo & interface_info) {
         double initial_value{0.0};
         if (!interface_info.initial_value.empty()) {
-<<<<<<< HEAD
-          double value = std::stod(interface_info.initial_value);
-          RCLCPP_INFO(this->nh_->get_logger(), "\t\t\t found initial value: %f", value);
-          return value;
-        } else {
-          return 0.0;
-=======
           try {
-            initial_value = hardware_interface::stod(interface_info.initial_value);
+            initial_value = std::stod(interface_info.initial_value);
             RCLCPP_INFO(this->nh_->get_logger(), "\t\t\t found initial value: %f", initial_value);
           } catch (std::invalid_argument &) {
             RCLCPP_ERROR_STREAM(
@@ -229,7 +222,6 @@ void GazeboSystem::registerJoints(
                 << ". Initial value will be set to 0.0");
             throw std::invalid_argument("Failed converting initial_value string");
           }
->>>>>>> cdae6b8 (Fix crashing due to an invalid parameter in the initial value. (#271))
         }
         return initial_value;
       };
