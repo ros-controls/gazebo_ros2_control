@@ -196,6 +196,14 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     controllerManagerNodeName = sdf->GetElement("controller_manager_name")->Get<std::string>();
   }
 
+  // Read urdf from ros parameter server
+  std::string urdf_string;
+  urdf_string = impl_->getURDF(impl_->robot_description_);
+  if (urdf_string.empty()) {
+    RCLCPP_ERROR_STREAM(impl_->model_nh_->get_logger(), "An empty URDF was passed. Exiting.");
+    return;
+  }
+
   // There's currently no direct way to set parameters to the plugin's node
   // So we have to parse the plugin file manually and set it to the node's context.
   auto rcl_context = impl_->model_nh_->get_node_base_interface()->get_context()->get_rcl_context();
@@ -214,6 +222,12 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     RCLCPP_ERROR(
       impl_->model_nh_->get_logger(), "No parameter file provided. Configuration might be wrong");
   }
+
+  // set the robot description parameter
+  // to propagate it among controller manager and controllers
+  std::string rb_arg = std::string("robot_description:=") + urdf_string;
+  arguments.push_back(RCL_PARAM_FLAG);
+  arguments.push_back(rb_arg);
 
   if (sdf->HasElement("ros")) {
     sdf = sdf->GetElement("ros");
@@ -270,13 +284,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       std::chrono::duration<double>(
         impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize())));
 
-  // Read urdf from ros parameter server then
   // setup actuators and mechanism control node.
   // This call will block if ROS is not properly initialized.
-  std::string urdf_string;
   std::vector<hardware_interface::HardwareInfo> control_hardware_info;
   try {
-    urdf_string = impl_->getURDF(impl_->robot_description_);
     control_hardware_info = hardware_interface::parse_control_resources_from_urdf(urdf_string);
   } catch (const std::runtime_error & ex) {
     RCLCPP_ERROR_STREAM(
@@ -465,7 +476,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
       RCLCPP_ERROR(
         model_nh_->get_logger(), "Interrupted while waiting for %s service. Exiting.",
         robot_description_node_.c_str());
-      return 0;
+      return "";
     }
     RCLCPP_ERROR(
       model_nh_->get_logger(), "%s service not available, waiting again...",
