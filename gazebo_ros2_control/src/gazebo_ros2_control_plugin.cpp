@@ -36,6 +36,8 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 #include "gazebo_ros/node.hpp"
 
@@ -506,7 +508,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
         model_nh_->get_logger(), "gazebo_ros2_control plugin is waiting for model"
         " URDF in parameter [%s] on the ROS param server.", param_name.c_str());
     }
-    usleep(100000);
+    std::this_thread::sleep_for(std::chrono::microseconds(100000));
   }
   RCLCPP_INFO(
     model_nh_->get_logger(), "Received urdf from param server, parsing...");
