@@ -56,7 +56,7 @@ def generate_launch_description():
                                    '-entity', 'tricycle'],
                         output='screen')
 
-    load_joint_state_controller = ExecuteProcess(
+    load_joint_state_broadcaster = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster'],
         output='screen'
@@ -69,25 +69,25 @@ def generate_launch_description():
     )
 
     rviz = Node(
-        package="rviz2",
-        executable="rviz2",
+        package='rviz2',
+        executable='rviz2',
         arguments=[
-            "-d",
-            os.path.join(gazebo_ros2_control_demos_path, "config/config.rviz"),
+            '-d',
+            os.path.join(gazebo_ros2_control_demos_path, 'config/config.rviz'),
         ],
-        output="screen",
+        output='screen',
     )
 
     return LaunchDescription([
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=spawn_entity,
-                on_exit=[load_joint_state_controller],
+                on_exit=[load_joint_state_broadcaster],
             )
         ),
         RegisterEventHandler(
             event_handler=OnProcessExit(
-                target_action=load_joint_state_controller,
+                target_action=load_joint_state_broadcaster,
                 on_exit=[load_tricycle_controller],
             )
         ),

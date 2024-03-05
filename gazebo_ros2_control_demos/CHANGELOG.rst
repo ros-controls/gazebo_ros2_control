@@ -2,6 +2,39 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.1 (2024-01-24)
+------------------
+
+0.7.0 (2024-01-04)
+------------------
+* replace Twist with TwistStamped (`#249 <https://github.com/ros-controls/gazebo_ros2_control/issues/249>`_)
+* Rename cartpole (`#252 <https://github.com/ros-controls/gazebo_ros2_control/issues/252>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Replace double quotes with single ones (`#243 <https://github.com/ros-controls/gazebo_ros2_control/issues/243>`_)
+* Cleanup controller config (`#232 <https://github.com/ros-controls/gazebo_ros2_control/issues/232>`_)
+  * Remove wrong yaml entries
+  * Rename effort_controller
+* Contributors: Alejandro Hernández Cordero, Christoph Fröhlich
+
+0.6.2 (2023-08-23)
+------------------
+* Set the C++ version to 17 (`#221 <https://github.com/ros-controls/gazebo_ros2_control/issues/221>`_)
+* Update diff_drive_controller.yaml (`#224 <https://github.com/ros-controls/gazebo_ros2_control/issues/224>`_)
+  The wrong base frame is set. The name of the link in the URDF is chassis.
+* Contributors: Alejandro Hernández Cordero, David V. Lu!!
+
+0.6.1 (2023-06-09)
+------------------
+* Add pre-commit and CI-format (`#206 <https://github.com/ros-controls/gazebo_ros2_control/issues/206>`_)
+  * Add pre-commit and ci-format
+* Contributors: Christoph Fröhlich
+
+0.6.0 (2023-05-23)
+------------------
+* Clean shutdown position example (`#196 <https://github.com/ros-controls/gazebo_ros2_control/issues/196>`_)
+* Remove publish_rate parameter (`#179 <https://github.com/ros-controls/gazebo_ros2_control/issues/179>`_)
+* Contributors: Alejandro Hernández Cordero, Tony Najjar
+
 0.5.1 (2023-02-07)
 ------------------
 

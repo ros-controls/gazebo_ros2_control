@@ -1,0 +1,83 @@
+name: gazebo_ros2_control CI - iron
+
+on:
+  pull_request:
+    branches:
+      - iron
+  push:
+    branches:
+      - iron
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:iron-desktop
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup colcon workspace
+      id: configure
+      run: |
+        cd ..
+        mkdir -p /home/ros2_ws/src
+        cp -r gazebo_ros2_control /home/ros2_ws/src/
+        apt-get update && apt-get upgrade -q -y
+        apt-get update && apt-get install -q -y --no-install-recommends \
+          dirmngr \
+          gnupg2 \
+          lsb-release \
+          python3-colcon-ros
+        cd /home/ros2_ws/src/
+        rosdep update
+        rosdep install --from-paths ./ -i -y --rosdistro iron \
+          --ignore-src
+    - name: Build project
+      id: build
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/iron/local_setup.sh
+        colcon build --packages-up-to gazebo_ros2_control_demos
+    - name: Run tests
+      id: test
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/iron/local_setup.sh
+        colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
+        colcon test-result
+  build_testing:
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:iron-desktop
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup colcon workspace
+      id: configure
+      run: |
+        cd ..
+        mkdir -p /home/ros2_ws/src
+        cp -r gazebo_ros2_control /home/ros2_ws/src/
+        curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+        sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2-testing/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+        apt-get update && apt-get upgrade -q -y
+        apt-get update && apt-get install -q -y --no-install-recommends \
+          dirmngr \
+          gnupg2 \
+          lsb-release \
+          python3-colcon-ros
+        cd /home/ros2_ws/src/
+        rosdep update
+        rosdep install --from-paths ./ -i -y --rosdistro iron \
+          --ignore-src
+    - name: Build project
+      id: build
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/iron/local_setup.sh
+        colcon build --packages-up-to gazebo_ros2_control_demos
+    - name: Run tests
+      id: test
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/iron/local_setup.sh
+        colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
+        colcon test-result
