@@ -74,6 +74,7 @@ public:
   bool initSim(
     rclcpp::Node::SharedPtr & model_nh,
     gazebo::physics::ModelPtr parent_model,
+    gazebo::transport::NodePtr & transport_nh,
     const hardware_interface::HardwareInfo & hardware_info,
     sdf::ElementPtr sdf) override;
 
@@ -83,6 +84,10 @@ private:
     gazebo::physics::ModelPtr parent_model);
 
   void registerSensors(
+    const hardware_interface::HardwareInfo & hardware_info,
+    gazebo::physics::ModelPtr parent_model);
+
+  void registerGazeboTopics(
     const hardware_interface::HardwareInfo & hardware_info,
     gazebo::physics::ModelPtr parent_model);
 
