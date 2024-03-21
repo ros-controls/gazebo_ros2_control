@@ -2,6 +2,13 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.7 (2024-03-21)
+------------------
+* Cleanup of demos (`#290 <https://github.com/ros-controls/gazebo_ros2_control/issues/290>`_) (`#292 <https://github.com/ros-controls/gazebo_ros2_control/issues/292>`_)
+  (cherry picked from commit 03b853b5337f6b8e9b8d4c0c8a3d814d7f34a97c)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Contributors: mergify[bot]
+
 0.4.6 (2024-01-24)
 ------------------
 

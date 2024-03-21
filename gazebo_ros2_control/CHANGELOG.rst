@@ -2,6 +2,20 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.7 (2024-03-21)
+------------------
+* Update gazebo_ros2_control_plugin.cpp (`#286 <https://github.com/ros-controls/gazebo_ros2_control/issues/286>`_) (`#287 <https://github.com/ros-controls/gazebo_ros2_control/issues/287>`_)
+  (cherry picked from commit 5e1f9a52bcd1bf4164186dbb3c8b5cf070ed156e)
+  Co-authored-by: Tobias Fischer <info@tobiasfischer.info>
+* set the robot description parameter (`#277 <https://github.com/ros-controls/gazebo_ros2_control/issues/277>`_)
+* Fix crashing due to an invalid parameter in the initial value. (backport `#271 <https://github.com/ros-controls/gazebo_ros2_control/issues/271>`_) (`#282 <https://github.com/ros-controls/gazebo_ros2_control/issues/282>`_)
+  * Fix crashing due to an invalid parameter in the initial value. (`#271 <https://github.com/ros-controls/gazebo_ros2_control/issues/271>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  (cherry picked from commit cdae6b8a8f638d87146482e99bf76cf36530e5a6)
+  Co-authored-by: Wiktor Bajor <69388767+Wiktor-99@users.noreply.github.com>
+  Co-authored-by: Alejandro Hernandez Cordero <ahcorde@gmail.com>
+* Contributors: AB, mergify[bot]
+
 0.4.6 (2024-01-24)
 ------------------
 * Load the URDF to the resource_manager before parsing it to CM  (`#262 <https://github.com/ros-controls/gazebo_ros2_control//issues/262>`_) (`#266 <https://github.com/ros-controls/gazebo_ros2_control//issues/266>`_)
