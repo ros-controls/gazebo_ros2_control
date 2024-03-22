@@ -34,6 +34,73 @@ struct MimicJoint
   double multiplier = 1.0;
 };
 
+class PID
+{
+  public: 
+    PID(double kp=0.0, double ki=0.0, double kd=0.0, double max_integral_error=std::numeric_limits<double>::max())
+    {
+      this->kp = kp;
+      this->ki = ki;
+      this->kd = kd;
+      this->max_integral_error = max_integral_error;
+      this->integral_error = 0;
+      this->lastError = 0;
+      this->init = false;
+    };
+
+    double getCMD(double state, double goal, double dt)
+    {
+        double error = goal-state;
+        double e_prime = (error-this->lastError)/dt;
+        this->lastError = error;
+        
+        this->integral_error += error*dt;
+
+        if(this->integral_error > this->max_integral_error)
+        {
+          this->integral_error = this->max_integral_error;
+        }
+
+        if(this->integral_error < -this->max_integral_error)
+        {
+          this->integral_error = -this->max_integral_error;
+        }
+       
+        double kd_cmd = this->kd*(0-e_prime);
+        double kp_cmd = this->kp*error;
+        double ki_cmd = this->ki*this->integral_error;
+
+        if(init)
+        {
+          return kd_cmd+kp_cmd+ki_cmd;
+        }
+        else
+        {
+          return kp_cmd+ki_cmd;
+        }
+        
+        // return kp_cmd+ki_cmd;
+    };
+    
+    bool isUse()
+    {
+      return kp!= 0.0 || ki != 0.0 || kd != 0.0 ;
+    }
+
+  private:
+    double kp;
+    double ki;
+    double kd;
+    double max_integral_error;
+    double integral_error;
+    double lastError;
+    bool init;
+};
+
+
+
+
+
 class gazebo_ros2_control::GazeboSystemPrivate
 {
 public:
@@ -82,6 +149,9 @@ public:
 
   /// \brief vector with the current cmd joint effort
   std::vector<double> joint_effort_cmd_;
+
+  /// \brief Joint PID utils
+  std::vector<PID> pid;
 
   /// \brief handles to the imus from within Gazebo
   std::vector<gazebo::sensors::ImuSensorPtr> sim_imu_sensors_;
@@ -154,6 +224,8 @@ void GazeboSystem::registerJoints(
   this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->pid.resize(this->dataPtr->n_dof_);
+
 
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     auto & joint_info = hardware_info.joints[j];
@@ -170,6 +242,51 @@ void GazeboSystem::registerJoints(
 
     // Accept this joint and continue configuration
     RCLCPP_INFO_STREAM(this->nh_->get_logger(), "Loading joint: " << joint_name);
+    
+    double kp;
+    double ki;
+    double kd;
+    double max_integral_error;
+
+    if (joint_info.parameters.find("kp") != joint_info.parameters.end()){
+      kp = std::stod(joint_info.parameters.at("kp"));
+    }
+    else
+    {
+      kp = 0.0;
+    }
+
+    if (joint_info.parameters.find("ki") != joint_info.parameters.end()){
+      ki = std::stod(joint_info.parameters.at("ki"));
+    }
+    else
+    {
+      ki = 0.0;
+    }
+
+    if (joint_info.parameters.find("kd") != joint_info.parameters.end()){
+      kd = std::stod(joint_info.parameters.at("kd"));
+    }
+    else
+    {
+      kd = 0.0;
+    }
+
+    if (joint_info.parameters.find("max_integral_error") != joint_info.parameters.end()){
+      max_integral_error = std::stod(joint_info.parameters.at("max_integral_error"));
+    }
+    else
+    {
+      max_integral_error = std::numeric_limits<double>::max();
+    }
+
+    this->dataPtr->pid[j] = PID(kp,ki,kd,max_integral_error);
+
+    if(this->dataPtr->pid[j].isUse())
+    {
+      RCLCPP_INFO_STREAM(this->nh_->get_logger(), "setting kp=" << kp <<" ki=" << ki <<" kd=" << kd <<" max_integral_error=" << max_integral_error);
+    }
+    
 
     std::string suffix = "";
 
@@ -603,16 +720,52 @@ hardware_interface::return_type GazeboSystem::write(
     }
   }
 
+  double dt = sim_period.seconds();
+
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
-    if (this->dataPtr->sim_joints_[j]) {
-      if (this->dataPtr->joint_control_methods_[j] & POSITION) {
-        this->dataPtr->sim_joints_[j]->SetPosition(0, this->dataPtr->joint_position_cmd_[j], true);
-        this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
-      } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY) { // NOLINT
-        this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
-      } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) { // NOLINT
+    if (this->dataPtr->sim_joints_[j]) 
+    {
+      if (this->dataPtr->joint_control_methods_[j] & POSITION) 
+      {
+        double pos_goal = this->dataPtr->joint_position_cmd_[j];
+        if(this->dataPtr->pid[j].isUse())
+        {
+          double pos = this->dataPtr->sim_joints_[j]->Position(0);
+          double cmd = this->dataPtr->pid[j].getCMD(pos,pos_goal,dt);
+       
+          this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
+        }
+        else
+        {
+          this->dataPtr->sim_joints_[j]->SetPosition(0, this->dataPtr->joint_position_cmd_[j], true);
+          this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
+        }
+        
+      } 
+      else if (this->dataPtr->joint_control_methods_[j] & VELOCITY) 
+      { 
+        
+        double vel_goal = this->dataPtr->joint_velocity_cmd_[j];
+
+        if(this->dataPtr->pid[j].isUse())
+        {
+          double vel = this->dataPtr->sim_joints_[j]->GetVelocity(0);
+          double cmd = this->dataPtr->pid[j].getCMD(vel,vel_goal,dt);
+       
+          this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
+        }
+        else
+        {
+          this->dataPtr->sim_joints_[j]->SetVelocity(0, vel_goal);
+        }
+        
+      } 
+      else if (this->dataPtr->joint_control_methods_[j] & EFFORT) 
+      { 
         this->dataPtr->sim_joints_[j]->SetForce(0, this->dataPtr->joint_effort_cmd_[j]);
-      } else if (this->dataPtr->is_joint_actuated_[j]) {
+      } 
+      else if (this->dataPtr->is_joint_actuated_[j]) 
+      {
         // Fallback case is a velocity command of zero (only for actuated joints)
         this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
       }
