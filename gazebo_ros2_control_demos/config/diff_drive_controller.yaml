@@ -24,7 +24,7 @@ diff_drive_base_controller:
 
     publish_rate: 50.0
     odom_frame_id: odom
-    base_frame_id: base_link
+    base_frame_id: chassis
     pose_covariance_diagonal : [0.001, 0.001, 0.0, 0.0, 0.0, 0.01]
     twist_covariance_diagonal: [0.001, 0.0, 0.0, 0.0, 0.0, 0.01]
 
@@ -33,7 +33,7 @@ diff_drive_base_controller:
 
     cmd_vel_timeout: 0.5
     #publish_limited_velocity: true
-    use_stamped_vel: false
+    use_stamped_vel: true
     #velocity_rolling_window_size: 10
 
     # Velocity and acceleration limits
