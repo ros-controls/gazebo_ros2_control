@@ -26,6 +26,7 @@
 #include "angles/angles.h"
 
 #include "control_toolbox/pid.hpp"
+
 #include "gazebo_ros2_control/gazebo_system_interface.hpp"
 
 #include "std_msgs/msg/bool.hpp"
@@ -42,7 +43,7 @@ class GazeboSystemPrivate;
 
 class GazeboSystem : public GazeboSystemInterface
 {
-public:
+ public:
   // Documentation Inherited
   CallbackReturn on_init(const hardware_interface::HardwareInfo & system_info)
   override;
@@ -81,7 +82,7 @@ public:
     const hardware_interface::HardwareInfo & hardware_info,
     sdf::ElementPtr sdf) override;
 
-private:
+ private:
   void registerJoints(
     const hardware_interface::HardwareInfo & hardware_info,
     gazebo::physics::ModelPtr parent_model);
@@ -90,7 +91,7 @@ private:
     const hardware_interface::HardwareInfo & hardware_info,
     gazebo::physics::ModelPtr parent_model);
 
-  control_toolbox::Pid extractPID(std::string prefix, 
+  control_toolbox::Pid extractPID(std::string prefix,
       hardware_interface::ComponentInfo joint_info);
 
   /// \brief Private data class

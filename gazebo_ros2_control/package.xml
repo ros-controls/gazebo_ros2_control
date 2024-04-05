@@ -19,15 +19,15 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>angles</depend>
+  <depend>controller_manager</depend>
+  <depend>control_toolbox</depend>
   <depend>gazebo_dev</depend>
   <depend>gazebo_ros</depend>
-  <depend>controller_manager</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
   <depend>yaml_cpp_vendor</depend>
-  <depend>control_toolbox</depend>
 
   <test_depend>ament_lint_common</test_depend>
   <test_depend>ament_lint_auto</test_depend>

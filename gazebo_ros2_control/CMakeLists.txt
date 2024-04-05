@@ -4,10 +4,10 @@ project(gazebo_ros2_control)
 find_package(ament_cmake REQUIRED)
 find_package(angles REQUIRED)
 find_package(controller_manager REQUIRED)
+find_package(control_toolbox REQUIRED)
 find_package(gazebo_dev REQUIRED)
 find_package(gazebo_ros REQUIRED)
 find_package(hardware_interface REQUIRED)
-find_package(control_toolbox REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
@@ -34,12 +34,12 @@ add_library(${PROJECT_NAME} SHARED
 ament_target_dependencies(${PROJECT_NAME}
   angles
   controller_manager
+  control_toolbox
   gazebo_dev
   gazebo_ros
   hardware_interface
   pluginlib
   rclcpp
-  control_toolbox
   yaml_cpp_vendor
 )
 
@@ -48,9 +48,9 @@ add_library(gazebo_hardware_plugins SHARED
 )
 ament_target_dependencies(gazebo_hardware_plugins
   angles
+  control_toolbox
   gazebo_dev
   hardware_interface
-  control_toolbox
   rclcpp
 )
 
