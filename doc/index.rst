@@ -101,16 +101,19 @@ include
 Using mimic joints in simulation
 -----------------------------------------------------------
 
-To use ``mimic`` joints in *gazebo_ros2_control* you should define its parameters to your URDF.
-We should include:
-
-* ``<mimic>`` tag to the mimicked joint `detailed manual <https://wiki.ros.org/urdf/XML/joint>`__
-* ``mimic`` and ``multiplier`` parameters to joint definition in ``<ros2_control>`` tag
+To use ``mimic`` joints in *gazebo_ros2_control* you should define its parameters in your URDF, i.e, the ``<mimic>`` tag to the mimicked joint `detailed manual <https://wiki.ros.org/urdf/XML/joint>`__
 
 .. code-block:: xml
 
+  <joint name="right_finger_joint" type="prismatic">
+    <axis xyz="0 1 0"/>
+    <origin xyz="0.0 -0.48 1" rpy="0.0 0.0 0.0"/>
+    <parent link="base"/>
+    <child link="finger_right"/>
+    <limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
+  </joint>
   <joint name="left_finger_joint" type="prismatic">
-    <mimic joint="right_finger_joint"/>
+    <mimic joint="right_finger_joint" multiplier="1" offset="0"/>
     <axis xyz="0 1 0"/>
     <origin xyz="0.0 0.48 1" rpy="0.0 0.0 3.1415926535"/>
     <parent link="base"/>
@@ -118,18 +121,8 @@ We should include:
     <limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
   </joint>
 
-
-.. code-block:: xml
-
-  <joint name="left_finger_joint">
-    <param name="mimic">right_finger_joint</param>
-    <param name="multiplier">1</param>
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-    <state_interface name="effort"/>
-  </joint>
-
+The mimic joint must not have command interfaces configured in the ``<ros2_control>`` tag, but state interfaces can be configured.
+Independent of the interface type of the mimicked joint in the ``<ros2_control>`` tag, the mimic joint will use the position interface of the gazebo classic physic engine to follow the position of the mimicked joint.
 
 Add the gazebo_ros2_control plugin
 ==========================================
