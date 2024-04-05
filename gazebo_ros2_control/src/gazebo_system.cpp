@@ -359,20 +359,22 @@ void GazeboSystem::registerJoints(
         }
         has_already_register_pos = true; 
         
-        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << joint_info.command_interfaces[i].name);
-        this->dataPtr->is_pos_pid[j]=(joint_info.command_interfaces[i].name =="position_pid");
+        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t " << joint_info.command_interfaces[i].name);        
 
         if(joint_info.command_interfaces[i].name =="position_pid")
         {
           this->dataPtr->is_pos_pid[j] = true;
           this->dataPtr->pos_pid[j] = this->extractPID(POSITION_PID_PARAMS_PREFIX, joint_info);
         }
+        else
+        {
+          this->dataPtr->is_pos_pid[j]=false;
+        }
 
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name + suffix,
           hardware_interface::HW_IF_POSITION,
           &this->dataPtr->joint_position_cmd_[j]);
-          this->dataPtr->is_pos_pid[j]=false;
 
         if (!std::isnan(initial_position)) {
           this->dataPtr->joint_position_cmd_[j] = initial_position;
