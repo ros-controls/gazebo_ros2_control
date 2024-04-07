@@ -43,7 +43,7 @@ class GazeboSystemPrivate;
 
 class GazeboSystem : public GazeboSystemInterface
 {
- public:
+public:
   // Documentation Inherited
   CallbackReturn on_init(const hardware_interface::HardwareInfo & system_info)
   override;
@@ -82,7 +82,7 @@ class GazeboSystem : public GazeboSystemInterface
     const hardware_interface::HardwareInfo & hardware_info,
     sdf::ElementPtr sdf) override;
 
- private:
+private:
   void registerJoints(
     const hardware_interface::HardwareInfo & hardware_info,
     gazebo::physics::ModelPtr parent_model);
@@ -91,8 +91,9 @@ class GazeboSystem : public GazeboSystemInterface
     const hardware_interface::HardwareInfo & hardware_info,
     gazebo::physics::ModelPtr parent_model);
 
-  control_toolbox::Pid extractPID(std::string prefix,
-      hardware_interface::ComponentInfo joint_info);
+  control_toolbox::Pid extractPID(
+    std::string prefix,
+    hardware_interface::ComponentInfo joint_info);
 
   /// \brief Private data class
   std::unique_ptr<GazeboSystemPrivate> dataPtr;
