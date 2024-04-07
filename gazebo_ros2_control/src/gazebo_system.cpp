@@ -314,6 +314,15 @@ void GazeboSystem::registerJoints(
     // check if joint is actuated (has command interfaces) or passive
     this->dataPtr->is_joint_actuated_[j] = (joint_info.command_interfaces.size() > 0);
   }
+
+  // set initial position for mimic joints
+  for (const auto & mimic_joint : hardware_info.mimic_joints) {
+    this->dataPtr->sim_joints_[mimic_joint.joint_index]->SetPosition(
+      0,
+      mimic_joint.offset + mimic_joint.multiplier *
+      this->dataPtr->joint_position_[mimic_joint.mimicked_joint_index],
+      true);
+  }
 }
 
 void GazeboSystem::registerSensors(
