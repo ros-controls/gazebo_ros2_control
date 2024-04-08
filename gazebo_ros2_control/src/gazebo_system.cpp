@@ -19,6 +19,8 @@
 #include <vector>
 #include <utility>
 
+#include <control_toolbox/pid.hpp>
+
 #include "gazebo_ros2_control/gazebo_system.hpp"
 #include "gazebo/sensors/ImuSensor.hh"
 #include "gazebo/sensors/ForceTorqueSensor.hh"
@@ -204,10 +206,10 @@ control_toolbox::Pid GazeboSystem::extractPID(
 
   RCLCPP_INFO_STREAM(
     this->nh_->get_logger(),
-    "setting kp=" << kp
-                  << " ki=" << ki
-                  << " kd=" << kd
-                  << " max_integral_error=" << max_integral_error);
+    "Setting kp = " << kp << "\t"
+                    << " ki = " << ki << "\t"
+                    << " kd = " << kd << "\t"
+                    << " max_integral_error = " << max_integral_error);
 
   return control_toolbox::Pid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
 }
@@ -371,7 +373,6 @@ void GazeboSystem::registerJoints(
           joint_name + suffix,
           hardware_interface::HW_IF_POSITION,
           &this->dataPtr->joint_position_cmd_[j]);
-
         if (!std::isnan(initial_position)) {
           this->dataPtr->joint_position_cmd_[j] = initial_position;
         }

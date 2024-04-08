@@ -12,4 +12,3 @@ position_controller:
   ros__parameters:
     joints:
       - slider_to_cart
-

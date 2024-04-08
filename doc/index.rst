@@ -134,7 +134,7 @@ We should include:
 Using PID control joints
 -----------------------------------------------------------
 
-To use PID control joints in gazebo_ros2_control, you should define their parameters inside the ``<joint>`` tag 
+To use PID control joints in gazebo_ros2_control, you should define their parameters inside the ``<joint>`` tag
 within the ``<ros2_control>`` tag. These PID joints can be controlled either in position or velocity.
 
 - To control a joint with velocity PID, simply set its ``command_interface`` to ``velocity_PID``.
