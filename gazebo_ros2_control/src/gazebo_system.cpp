@@ -536,9 +536,8 @@ GazeboSystem::perform_command_mode_switch(
 
   // mimic joint has always position control mode
   for (const auto & mimic_joint : this->info_.mimic_joints) {
-    this->dataPtr->joint_control_methods_[mimic_joint.joint_index] &=
-      static_cast<ControlMethod_>(VELOCITY & EFFORT);
-    this->dataPtr->joint_control_methods_[mimic_joint.joint_index] |= POSITION;
+    this->dataPtr->joint_control_methods_[mimic_joint.joint_index] =
+      static_cast<ControlMethod>(POSITION);
   }
   return hardware_interface::return_type::OK;
 }
