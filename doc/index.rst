@@ -101,7 +101,7 @@ include
 Using mimic joints in simulation
 -----------------------------------------------------------
 
-To use ``mimic`` joints in *gazebo_ros2_control* you should define its parameters in your URDF, i.e, the ``<mimic>`` tag to the mimicked joint `detailed manual <https://wiki.ros.org/urdf/XML/joint>`__
+To use ``mimic`` joints in *gazebo_ros2_control* you should define its parameters in your URDF, i.e, set the ``<mimic>`` tag to the mimicked joint (see the `URDF specification <https://wiki.ros.org/urdf/XML/joint>`__)
 
 .. code-block:: xml
 
