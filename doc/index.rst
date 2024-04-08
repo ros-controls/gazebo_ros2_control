@@ -122,7 +122,10 @@ To use ``mimic`` joints in *gazebo_ros2_control* you should define its parameter
   </joint>
 
 The mimic joint must not have command interfaces configured in the ``<ros2_control>`` tag, but state interfaces can be configured.
-Independent of the interface type of the mimicked joint in the ``<ros2_control>`` tag, the mimic joint will use the position interface of the gazebo classic physic engine to follow the position of the mimicked joint.
+
+.. note::
+
+  Independent of the interface type of the mimicked joint in the ``<ros2_control>`` tag, the mimic joint will use the position interface of the gazebo classic physic engine to follow the position of the mimicked joint.
 
 Add the gazebo_ros2_control plugin
 ==========================================
