@@ -691,13 +691,13 @@ hardware_interface::return_type GazeboSystem::read(
 
   for (unsigned int j = 0; j < this->dataPtr->sim_ft_sensors_.size(); j++) {
     auto sim_ft_sensor = this->dataPtr->sim_ft_sensors_[j];
-    this->dataPtr->imu_sensor_data_[j][0] = sim_ft_sensor->Force().X();
-    this->dataPtr->imu_sensor_data_[j][1] = sim_ft_sensor->Force().Y();
-    this->dataPtr->imu_sensor_data_[j][2] = sim_ft_sensor->Force().Z();
+    this->dataPtr->ft_sensor_data_[j][0] = sim_ft_sensor->Force().X();
+    this->dataPtr->ft_sensor_data_[j][1] = sim_ft_sensor->Force().Y();
+    this->dataPtr->ft_sensor_data_[j][2] = sim_ft_sensor->Force().Z();
 
-    this->dataPtr->imu_sensor_data_[j][3] = sim_ft_sensor->Torque().X();
-    this->dataPtr->imu_sensor_data_[j][4] = sim_ft_sensor->Torque().Y();
-    this->dataPtr->imu_sensor_data_[j][5] = sim_ft_sensor->Torque().Z();
+    this->dataPtr->ft_sensor_data_[j][3] = sim_ft_sensor->Torque().X();
+    this->dataPtr->ft_sensor_data_[j][4] = sim_ft_sensor->Torque().Y();
+    this->dataPtr->ft_sensor_data_[j][5] = sim_ft_sensor->Torque().Z();
   }
   return hardware_interface::return_type::OK;
 }
