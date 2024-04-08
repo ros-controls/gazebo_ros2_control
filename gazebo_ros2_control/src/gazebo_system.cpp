@@ -319,8 +319,8 @@ void GazeboSystem::registerJoints(
   for (const auto & mimic_joint : hardware_info.mimic_joints) {
     this->dataPtr->sim_joints_[mimic_joint.joint_index]->SetPosition(
       0,
-      mimic_joint.offset + mimic_joint.multiplier *
-      this->dataPtr->joint_position_[mimic_joint.mimicked_joint_index],
+      mimic_joint.offset + (mimic_joint.multiplier *
+      this->dataPtr->joint_position_[mimic_joint.mimicked_joint_index]),
       true);
   }
 }
