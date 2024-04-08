@@ -226,7 +226,7 @@ void GazeboSystem::registerJoints(
       RCLCPP_INFO_STREAM(
         this->nh_->get_logger(),
         "Joint '" << joint_name << "'is mimicking joint '" << mimicked_joint <<
-          "' with mutiplier: " << mimic_joint.multiplier);
+          "' with multiplier: " << mimic_joint.multiplier);
       this->dataPtr->mimic_joints_.push_back(mimic_joint);
       suffix = "_mimic";
     }
