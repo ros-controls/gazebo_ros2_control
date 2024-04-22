@@ -254,7 +254,7 @@ The following example shows a parallel gripper with a mimic joint:
   ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
 
 .. image:: img/gripper.gif
-  :alt: Cart
+  :alt: Gripper
 
 To demonstrate the setup of the initial position and a position-mimicked joint in
 case of an effort command interface of the joint to be mimicked, run
