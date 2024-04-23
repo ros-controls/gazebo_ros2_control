@@ -33,7 +33,7 @@ def generate_launch_description():
                 [FindPackageShare(
                     'gazebo_ros2_control_demos'),
                     'urdf',
-                    'test_gripper_mimic_joint.xacro.urdf']
+                    'test_gripper_mimic_joint_effort.xacro.urdf']
             ),
         ]
     )
