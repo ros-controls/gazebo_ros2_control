@@ -248,7 +248,6 @@ When the Gazebo world is launched you can run some of the following commands to 
 
 The following example shows a parallel gripper with a mimic joint:
 
-
 .. code-block:: shell
 
   ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
