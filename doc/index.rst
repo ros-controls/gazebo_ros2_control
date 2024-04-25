@@ -305,9 +305,9 @@ degree of freedom on the rail, and the physics of the passive joint of the pendu
 
 .. note::
 
-  If the position command interface is used instead, the motion of the pendulum is not calculated correctly and does not move at all, see the following example. This also holds true if a mimicked joint with position interface is used.
+  If the position command interface is used instead, the motion of the pendulum is not calculated correctly and does not move at all, see this `PR <https://github.com/ros-controls/gazebo_ros2_control/issues/240>`__. This also holds true if a mimicked joint with position interface is used. To demonstrate this, run
 
-.. code-block:: shell
+  .. code-block:: shell
 
-  ros2 launch gazebo_ros2_control_demos pendulum_example_position.launch.py
-  ros2 run gazebo_ros2_control_demos example_position
+    ros2 launch gazebo_ros2_control_demos pendulum_example_position.launch.py
+    ros2 run gazebo_ros2_control_demos example_position
