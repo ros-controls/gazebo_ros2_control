@@ -101,16 +101,19 @@ include
 Using mimic joints in simulation
 -----------------------------------------------------------
 
-To use ``mimic`` joints in *gazebo_ros2_control* you should define its parameters to your URDF.
-We should include:
-
-* ``<mimic>`` tag to the mimicked joint `detailed manual <https://wiki.ros.org/urdf/XML/joint>`__
-* ``mimic`` and ``multiplier`` parameters to joint definition in ``<ros2_control>`` tag
+To use ``mimic`` joints in *gazebo_ros2_control* you should define its parameters in your URDF, i.e, set the ``<mimic>`` tag to the mimicked joint (see the `URDF specification <https://wiki.ros.org/urdf/XML/joint>`__)
 
 .. code-block:: xml
 
+  <joint name="right_finger_joint" type="prismatic">
+    <axis xyz="0 1 0"/>
+    <origin xyz="0.0 -0.48 1" rpy="0.0 0.0 0.0"/>
+    <parent link="base"/>
+    <child link="finger_right"/>
+    <limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
+  </joint>
   <joint name="left_finger_joint" type="prismatic">
-    <mimic joint="right_finger_joint"/>
+    <mimic joint="right_finger_joint" multiplier="1" offset="0"/>
     <axis xyz="0 1 0"/>
     <origin xyz="0.0 0.48 1" rpy="0.0 0.0 3.1415926535"/>
     <parent link="base"/>
@@ -118,18 +121,11 @@ We should include:
     <limit effort="1000.0" lower="0" upper="0.38" velocity="10"/>
   </joint>
 
+The mimic joint must not have command interfaces configured in the ``<ros2_control>`` tag, but state interfaces can be configured.
 
-.. code-block:: xml
+.. note::
 
-  <joint name="left_finger_joint">
-    <param name="mimic">right_finger_joint</param>
-    <param name="multiplier">1</param>
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-    <state_interface name="effort"/>
-  </joint>
-
+  Independent of the interface type of the mimicked joint in the ``<ros2_control>`` tag, the mimic joint will use the position interface of the gazebo classic physic engine to follow the position of the mimicked joint.
 
 Add the gazebo_ros2_control plugin
 ==========================================
@@ -146,7 +142,8 @@ robot hardware interfaces between *ros2_control* and Gazebo Classic.
       <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
         <robot_param>robot_description</robot_param>
         <robot_param_node>robot_state_publisher</robot_param_node>
-        <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+        <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
+        <controller_manager_name>simulation_controller_manager</controller_manager_name>
       </plugin>
   </gazebo>
 
@@ -155,6 +152,8 @@ The *gazebo_ros2_control* ``<plugin>`` tag also has the following optional child
 * ``<robot_param>``: The location of the ``robot_description`` (URDF) on the parameter server, defaults to ``robot_description``
 * ``<robot_param_node>``: Name of the node where the ``robot_param`` is located, defaults to ``robot_state_publisher``
 * ``<parameters>``: YAML file with the configuration of the controllers
+* ``<hold_joints>``: if set to true (default), it will hold the joints' position if their interface was not claimed, e.g., the controller hasn't been activated yet.
+* ``<controller_manager_name>``: Set controller manager name (default: ``controller_manager``)
 
 Default gazebo_ros2_control Behavior
 -----------------------------------------------------------
@@ -202,32 +201,18 @@ Use the tag ``<parameters>`` inside ``<plugin>`` to set the YAML file with the c
 
   <gazebo>
     <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-      <parameters>$(find gazebo_ros2_control_demos)/config/cartpole_controller.yaml</parameters>
+      <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
     </plugin>
   <gazebo>
 
-This controller publishes the state of all resources registered to a
-``hardware_interface::StateInterface`` to a topic of type ``sensor_msgs/msg/JointState``.
-The following is a basic configuration of the controller.
+The following is a basic configuration of the controllers:
 
-.. code-block:: yaml
+- ``joint_state_broadcaster``: This controller publishes the state of all resources registered to a ``hardware_interface::StateInterface`` to a topic of type ``sensor_msgs/msg/JointState``.
 
-  joint_state_controller:
-    ros__parameters:
-      type: joint_state_controller/JointStateController
+- ``joint_trajectory_controller``: This controller creates an action called ``/joint_trajectory_controller/follow_joint_trajectory`` of type ``control_msgs::action::FollowJointTrajectory``.
 
-
-This controller creates an action called ``/cart_pole_controller/follow_joint_trajectory`` of type ``control_msgs::action::FollowJointTrajectory``.
-
-.. code-block:: yaml
-
-  cart_pole_controller:
-    ros__parameters:
-      type: joint_trajectory_controller/JointTrajectoryController
-      joints:
-        - slider_to_cart
-      write_op_modes:
-        - slider_to_cart
+.. literalinclude:: ../gazebo_ros2_control_demos/config/cart_controller.yaml
+   :language: yaml
 
 gazebo_ros2_control_demos
 ==========================================
@@ -280,16 +265,28 @@ When the Gazebo world is launched you can run some of the following commands to 
 
 Gripper
 -----------------------------------------------------------
-The following example shows parallel gripper with mimic joint:
+The following example shows a parallel gripper with a mimic joint:
 
 .. image:: img/gripper.gif
   :alt: Cart
 
 .. code-block:: shell
 
-  ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example.launch.py
+  ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
 
-Send example commands:
+.. image:: img/gripper.gif
+  :alt: Gripper
+
+To demonstrate the setup of the initial position and a position-mimicked joint in
+case of an effort command interface of the joint to be mimicked, run
+
+.. code-block:: shell
+
+  ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_effort.launch.py
+
+instead.
+
+Send example commands with
 
 .. code-block:: shell
 

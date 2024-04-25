@@ -56,7 +56,7 @@ def generate_launch_description():
                                    '-entity', 'diffbot'],
                         output='screen')
 
-    load_joint_state_controller = ExecuteProcess(
+    load_joint_state_broadcaster = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster'],
         output='screen'
@@ -72,12 +72,12 @@ def generate_launch_description():
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=spawn_entity,
-                on_exit=[load_joint_state_controller],
+                on_exit=[load_joint_state_broadcaster],
             )
         ),
         RegisterEventHandler(
             event_handler=OnProcessExit(
-                target_action=load_joint_state_controller,
+                target_action=load_joint_state_broadcaster,
                 on_exit=[load_diff_drive_base_controller],
             )
         ),
