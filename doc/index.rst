@@ -264,10 +264,6 @@ When the Gazebo world is launched you can run some of the following commands to 
   ros2 run gazebo_ros2_control_demos example_diff_drive
   ros2 run gazebo_ros2_control_demos example_tricycle_drive
 
-<<<<<<< HEAD
-
-The following example shows parallel gripper with mimic joint:
-=======
 Gripper
 -----------------------------------------------------------
 The following example shows a parallel gripper with a mimic joint:
@@ -278,7 +274,6 @@ The following example shows a parallel gripper with a mimic joint:
 .. code-block:: shell
 
   ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
->>>>>>> 7d5ec5d (Add an example with a passive joint (#172))
 
 .. image:: img/gripper.gif
   :alt: Cart
