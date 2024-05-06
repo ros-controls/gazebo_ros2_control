@@ -28,7 +28,7 @@ link_directories(
 
 # Libraries
 add_library(${PROJECT_NAME} SHARED
-  src/gazebo_ros2_control_plugin.cpp
+  src/gazebo_ros2_control_plugin.cpp src/node.cc
 )
 ament_target_dependencies(${PROJECT_NAME}
   angles

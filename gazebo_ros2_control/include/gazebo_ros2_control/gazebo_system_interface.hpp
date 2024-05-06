@@ -26,6 +26,7 @@
 
 #include "hardware_interface/system_interface.hpp"
 
+#include "gazebo_ros2_control/node.hh"
 #include "rclcpp/rclcpp.hpp"
 
 
@@ -69,6 +70,7 @@ public:
   virtual bool initSim(
     rclcpp::Node::SharedPtr & model_nh,
     gazebo::physics::ModelPtr parent_model,
+    gazebo::transport::NodePtr & transport_nh,
     const hardware_interface::HardwareInfo & hardware_info,
     sdf::ElementPtr sdf) = 0;
 
