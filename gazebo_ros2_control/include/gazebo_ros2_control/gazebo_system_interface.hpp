@@ -79,6 +79,8 @@ public:
     POSITION  = (1 << 0),
     VELOCITY  = (1 << 1),
     EFFORT    = (1 << 2),
+    VELOCITY_PID    = (1 << 3),
+    POSITION_PID    = (1 << 4),
   };
 
   typedef SafeEnum<enum ControlMethod_> ControlMethod;
