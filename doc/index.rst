@@ -127,6 +127,58 @@ The mimic joint must not have command interfaces configured in the ``<ros2_contr
 
   Independent of the interface type of the mimicked joint in the ``<ros2_control>`` tag, the mimic joint will use the position interface of the gazebo classic physic engine to follow the position of the mimicked joint.
 
+Using PID control joints
+-----------------------------------------------------------
+
+To use PID control joints in gazebo_ros2_control, you should define their parameters inside the ``<joint>`` tag
+within the ``<ros2_control>`` tag. These PID joints can be controlled either in position or velocity.
+
+- To control a joint with velocity PID, simply set its ``command_interface`` to ``velocity_PID``.
+- To control a joint with position PID, set its ``command_interface`` to ``position_PID``.
+
+.. note::
+    You cannot have both command interfaces set to position and position_PID for the same joint. The same restriction applies to velocity (and velocity_PID).
+
+To create a system with one joint that can be controlled using both position_PID and velocity_PID, follow this example:
+
+.. code-block:: xml
+
+ <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="slider_to_cart">
+
+      <param name="pos_kp">10</param>
+      <param name="pos_ki">1</param>
+      <param name="pos_kd">2</param>
+      <param name="pos_max_integral_error">10000</param>
+
+      <param name="vel_kp">10</param>
+      <param name="vel_ki">5</param>
+      <param name="vel_kd">2</param>
+      <param name="vel_max_integral_error">10000</param>
+
+      <command_interface name="position_PID"/>
+      <command_interface name="velocity_PID"/>
+
+      <state_interface name="position">
+        <param name="initial_value">1.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+  </ros2_control>
+
+Where the parameters are as follows:
+
+- ``pos_kp``: Proportional gain
+- ``pos_ki``: Integral gain
+- ``pos_kd``: Derivative gain
+- ``pos_max_integral_error``: Maximum summation of the error
+
+The same definitions apply to the ``vel_*`` parameters.
+
 Add the gazebo_ros2_control plugin
 ==========================================
 
@@ -242,6 +294,7 @@ When the Gazebo world is launched you can run some of the following commands to 
 .. code-block:: shell
 
   ros2 run gazebo_ros2_control_demos example_position
+  ros2 run gazebo_ros2_control_demos example_position_pid
   ros2 run gazebo_ros2_control_demos example_velocity
   ros2 run gazebo_ros2_control_demos example_effort
 
@@ -311,3 +364,20 @@ degree of freedom on the rail, and the physics of the passive joint of the pendu
 
     ros2 launch gazebo_ros2_control_demos pendulum_example_position.launch.py
     ros2 run gazebo_ros2_control_demos example_position
+
+
+
+PID control joints
+-----------------------------------------------------------
+
+The following examples shows a vertical cart control by a PID joint using position and velocity cmd.
+
+.. code-block:: shell
+
+  ros2 launch gazebo_ros2_control_demos vertical_cart_example_position_pid.launch.py
+  ros2 launch gazebo_ros2_control_demos vertical_cart_example_velocity_pid.launch.py
+
+.. code-block:: shell
+
+  ros2 run gazebo_ros2_control_demos example_position_pid
+  ros2 run gazebo_ros2_control_demos example_velocity
