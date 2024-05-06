@@ -19,6 +19,7 @@
 #include <vector>
 #include <utility>
 
+#include "control_toolbox/pid.hpp"
 #include "gazebo_ros2_control/gazebo_system.hpp"
 #include "gazebo/sensors/ImuSensor.hh"
 #include "gazebo/sensors/ForceTorqueSensor.hh"
@@ -83,6 +84,18 @@ public:
   /// \brief vector with the current cmd joint effort
   std::vector<double> joint_effort_cmd_;
 
+  /// \brief Joint velocity PID utils
+  std::vector<control_toolbox::Pid> vel_pid;
+
+  /// \brief Joint position PID utils
+  std::vector<control_toolbox::Pid> pos_pid;
+
+  // \brief control flag
+  std::vector<bool> is_pos_pid;
+
+  //  \brief control flag
+  std::vector<bool> is_vel_pid;
+
   /// \brief handles to the imus from within Gazebo
   std::vector<gazebo::sensors::ImuSensorPtr> sim_imu_sensors_;
 
@@ -139,6 +152,67 @@ bool GazeboSystem::initSim(
   return true;
 }
 
+control_toolbox::Pid GazeboSystem::extractPID(
+  std::string prefix,
+  hardware_interface::ComponentInfo joint_info)
+{
+  double kp;
+  double ki;
+  double kd;
+  double max_integral_error;
+  double min_integral_error;
+  bool antiwindup;
+
+  if (joint_info.parameters.find(prefix + "kp") != joint_info.parameters.end()) {
+    kp = std::stod(joint_info.parameters.at(prefix + "kp"));
+  } else {
+    kp = 0.0;
+  }
+
+  if (joint_info.parameters.find(prefix + "ki") != joint_info.parameters.end()) {
+    ki = std::stod(joint_info.parameters.at(prefix + "ki"));
+  } else {
+    ki = 0.0;
+  }
+
+  if (joint_info.parameters.find(prefix + "kd") != joint_info.parameters.end()) {
+    kd = std::stod(joint_info.parameters.at(prefix + "kd"));
+  } else {
+    kd = 0.0;
+  }
+
+  if (joint_info.parameters.find(prefix + "max_integral_error") != joint_info.parameters.end()) {
+    max_integral_error = std::stod(joint_info.parameters.at(prefix + "max_integral_error"));
+  } else {
+    max_integral_error = std::numeric_limits<double>::max();
+  }
+
+  if (joint_info.parameters.find(prefix + "min_integral_error") != joint_info.parameters.end()) {
+    min_integral_error = std::stod(joint_info.parameters.at(prefix + "min_integral_error"));
+  } else {
+    min_integral_error = std::numeric_limits<double>::min();
+  }
+
+  if (joint_info.parameters.find(prefix + "antiwindup") != joint_info.parameters.end()) {
+    if (joint_info.parameters.at(prefix + "antiwindup") == "true" ||
+      joint_info.parameters.at(prefix + "antiwindup") == "True")
+    {
+      antiwindup = true;
+    }
+  } else {
+    antiwindup = false;
+  }
+
+  RCLCPP_INFO_STREAM(
+    this->nh_->get_logger(),
+    "Setting kp = " << kp << "\t"
+                    << " ki = " << ki << "\t"
+                    << " kd = " << kd << "\t"
+                    << " max_integral_error = " << max_integral_error);
+
+  return control_toolbox::Pid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+}
+
 void GazeboSystem::registerJoints(
   const hardware_interface::HardwareInfo & hardware_info,
   gazebo::physics::ModelPtr parent_model)
@@ -154,6 +228,10 @@ void GazeboSystem::registerJoints(
   this->dataPtr->joint_position_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_velocity_cmd_.resize(this->dataPtr->n_dof_);
   this->dataPtr->joint_effort_cmd_.resize(this->dataPtr->n_dof_);
+  this->dataPtr->vel_pid.resize(this->dataPtr->n_dof_);
+  this->dataPtr->pos_pid.resize(this->dataPtr->n_dof_);
+  this->dataPtr->is_pos_pid.resize(this->dataPtr->n_dof_);
+  this->dataPtr->is_vel_pid.resize(this->dataPtr->n_dof_);
 
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     auto & joint_info = hardware_info.joints[j];
@@ -264,9 +342,32 @@ void GazeboSystem::registerJoints(
     RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\tCommand:");
 
     // register the command handles
+    bool has_already_registered_vel = false;
+    bool has_already_registered_pos = false;
+
     for (unsigned int i = 0; i < joint_info.command_interfaces.size(); i++) {
-      if (joint_info.command_interfaces[i].name == "position") {
-        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t position");
+      if (joint_info.command_interfaces[i].name == "position" ||
+        joint_info.command_interfaces[i].name == "position_pid")
+      {
+        if (has_already_registered_pos) {
+          RCLCPP_ERROR_STREAM(
+            this->nh_->get_logger(),
+            "can't have position and position"
+              << "pid command_interface at same time !!!");
+          continue;
+        }
+        has_already_registered_pos = true;
+        RCLCPP_INFO_STREAM(
+          this->nh_->get_logger(), "\t\t "
+            << joint_info.command_interfaces[i].name);
+
+        if (joint_info.command_interfaces[i].name == "position_pid") {
+          this->dataPtr->is_pos_pid[j] = true;
+          this->dataPtr->pos_pid[j] = this->extractPID(POSITION_PID_PARAMS_PREFIX, joint_info);
+        } else {
+          this->dataPtr->is_pos_pid[j] = false;
+        }
+
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name + suffix,
           hardware_interface::HW_IF_POSITION,
@@ -279,8 +380,25 @@ void GazeboSystem::registerJoints(
       if (!std::isnan(initial_position)) {
         this->dataPtr->sim_joints_[j]->SetPosition(0, initial_position, true);
       }
-      if (joint_info.command_interfaces[i].name == "velocity") {
-        RCLCPP_INFO_STREAM(this->nh_->get_logger(), "\t\t velocity");
+      if (joint_info.command_interfaces[i].name == "velocity" ||
+        joint_info.command_interfaces[i].name == "velocity_pid")
+      {
+        if (has_already_registered_vel) {
+          RCLCPP_ERROR_STREAM(
+            this->nh_->get_logger(), "can't have velocity and velocity_pid "
+              << "command_interface at same time !!!");
+          continue;
+        }
+        has_already_registered_vel = true;
+
+        RCLCPP_INFO_STREAM(
+          this->nh_->get_logger(), "\t\t "
+            << joint_info.command_interfaces[i].name);
+
+        if (joint_info.command_interfaces[i].name == "velocity_pid") {
+          this->dataPtr->is_vel_pid[j] = true;
+          this->dataPtr->vel_pid[j] = this->extractPID(VELOCITY_PID_PARAMS_PREFIX, joint_info);
+        }
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name + suffix,
           hardware_interface::HW_IF_VELOCITY,
@@ -489,34 +607,46 @@ GazeboSystem::perform_command_mode_switch(
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     for (const std::string & interface_name : stop_interfaces) {
       // Clear joint control method bits corresponding to stop interfaces
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
-        hardware_interface::HW_IF_POSITION))
-      {
-        this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(VELOCITY & EFFORT);
-      } else if (interface_name == (this->dataPtr->joint_names_[j] + "/" + // NOLINT
-        hardware_interface::HW_IF_VELOCITY))
-      {
-        this->dataPtr->joint_control_methods_[j] &= static_cast<ControlMethod_>(POSITION & EFFORT);
-      } else if (interface_name == (this->dataPtr->joint_names_[j] + "/" + // NOLINT
-        hardware_interface::HW_IF_EFFORT))
+      if (interface_name == // NOLINT
+        (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_POSITION))
       {
         this->dataPtr->joint_control_methods_[j] &=
-          static_cast<ControlMethod_>(POSITION & VELOCITY);
+          static_cast<ControlMethod_>(VELOCITY & VELOCITY_PID & EFFORT);
+
+      } else if (interface_name == // NOLINT
+        (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_VELOCITY))
+      {
+        this->dataPtr->joint_control_methods_[j] &=
+          static_cast<ControlMethod_>(POSITION & POSITION_PID & EFFORT);
+
+      } else if (interface_name == // NOLINT
+        (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_EFFORT))
+      {
+        this->dataPtr->joint_control_methods_[j] &=
+          static_cast<ControlMethod_>(POSITION & POSITION_PID & VELOCITY_PID & VELOCITY);
       }
     }
 
     // Set joint control method bits corresponding to start interfaces
     for (const std::string & interface_name : start_interfaces) {
-      if (interface_name == (this->dataPtr->joint_names_[j] + "/" +
-        hardware_interface::HW_IF_POSITION))
+      if (interface_name ==
+        (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_POSITION))
       {
-        this->dataPtr->joint_control_methods_[j] |= POSITION;
-      } else if (interface_name == (this->dataPtr->joint_names_[j] + "/" + // NOLINT
-        hardware_interface::HW_IF_VELOCITY))
+        if (!this->dataPtr->is_pos_pid[j]) {
+          this->dataPtr->joint_control_methods_[j] |= POSITION;
+        } else {
+          this->dataPtr->joint_control_methods_[j] |= POSITION_PID;
+        }
+      } else if (interface_name == // NOLINT
+        (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_VELOCITY))
       {
-        this->dataPtr->joint_control_methods_[j] |= VELOCITY;
-      } else if (interface_name == (this->dataPtr->joint_names_[j] + "/" + // NOLINT
-        hardware_interface::HW_IF_EFFORT))
+        if (!this->dataPtr->is_vel_pid[j]) {
+          this->dataPtr->joint_control_methods_[j] |= VELOCITY;
+        } else {
+          this->dataPtr->joint_control_methods_[j] |= VELOCITY_PID;
+        }
+      } else if (interface_name == // NOLINT
+        (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_EFFORT))
       {
         this->dataPtr->joint_control_methods_[j] |= EFFORT;
       }
@@ -603,15 +733,32 @@ hardware_interface::return_type GazeboSystem::write(
     }
   }
 
+  uint64_t dt = sim_period.nanoseconds();
+
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     if (this->dataPtr->sim_joints_[j]) {
       if (this->dataPtr->joint_control_methods_[j] & POSITION) {
-        this->dataPtr->sim_joints_[j]->SetPosition(0, this->dataPtr->joint_position_cmd_[j], true);
+        double cmd = this->dataPtr->joint_position_cmd_[j];
+        this->dataPtr->sim_joints_[j]->SetPosition(0, cmd, true);
         this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
-      } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY) { // NOLINT
+
+      } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY) {
         this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
-      } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) { // NOLINT
+
+      } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) {
         this->dataPtr->sim_joints_[j]->SetForce(0, this->dataPtr->joint_effort_cmd_[j]);
+
+      } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY_PID) {
+        double vel_goal = this->dataPtr->joint_velocity_cmd_[j];
+        double vel = this->dataPtr->sim_joints_[j]->GetVelocity(0);
+        double cmd = this->dataPtr->vel_pid[j].computeCommand(vel_goal - vel, dt);
+        this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
+
+      } else if (this->dataPtr->joint_control_methods_[j] & POSITION_PID) {
+        double pos_goal = this->dataPtr->joint_position_cmd_[j];
+        double pos = this->dataPtr->sim_joints_[j]->Position(0);
+        double cmd = this->dataPtr->pos_pid[j].computeCommand(pos_goal - pos, dt);
+        this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
       } else if (this->dataPtr->is_joint_actuated_[j]) {
         // Fallback case is a velocity command of zero (only for actuated joints)
         this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
