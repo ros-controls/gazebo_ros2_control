@@ -54,6 +54,12 @@ ament_target_dependencies(example_gripper
   std_msgs
 )
 
+add_executable(example_position_pid examples/example_position_pid.cpp)
+ament_target_dependencies(example_position_pid
+  rclcpp
+  std_msgs
+)
+
 add_executable(example_diff_drive examples/example_diff_drive.cpp)
 ament_target_dependencies(example_diff_drive
   rclcpp
@@ -77,6 +83,7 @@ endif()
 install(
   TARGETS
     example_position
+    example_position_pid
     example_velocity
     example_effort
     example_diff_drive
