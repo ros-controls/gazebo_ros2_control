@@ -2,6 +2,20 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.8 (2024-05-14)
+------------------
+* Add PID controller to control joint using effort (`#294 <https://github.com/ros-controls/gazebo_ros2_control//issues/294>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Update precommit config (`#298 <https://github.com/ros-controls/gazebo_ros2_control//issues/298>`_) (`#301 <https://github.com/ros-controls/gazebo_ros2_control//issues/301>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  (cherry picked from commit 105c0ba5b786a43e1e9266399ab027a12011c643)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Fix incorrect force-torque sensor vec population (`#296 <https://github.com/ros-controls/gazebo_ros2_control//issues/296>`_) (`#299 <https://github.com/ros-controls/gazebo_ros2_control//issues/299>`_)
+  (cherry picked from commit fdcd7aa8c67ea57f44bbf2f8fba90a28d7f04b5d)
+  Co-authored-by: Mateus Menezes <mateusmenezes95@gmail.com>
+* Contributors: chameau5050, mergify[bot]
+
 0.4.7 (2024-03-21)
 ------------------
 * Update gazebo_ros2_control_plugin.cpp (`#286 <https://github.com/ros-controls/gazebo_ros2_control/issues/286>`_) (`#287 <https://github.com/ros-controls/gazebo_ros2_control/issues/287>`_)
