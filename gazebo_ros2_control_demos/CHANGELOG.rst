@@ -2,6 +2,28 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.6 (2024-05-14)
+------------------
+* Change initial pose of pendulum (`#313 <https://github.com/ros-controls/gazebo_ros2_control//issues/313>`_) (`#316 <https://github.com/ros-controls/gazebo_ros2_control//issues/316>`_)
+  (cherry picked from commit 40ee42da16af9f1bc78886dbaec8082fd3fdea26)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Add PID controller to control joint using effort (`#294 <https://github.com/ros-controls/gazebo_ros2_control//issues/294>`_) (`#311 <https://github.com/ros-controls/gazebo_ros2_control//issues/311>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+  (cherry picked from commit f769c6c1684eb2ccb3e4988ad4611b32b4beabf6)
+  Co-authored-by: chameau5050 <54971185+chameau5050@users.noreply.github.com>
+* Add an example with a passive joint (backport `#172 <https://github.com/ros-controls/gazebo_ros2_control//issues/172>`_) (`#307 <https://github.com/ros-controls/gazebo_ros2_control//issues/307>`_)
+  * Add an example with a passive joint (`#172 <https://github.com/ros-controls/gazebo_ros2_control//issues/172>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  (cherry picked from commit 7d5ec5dbad710d628bc14a82195c196f088621b8)
+  # Conflicts:
+  #	doc/index.rst
+  * Fixed docs
+  ---------
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Contributors: mergify[bot]
+
 0.6.5 (2024-03-21)
 ------------------
 * Cleanup of demos (`#290 <https://github.com/ros-controls/gazebo_ros2_control/issues/290>`_) (`#293 <https://github.com/ros-controls/gazebo_ros2_control/issues/293>`_)
