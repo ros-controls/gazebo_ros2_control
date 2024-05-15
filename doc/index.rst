@@ -326,9 +326,6 @@ Gripper
 -----------------------------------------------------------
 The following example shows a parallel gripper with a mimic joint:
 
-.. image:: img/gripper.gif
-  :alt: Cart
-
 .. code-block:: shell
 
   ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
