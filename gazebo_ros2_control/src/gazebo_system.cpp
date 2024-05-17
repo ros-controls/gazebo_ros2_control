@@ -179,7 +179,7 @@ control_toolbox::Pid GazeboSystem::extractPID(
   double kd;
   double max_integral_error;
   double min_integral_error;
-  bool antiwindup;
+  bool antiwindup = false;
 
   if (joint_info.parameters.find(prefix + "kp") != joint_info.parameters.end()) {
     kp = std::stod(joint_info.parameters.at(prefix + "kp"));
@@ -217,8 +217,6 @@ control_toolbox::Pid GazeboSystem::extractPID(
     {
       antiwindup = true;
     }
-  } else {
-    antiwindup = false;
   }
 
   RCLCPP_INFO_STREAM(
