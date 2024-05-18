@@ -21,12 +21,12 @@ jobs:
     - name: Setup colcon workspace
       id: configure
       run: |
-        apt-get update && apt-get upgrade -q -y | grep -E 'Setting up'
-        apt-get update && apt-get install -q -y --no-install-recommends \
+        apt-get update && apt-get upgrade -q -y
+        apt-get install -q -y --no-install-recommends \
           dirmngr \
           gnupg2 \
           lsb-release \
-          python3-colcon-ros | grep -E 'Setting up'
+          python3-colcon-ros
         cd ..
         mkdir -p /home/ros2_ws/src
         vcs import --input https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/ros_controls.rolling-on-$ROS_DISTRO.repos /home/ros2_ws/src
@@ -60,12 +60,12 @@ jobs:
       run: |
         curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
         sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2-testing/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
-        apt-get update && apt-get upgrade -q -y | grep -E 'Setting up'
-        apt-get update && apt-get install -q -y --no-install-recommends \
+        apt-get update && apt-get upgrade -q -y
+        apt-get install -q -y --no-install-recommends \
           dirmngr \
           gnupg2 \
           lsb-release \
-          python3-colcon-ros | grep -E 'Setting up'
+          python3-colcon-ros
         cd ..
         mkdir -p /home/ros2_ws/src
         vcs import --input https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/ros_controls.rolling-on-$ROS_DISTRO.repos /home/ros2_ws/src
