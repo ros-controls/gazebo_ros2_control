@@ -6,6 +6,8 @@ This is a ROS 2 package for integrating the `ros2_control` controller architectu
 >
 > Furthermore, Gazebo Classic is not released to Ubuntu Noble. As a consequence, gazebo_ros2_control won't be released for Jazzy and Rolling anymore.
 
+To use ros2_control with newer versions of Gazebo take a look at [gz_ros2_control](https://github.com/ros-controls/gz_ros2_control).
+
 This package provides a Gazebo plugin which instantiates a `ros2_control` controller manager and connects it to a Gazebo model.
 
 ## Documentation
