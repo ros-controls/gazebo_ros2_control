@@ -1,0 +1,90 @@
+name: gazebo_ros2_control - Rolling
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+env:
+  ROS_DISTRO: humble
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:humble-desktop
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup colcon workspace
+      id: configure
+      run: |
+        apt-get update && apt-get upgrade -q -y
+        apt-get install -q -y --no-install-recommends \
+          dirmngr \
+          gnupg2 \
+          lsb-release \
+          python3-colcon-ros
+        cd ..
+        mkdir -p /home/ros2_ws/src
+        vcs import --input https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/ros_controls.rolling-on-$ROS_DISTRO.repos /home/ros2_ws/src
+        rm -rf /home/ros2_ws/src/ros-controls/gazebo_ros2_control
+        cp -r gazebo_ros2_control /home/ros2_ws/src/ros-controls/
+        cd /home/ros2_ws/src/
+        rosdep update --rosdistro=$ROS_DISTRO
+        rosdep install --from-paths ./ -i -y --rosdistro $ROS_DISTRO \
+          --ignore-src | grep -E '(executing command)|(Setting up)'
+    - name: Build project
+      id: build
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/$ROS_DISTRO/local_setup.sh
+        colcon build --packages-up-to gazebo_ros2_control_demos
+    - name: Run tests
+      id: test
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/$ROS_DISTRO/local_setup.sh
+        colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
+        colcon test-result
+  build_testing:
+    runs-on: ubuntu-latest
+    container:
+      image: osrf/ros:humble-desktop
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup colcon workspace
+      id: configure
+      run: |
+        curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+        sh -c 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2-testing/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+        apt-get update && apt-get upgrade -q -y
+        apt-get install -q -y --no-install-recommends \
+          dirmngr \
+          gnupg2 \
+          lsb-release \
+          python3-colcon-ros
+        cd ..
+        mkdir -p /home/ros2_ws/src
+        vcs import --input https://raw.githubusercontent.com/ros-controls/ros2_control_ci/master/ros_controls.rolling-on-$ROS_DISTRO.repos /home/ros2_ws/src
+        rm -rf /home/ros2_ws/src/ros-controls/gazebo_ros2_control
+        cp -r gazebo_ros2_control /home/ros2_ws/src/ros-controls/
+        cd /home/ros2_ws/src/
+        rosdep update --rosdistro=$ROS_DISTRO
+        rosdep install --from-paths ./ -i -y --rosdistro $ROS_DISTRO \
+          --ignore-src | grep -E '(executing command)|(Setting up)'
+    - name: Build project
+      id: build
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/$ROS_DISTRO/local_setup.sh
+        colcon build --packages-up-to gazebo_ros2_control_demos
+    - name: Run tests
+      id: test
+      run: |
+        cd /home/ros2_ws/
+        . /opt/ros/$ROS_DISTRO/local_setup.sh
+        colcon test --event-handlers console_direct+ --packages-select gazebo_ros2_control gazebo_ros2_control_demos
+        colcon test-result
