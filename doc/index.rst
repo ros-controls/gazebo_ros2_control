@@ -261,7 +261,7 @@ Use the tag ``<parameters>`` inside ``<plugin>`` to set the YAML file with the c
     <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
       <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
     </plugin>
-  <gazebo>
+  </gazebo>
 
 The following is a basic configuration of the controllers:
 
