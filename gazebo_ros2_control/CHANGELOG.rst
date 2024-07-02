@@ -2,6 +2,13 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.9 (2024-07-02)
+------------------
+* Initialize antiwindup variable properly (`#326 <https://github.com/ros-controls/gazebo_ros2_control/issues/326>`_) (`#327 <https://github.com/ros-controls/gazebo_ros2_control/issues/327>`_)
+  (cherry picked from commit 1ef9652ac34ed883dbf8fed27bcf393f78f53d52)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Contributors: mergify[bot]
+
 0.4.8 (2024-05-14)
 ------------------
 * Add PID controller to control joint using effort (`#294 <https://github.com/ros-controls/gazebo_ros2_control//issues/294>`_)
