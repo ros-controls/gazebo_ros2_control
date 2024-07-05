@@ -208,7 +208,7 @@ The *gazebo_ros2_control* ``<plugin>`` tag also has the following optional child
 * ``<hold_joints>``: if set to true (default), it will hold the joints' position if their interface was not claimed, e.g., the controller hasn't been activated yet.
 * ``<controller_manager_name>``: Set controller manager name (default: ``controller_manager``)
 
-Additionally, one can add a section for namespaces and remapping rules, which will be forwarded to the controller_manager and loaded controllers. Add the following <ros> section inside the <gazebo> tag:
+Additionally, one can specify a namespace and remapping rules, which will be forwarded to the controller_manager and loaded controllers. Add the following ``<ros>`` section:
 
 .. code-block:: xml
 
