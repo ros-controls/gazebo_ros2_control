@@ -197,15 +197,14 @@ robot hardware interfaces between *ros2_control* and Gazebo Classic.
 .. code-block:: xml
 
   <gazebo>
-      <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-        <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
-        <controller_manager_name>simulation_controller_manager</controller_manager_name>
-      </plugin>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
+    </plugin>
   </gazebo>
 
 The *gazebo_ros2_control* ``<plugin>`` tag also has the following optional child elements:
 
-* ``<parameters>``: YAML file with the configuration of the controllers
+* ``<parameters>``: A YAML file with the configuration of the controllers. This element can be given multiple times to load multiple files.
 * ``<hold_joints>``: if set to true (default), it will hold the joints' position if their interface was not claimed, e.g., the controller hasn't been activated yet.
 * ``<controller_manager_name>``: Set controller manager name (default: ``controller_manager``)
 
@@ -214,13 +213,13 @@ Additionally, one can add a section for namespaces and remapping rules, which wi
 .. code-block:: xml
 
   <gazebo>
-      <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
       ...
       <ros>
         <namespace>my_namespace</namespace>
         <remapping>/robot_description:=/robot_description_ful</remapping>
       </ros>
-      </plugin>
+    </plugin>
   </gazebo>
 
 Default gazebo_ros2_control Behavior
