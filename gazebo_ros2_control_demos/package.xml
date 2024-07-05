@@ -32,6 +32,7 @@
   <exec_depend>gazebo_ros2_control</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>hardware_interface</exec_depend>
+  <exec_depend>imu_sensor_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>launch</exec_depend>
