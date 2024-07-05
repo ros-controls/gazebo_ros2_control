@@ -217,7 +217,7 @@ Additionally, one can add a section for namespaces and remapping rules, which wi
       ...
       <ros>
         <namespace>my_namespace</namespace>
-        <remapping>/robot_description:=/robot_description_ful</remapping>
+        <remapping>/robot_description:=/robot_description_full</remapping>
       </ros>
     </plugin>
   </gazebo>
