@@ -67,7 +67,7 @@ public:
     sdf::ElementPtr sdf)
   : hardware_interface::ResourceManager(),
     gazebo_system_loader_("gazebo_ros2_control",
-          "gazebo_ros2_control::GazeboSystemInterface"),
+      "gazebo_ros2_control::GazeboSystemInterface"),
     logger_(node->get_logger().get_child("GazeboResourceManager"))
   {
     node_ = node;
@@ -352,7 +352,9 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
 
   std::unique_ptr<hardware_interface::ResourceManager> resource_manager_ =
-    std::make_unique<gazebo_ros2_control::GazeboResourceManager>(node_ros2, impl_->parent_model_, sdf);
+    std::make_unique<gazebo_ros2_control::GazeboResourceManager>(
+    node_ros2,
+    impl_->parent_model_, sdf);
 
   // Create the controller manager
   RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
