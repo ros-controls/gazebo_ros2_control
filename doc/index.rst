@@ -212,6 +212,7 @@ The *gazebo_ros2_control* ``<plugin>`` tag also has the following optional child
 
 * ``<robot_param>``: The location of the ``robot_description`` (URDF) on the parameter server, defaults to ``robot_description``
 * ``<robot_param_node>``: Name of the node where the ``robot_param`` is located, defaults to ``robot_state_publisher``
+* ``<hold_joints>``: if set to true (default), it will hold the joints' position if their interface was not claimed, e.g., the controller hasn't been activated yet.
 * ``<parameters>``: A YAML file with the configuration of the controllers. This element can be given multiple times to load multiple files.
 * ``<controller_manager_name>``: Set controller manager name (default: ``controller_manager``)
 
