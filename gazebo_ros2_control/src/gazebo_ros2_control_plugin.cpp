@@ -28,7 +28,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /* Author: Dave Coleman, Jonathan Bohren
-   Desc:   Gazebo plugin for ros_control that allows 'hardware_interfaces' to be plugged in
+   Desc:   Gazebo plugin for ros2_control that allows 'hardware_interfaces' to be plugged in
    using pluginlib
 */
 
@@ -58,7 +58,87 @@ using namespace std::chrono_literals;
 
 namespace gazebo_ros2_control
 {
+class GazeboResourceManager : public hardware_interface::ResourceManager
+{
+public:
+  GazeboResourceManager(
+    rclcpp::Node::SharedPtr & node,
+    gazebo::physics::ModelPtr parent_model,
+    sdf::ElementPtr sdf)
+  : hardware_interface::ResourceManager(),
+    gazebo_system_loader_("gazebo_ros2_control",
+      "gazebo_ros2_control::GazeboSystemInterface"),
+    logger_(node->get_logger().get_child("GazeboResourceManager"))
+  {
+    node_ = node;
+    parent_model_ = parent_model;
+    sdf_ = sdf;
+  }
 
+  GazeboResourceManager(const GazeboResourceManager &) = delete;
+
+  // Called from Controller Manager when robot description is initialized from callback
+  bool load_and_initialize_components(
+    const std::string & urdf,
+    unsigned int update_rate) override
+  {
+    components_are_loaded_and_initialized_ = true;
+
+    const auto hardware_info = hardware_interface::parse_control_resources_from_urdf(urdf);
+
+    for (const auto & individual_hardware_info : hardware_info) {
+      std::string robot_hw_sim_type_str_ = individual_hardware_info.hardware_plugin_name;
+      RCLCPP_DEBUG(
+        logger_, "Load hardware interface %s ...",
+        robot_hw_sim_type_str_.c_str());
+
+      // Load hardware
+      std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface> gazeboSystem;
+      std::scoped_lock guard(resource_interfaces_lock_, claimed_command_interfaces_lock_);
+      try {
+        gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
+          gazebo_system_loader_.createUnmanagedInstance(robot_hw_sim_type_str_));
+      } catch (pluginlib::PluginlibException & ex) {
+        RCLCPP_ERROR(
+          logger_,
+          "The plugin failed to load for some reason. Error: %s\n",
+          ex.what());
+        continue;
+      }
+
+      // initialize simulation requirements
+      if (!gazeboSystem->initSim(
+          node_,
+          parent_model_,
+          individual_hardware_info,
+          sdf_))
+      {
+        RCLCPP_FATAL(
+          logger_, "Could not initialize robot simulation interface");
+        components_are_loaded_and_initialized_ = false;
+        break;
+      }
+      RCLCPP_DEBUG(
+        logger_, "Initialized robot simulation interface %s!",
+        robot_hw_sim_type_str_.c_str());
+
+      // initialize hardware
+      import_component(std::move(gazeboSystem), individual_hardware_info);
+    }
+
+    return components_are_loaded_and_initialized_;
+  }
+
+private:
+  std::shared_ptr<rclcpp::Node> node_;
+  gazebo::physics::ModelPtr parent_model_;
+  sdf::ElementPtr sdf_;
+
+  /// \brief Interface loader
+  pluginlib::ClassLoader<gazebo_ros2_control::GazeboSystemInterface> gazebo_system_loader_;
+
+  rclcpp::Logger logger_;
+};
 class GazeboRosControlPrivate
 {
 public:
@@ -72,9 +152,6 @@ public:
   // Called on world reset
   virtual void Reset();
 
-  // Get the URDF XML from the parameter server
-  std::string getURDF(std::string param_name) const;
-
   // Node Handles
   gazebo_ros::Node::SharedPtr model_nh_;
 
@@ -87,12 +164,6 @@ public:
   // Interface loader
   boost::shared_ptr<pluginlib::ClassLoader<
       gazebo_ros2_control::GazeboSystemInterface>> robot_hw_sim_loader_;
-
-  // String with the robot description
-  std::string robot_description_;
-
-  // String with the name of the node that contains the robot_description
-  std::string robot_description_node_;
 
   // Executor to spin the controller
   rclcpp::executors::MultiThreadedExecutor::SharedPtr executor_;
@@ -152,7 +223,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     impl_->model_nh_->get_namespace());
 
   RCLCPP_INFO(
-    impl_->model_nh_->get_logger(), "Starting gazebo_ros2_control plugin in ros 2 node: %s",
+    impl_->model_nh_->get_logger(), "Starting gazebo_ros2_control plugin in ROS 2 node: %s",
     impl_->model_nh_->get_name());
 
   // Error message if the model couldn't be found
@@ -170,20 +241,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     return;
   }
 
-  // Get robot_description ROS param name
-  if (sdf->HasElement("robot_param")) {
-    impl_->robot_description_ = sdf->GetElement("robot_param")->Get<std::string>();
-  } else {
-    impl_->robot_description_ = "robot_description";  // default
-  }
-
-  // Get robot_description ROS param name
-  if (sdf->HasElement("robot_param_node")) {
-    impl_->robot_description_node_ =
-      sdf->GetElement("robot_param_node")->Get<std::string>();
-  } else {
-    impl_->robot_description_node_ = "robot_state_publisher";  // default
-  }
   // Hold joints if no control mode is active?
   bool hold_joints = true;  // default
   if (sdf->HasElement("hold_joints")) {
@@ -196,14 +253,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
   if (sdf->HasElement("controller_manager_name")) {
     controllerManagerNodeName = sdf->GetElement("controller_manager_name")->Get<std::string>();
-  }
-
-  // Read urdf from ros parameter server
-  std::string urdf_string;
-  urdf_string = impl_->getURDF(impl_->robot_description_);
-  if (urdf_string.empty()) {
-    RCLCPP_ERROR_STREAM(impl_->model_nh_->get_logger(), "An empty URDF was passed. Exiting.");
-    return;
   }
 
   // There's currently no direct way to set parameters to the plugin's node
@@ -224,12 +273,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     RCLCPP_ERROR(
       impl_->model_nh_->get_logger(), "No parameter file provided. Configuration might be wrong");
   }
-
-  // set the robot description parameter
-  // to propagate it among controller manager and controllers
-  std::string rb_arg = std::string("robot_description:=") + urdf_string;
-  arguments.push_back(RCL_PARAM_FLAG);
-  arguments.push_back(rb_arg);
 
   if (sdf->HasElement("ros")) {
     sdf = sdf->GetElement("ros");
@@ -286,100 +329,32 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       std::chrono::duration<double>(
         impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize())));
 
-  // setup actuators and mechanism control node.
-  // This call will block if ROS is not properly initialized.
-  std::vector<hardware_interface::HardwareInfo> control_hardware_info;
+  rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(
+    impl_->model_nh_);
   try {
-    control_hardware_info = hardware_interface::parse_control_resources_from_urdf(urdf_string);
-  } catch (const std::runtime_error & ex) {
-    RCLCPP_ERROR_STREAM(
-      impl_->model_nh_->get_logger(),
-      "Error parsing URDF in gazebo_ros2_control plugin, plugin not active : " << ex.what());
-    return;
-  }
-
-  std::unique_ptr<hardware_interface::ResourceManager> resource_manager_ =
-    std::make_unique<hardware_interface::ResourceManager>();
-
-  try {
-    resource_manager_->load_urdf(urdf_string, false, false);
-  } catch (...) {
-    // This error should be normal as the resource manager is not supposed to load and initialize
-    // them
-    RCLCPP_ERROR(impl_->model_nh_->get_logger(), "Error initializing URDF to resource manager!");
-  }
-  try {
-    impl_->robot_hw_sim_loader_.reset(
-      new pluginlib::ClassLoader<gazebo_ros2_control::GazeboSystemInterface>(
-        "gazebo_ros2_control",
-        "gazebo_ros2_control::GazeboSystemInterface"));
-  } catch (pluginlib::LibraryLoadException & ex) {
+    node_ros2->declare_parameter("hold_joints", rclcpp::ParameterValue(hold_joints));
+  } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException & e) {
     RCLCPP_ERROR(
-      impl_->model_nh_->get_logger(), "Failed to create robot simulation interface loader: %s ",
-      ex.what());
-  }
-
-  for (unsigned int i = 0; i < control_hardware_info.size(); i++) {
-    std::string robot_hw_sim_type_str_ = control_hardware_info[i].hardware_plugin_name;
-    RCLCPP_DEBUG(
-      impl_->model_nh_->get_logger(), "Load hardware interface %s ...",
-      robot_hw_sim_type_str_.c_str());
-    std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface> gazeboSystem;
-    try {
-      gazeboSystem = std::unique_ptr<gazebo_ros2_control::GazeboSystemInterface>(
-        impl_->robot_hw_sim_loader_->createUnmanagedInstance(robot_hw_sim_type_str_));
-    } catch (pluginlib::PluginlibException & ex) {
-      RCLCPP_ERROR(
-        impl_->model_nh_->get_logger(), "The plugin failed to load for some reason. Error: %s\n",
-        ex.what());
-      continue;
-    }
-    rclcpp::Node::SharedPtr node_ros2 = std::dynamic_pointer_cast<rclcpp::Node>(
-      impl_->model_nh_);
-    RCLCPP_DEBUG(
-      impl_->model_nh_->get_logger(), "Loaded hardware interface %s!",
-      robot_hw_sim_type_str_.c_str());
-    try {
-      node_ros2->declare_parameter("hold_joints", rclcpp::ParameterValue(hold_joints));
-    } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException & e) {
-      RCLCPP_ERROR(
-        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has already been declared, %s",
-        e.what());
-    } catch (const rclcpp::exceptions::InvalidParametersException & e) {
-      RCLCPP_ERROR(
-        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has invalid name, %s", e.what());
-    } catch (const rclcpp::exceptions::InvalidParameterValueException & e) {
-      RCLCPP_ERROR(
-        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value is invalid, %s", e.what());
-    } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
-      RCLCPP_ERROR(
-        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value has wrong type, %s",
-        e.what());
-    }
-    if (!gazeboSystem->initSim(
-        node_ros2,
-        impl_->parent_model_,
-        control_hardware_info[i],
-        sdf))
-    {
-      RCLCPP_FATAL(
-        impl_->model_nh_->get_logger(), "Could not initialize robot simulation interface");
-      return;
-    }
-    RCLCPP_DEBUG(
-      impl_->model_nh_->get_logger(), "Initialized robot simulation interface %s!",
-      robot_hw_sim_type_str_.c_str());
-
-    resource_manager_->import_component(std::move(gazeboSystem), control_hardware_info[i]);
-
-    // activate all components
-    rclcpp_lifecycle::State state(
-      lifecycle_msgs::msg::State::PRIMARY_STATE_ACTIVE,
-      hardware_interface::lifecycle_state_names::ACTIVE);
-    resource_manager_->set_component_state(control_hardware_info[i].name, state);
+      impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has already been declared, %s",
+      e.what());
+  } catch (const rclcpp::exceptions::InvalidParametersException & e) {
+    RCLCPP_ERROR(
+      impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has invalid name, %s", e.what());
+  } catch (const rclcpp::exceptions::InvalidParameterValueException & e) {
+    RCLCPP_ERROR(
+      impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value is invalid, %s", e.what());
+  } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
+    RCLCPP_ERROR(
+      impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value has wrong type, %s",
+      e.what());
   }
 
   impl_->executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+
+  std::unique_ptr<hardware_interface::ResourceManager> resource_manager_ =
+    std::make_unique<gazebo_ros2_control::GazeboResourceManager>(
+    node_ros2,
+    impl_->parent_model_, sdf);
 
   // Create the controller manager
   RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
@@ -391,13 +366,7 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       impl_->model_nh_->get_namespace()));
   impl_->executor_->add_node(impl_->controller_manager_);
 
-  if (!impl_->controller_manager_->has_parameter("update_rate")) {
-    RCLCPP_ERROR_STREAM(
-      impl_->model_nh_->get_logger(), "controller manager doesn't have an update_rate parameter");
-    return;
-  }
-
-  auto cm_update_rate = impl_->controller_manager_->get_parameter("update_rate").as_int();
+  auto cm_update_rate = impl_->controller_manager_->get_update_rate();
   impl_->control_period_ = rclcpp::Duration(
     std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::duration<double>(1.0 / static_cast<double>(cm_update_rate))));
@@ -435,6 +404,14 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       &GazeboRosControlPrivate::Update,
       impl_.get()));
 
+  // Wait for CM to receive robot description from the topic and then initialize Resource Manager
+  while (!impl_->controller_manager_->is_resource_manager_initialized()) {
+    RCLCPP_WARN(
+      impl_->model_nh_->get_logger(),
+      "Waiting RM to load and initialize hardware...");
+    std::this_thread::sleep_for(std::chrono::microseconds(2000000));
+  }
+
   RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loaded gazebo_ros2_control.");
 }
 
@@ -463,57 +440,6 @@ void GazeboRosControlPrivate::Reset()
 {
   // Reset timing variables to not pass negative update periods to controllers on world reset
   last_update_sim_time_ros_ = rclcpp::Time((int64_t)0, RCL_ROS_TIME);
-}
-
-// Get the URDF XML from the parameter server
-std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
-{
-  std::string urdf_string;
-
-  using namespace std::chrono_literals;
-  auto parameters_client = std::make_shared<rclcpp::AsyncParametersClient>(
-    model_nh_, robot_description_node_);
-  while (!parameters_client->wait_for_service(0.5s)) {
-    if (!rclcpp::ok()) {
-      RCLCPP_ERROR(
-        model_nh_->get_logger(), "Interrupted while waiting for %s service. Exiting.",
-        robot_description_node_.c_str());
-      return "";
-    }
-    RCLCPP_ERROR(
-      model_nh_->get_logger(), "%s service not available, waiting again...",
-      robot_description_node_.c_str());
-  }
-
-  RCLCPP_INFO(
-    model_nh_->get_logger(), "connected to service!! %s", robot_description_node_.c_str());
-
-  // search and wait for robot_description on param server
-  while (urdf_string.empty()) {
-    RCLCPP_DEBUG(model_nh_->get_logger(), "param_name %s", param_name.c_str());
-
-    try {
-      auto f = parameters_client->get_parameters({param_name});
-      f.wait();
-      std::vector<rclcpp::Parameter> values = f.get();
-      urdf_string = values.at(0).as_string();
-    } catch (const std::exception & e) {
-      RCLCPP_ERROR(model_nh_->get_logger(), "%s", e.what());
-    }
-
-    if (!urdf_string.empty()) {
-      break;
-    } else {
-      RCLCPP_ERROR(
-        model_nh_->get_logger(), "gazebo_ros2_control plugin is waiting for model"
-        " URDF in parameter [%s] on the ROS param server.", param_name.c_str());
-    }
-    std::this_thread::sleep_for(std::chrono::microseconds(100000));
-  }
-  RCLCPP_INFO(
-    model_nh_->get_logger(), "Received urdf from param server, parsing...");
-
-  return urdf_string;
 }
 
 // Register this plugin with the simulator
