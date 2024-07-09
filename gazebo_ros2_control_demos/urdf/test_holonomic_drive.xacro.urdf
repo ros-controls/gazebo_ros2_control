@@ -1,0 +1,469 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="holonomic_drive">
+    
+    <!-- INERTIA MACROS -->
+    
+    <!-- Cylinder Inertia-->    
+    <xacro:macro name="inertial_cylinder" params="mass length radius *origin">
+        <inertial>
+            <xacro:insert_block name="origin"/>
+            <mass value="${mass}" />
+            <inertia ixx="${(1/12) * mass * (3*radius*radius + length*length)}" ixy="0.0" ixz="0.0"
+                    iyy="${(1/12) * mass * (3*radius*radius + length*length)}" iyz="0.0"
+                    izz="${(1/2) * mass * (radius*radius)}" />
+        </inertial>
+    </xacro:macro>
+    
+    
+    <!-- Box(Rectangle) Inertia-->    
+    <xacro:macro name="inertial_box" params="mass x y z *origin">
+        <inertial>
+            <xacro:insert_block name="origin"/>
+            <mass value="${mass}" />
+            <inertia ixx="${(1/12) * mass * (y*y+z*z)}" ixy="0.0" ixz="0.0"
+                    iyy="${(1/12) * mass * (x*x+z*z)}" iyz="0.0"
+                    izz="${(1/12) * mass * (x*x+y*y)}" />
+        </inertial>
+    </xacro:macro>
+
+    
+    <!-- Colors -->
+    <material name="purple">
+        <color rgba="0.5 0 0.5 1"/>
+    </material>        
+    
+    <material name="yellow">
+      <color rgba="1.0 1.0 0.0 1.0"/>
+    </material>
+    
+    
+    <!-- Chassis Properties -->
+    <xacro:property name="chassis_width" value="0.6"/>       <!-- 6 meter = 600 cm -->
+    <xacro:property name="chassis_height" value="0.6"/>      <!-- 6 meter = 600 cm -->
+    <xacro:property name="chassis_depth" value="0.02"/>      <!-- 0.02meter = 2 cm -->
+    <xacro:property name="chassis_mass" value="1"/>          <!-- 1 kg -->            
+    
+    
+    <!-- Wheel Properties -->
+    <xacro:property name="wheel_radius" value="0.02"/>
+    <xacro:property name="wheel_width" value="0.02"/>
+    <xacro:property name="wheel_mass" value="1"/>
+    
+        
+    <!-- Wheel Macro -->
+    <xacro:macro name="wheel_macro" params="wheel_name wheel_color">    
+        <link name="${wheel_name}">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                   <cylinder length="${wheel_width}" radius="${wheel_radius}" /> 
+                </geometry>
+                <material name="yellow"/>
+            </visual>        
+            
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <cylinder length="${wheel_width}" radius="${wheel_radius}" /> 
+                </geometry>
+            </collision>
+            
+            <xacro:inertial_cylinder mass="${wheel_mass}" length="${wheel_width}" radius="${wheel_radius}">
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </xacro:inertial_cylinder>
+        </link>
+        
+        <gazebo reference="${wheel_name}">
+            <material>${wheel_color}</material>
+        </gazebo>
+            
+    </xacro:macro>
+
+
+    <!-- Roller Macro -->
+    <xacro:macro name="roller_macro" params="sno base_wheel x y z roll pitch yaw">
+                                              
+        <!-- Roller Link -->    
+        <link name="roll_${sno}">
+            
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="file:///home/pratham/Desktop/robotics/projects/smash_it/CAD_Models/mec_model/exported/roller_M1-Body001.stl" scale="0.001 0.001 0.001"/>  
+                   
+                    <!-- <mesh filename="package://gazebo_ros2_control_demos/urdf/mesh/holonomic_drive/roller.stl" scale="0.001 0.001 0.001"/>                     -->
+                </geometry>
+                <material name="yellow"/>
+            </visual>        
+            
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="file:///home/pratham/Desktop/robotics/projects/smash_it/CAD_Models/mec_model/exported/roller_M1-Body001.stl" scale="0.001 0.001 0.001"/>
+                    <!-- <mesh filename="package://gazebo_ros2_control_demos/urdf/mesh/holonomic_drive/roller.stl" scale="0.001 0.001 0.001"/> -->
+                </geometry>
+            </collision>
+            
+            <xacro:inertial_cylinder mass="0.001" length="0.028" radius="0.105">    <!-- Length=28mm radius=10.5 -->
+            <!--  <xacro:inertial_cylinder mass="0.001" length="0.028" radius="0.00525 "> -->  <!-- Actual value but not the best -->
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+            </xacro:inertial_cylinder>
+            
+        </link>
+        
+        <gazebo reference="roll_${sno}">
+            <material>Gazebo/Yellow</material>
+        </gazebo>
+        
+        <joint name="r_joint_${sno}" type="continuous">
+            <parent link="${base_wheel}" />
+            <child link="roll_${sno}" />
+            <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}" />
+            <axis xyz="0 0 1"/>
+        </joint>     
+                 
+    </xacro:macro>
+    
+    
+    <!-- Roller Group Macro -->
+    <xacro:macro name="roller_group_macro" params="base_wheel roller_angle" >                  
+        
+        <!-- Roller_1 -->              
+        <xacro:roller_macro sno="1_${base_wheel}" base_wheel="${base_wheel}" x="0.05" y="0.0" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="0.0" />
+        
+        <!-- Roller_2 -->
+        <xacro:roller_macro sno="2_${base_wheel}" base_wheel="${base_wheel}" x="0.043301" y="0.025" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="0.5236" />
+
+        <!-- Roller_3 -->
+        <xacro:roller_macro sno="3_${base_wheel}" base_wheel="${base_wheel}" x="0.025" y="0.043301" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="1.0472" />
+        
+        <!-- Roller_4 -->
+        <xacro:roller_macro sno="4_${base_wheel}" base_wheel="${base_wheel}" x="0.0" y="0.05" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="1.5708" />
+
+        <!-- Roller_5 -->
+        <xacro:roller_macro sno="5_${base_wheel}" base_wheel="${base_wheel}" x="-0.025" y="0.043301" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="2.0944" />    
+
+        <!-- Roller_6 -->
+        <xacro:roller_macro sno="6_${base_wheel}" base_wheel="${base_wheel}" x="-0.043301" y="0.025" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="2.6180" />
+        
+        <!-- Roller_7 -->
+        <xacro:roller_macro sno="7_${base_wheel}" base_wheel="${base_wheel}" x="-0.05" y="0.0" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="3.1416" />
+        
+        <!-- Roller_8 -->
+        <xacro:roller_macro sno="8_${base_wheel}" base_wheel="${base_wheel}" x="-0.043301" y="-0.025" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="3.6652" />
+        
+        <!-- Roller_9 -->
+        <xacro:roller_macro sno="9_${base_wheel}" base_wheel="${base_wheel}" x="-0.025" y="-0.043301" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="4.1888" />
+        
+        <!-- Roller_10 -->
+        <xacro:roller_macro sno="10_${base_wheel}" base_wheel="${base_wheel}" x="0.0" y="-0.05" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="4.7124" />
+        
+        <!-- Roller_11 -->
+        <xacro:roller_macro sno="11_${base_wheel}" base_wheel="${base_wheel}" x="0.025" y="-0.043301" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="5.2360" />
+        
+        <!-- Roller_12 -->        
+        <xacro:roller_macro sno="12_${base_wheel}" base_wheel="${base_wheel}" x="0.043301" y="-0.025" z="0.0" roll="${roller_angle}" pitch="0.0" yaw="5.7596" />
+        
+    </xacro:macro>
+
+  
+    <!-- INTIGRATING COMPONENTS -->   
+    
+    <!-- BASE LINK -->
+    <link name="base_link">
+    </link>
+    
+    <!-- Chassis Link -->
+    <joint name="chassis_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="chassis_link"/>
+        <origin xyz="0 0 0.06"/>    
+    </joint>
+    
+    <link name="chassis_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${chassis_width} ${chassis_height} ${chassis_depth}"/> 
+            </geometry>
+            <material name="purple"/>
+        </visual>
+        
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="${chassis_width} ${chassis_height} ${chassis_depth}"/>
+            </geometry>
+        </collision>
+        
+        <xacro:inertial_box mass="${chassis_mass}" x="${chassis_width}" y="${chassis_height}" z="${chassis_depth}"> 
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </xacro:inertial_box>
+    </link>
+        
+    <gazebo reference="chassis_link">
+        <material>Gazebo/Purple</material>
+    </gazebo>
+    
+   
+   
+    <!-- Front Left Wheel -->           
+    <joint name="front_left_joint" type="continuous">
+        <parent link="chassis_link" />
+        <child link="front_left_link" />
+        <origin xyz="0.3 0.32 0" rpy="${pi/2} 0 0" />
+        <axis xyz="0 0 -1"/>
+    </joint>
+
+    <xacro:wheel_macro wheel_name="front_left_link" wheel_color="Gazebo/Green"/>
+    <xacro:roller_group_macro base_wheel="front_left_link" roller_angle="${-pi/4}"/>  
+   
+   
+    <!-- Front Right Wheel -->
+    <joint name="front_right_joint" type="continuous">
+        <parent link="chassis_link" />
+        <child link="front_right_link" />
+        <origin xyz="0.3 -0.32 0" rpy="${pi/2} 0 0" />
+        <axis xyz="0 0 -1"/>
+    </joint>
+
+    <xacro:wheel_macro wheel_name="front_right_link" wheel_color="Gazebo/Green"/>   
+    <xacro:roller_group_macro base_wheel="front_right_link" roller_angle="${pi/4}"/>   
+    
+    
+    <!-- Rear Left Wheel -->
+    <joint name="rear_left_joint" type="continuous">
+        <parent link="chassis_link" />
+        <child link="rear_left_link" />
+        <origin xyz="-0.3 0.32 0" rpy="${pi/2} 0 0" />
+        <axis xyz="0 0 -1"/>
+        <!-- 0.3 (half chassis width) + 0.01 (half tyre width) + 0.01 (safety margin). -->
+    </joint>
+    
+    <xacro:wheel_macro wheel_name="rear_left_link" wheel_color="Gazebo/Yellow"/>
+    <xacro:roller_group_macro base_wheel="rear_left_link" roller_angle="${pi/4}"/>  
+    
+    
+    <!-- Rear Right Wheel -->   
+    <joint name="rear_right_joint" type="continuous">
+        <parent link="chassis_link" />
+        <child link="rear_right_link" />
+        <origin xyz="-0.3 -0.32 0" rpy="${pi/2} 0 0" />    
+        <axis xyz="0 0 -1"/>            
+    </joint>
+    
+    <xacro:wheel_macro wheel_name="rear_right_link" wheel_color="Gazebo/Yellow"/>
+    <xacro:roller_group_macro base_wheel="rear_right_link" roller_angle="${-pi/4}"/>                  
+    
+
+   <!-- ROS2 CONTROL -->
+    <ros2_control name="GazeboSystem" type="system">
+        <hardware>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+        
+        
+        <!-- Actuated Joints -->
+        <joint name="rear_left_joint">
+            <command_interface name="velocity">
+                <param name="min">-10</param>
+                <param name="max">10</param>
+            </command_interface>
+            <state_interface name="position" />
+            <state_interface name="velocity" />
+        </joint>
+        
+        <joint name="rear_right_joint">
+            <command_interface name="velocity">
+                <param name="min">-10</param>
+                <param name="max">10</param>
+            </command_interface>
+            <state_interface name="velocity" />
+            <state_interface name="position" />
+        </joint>
+        
+        <joint name="front_left_joint">
+            <command_interface name="velocity">
+                <param name="min">-10</param>
+                <param name="max">10</param>
+            </command_interface>
+            <state_interface name="position" />
+            <state_interface name="velocity" />
+        </joint>
+        
+        <joint name="front_right_joint">
+            <command_interface name="velocity">
+                <param name="min">-10</param>
+                <param name="max">10</param>
+            </command_interface>
+            <state_interface name="velocity" />
+            <state_interface name="position" />
+        </joint>
+
+
+
+        <!-- Non-Actuated Joints -->   
+        
+        <!-- Front Left Wheel Rollers-->     
+        <joint name="r_joint_1_front_left_link">           
+            <state_interface name="position" />
+        </joint>        
+        <joint name="r_joint_2_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_3_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_4_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_5_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_6_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_7_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_8_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_9_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_10_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_11_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_12_front_left_link">           
+            <state_interface name="position" />
+        </joint>
+        
+
+        <!-- Front Right Wheel Rollers-->     
+        <joint name="r_joint_1_front_right_link">           
+            <state_interface name="position" />
+        </joint>        
+        <joint name="r_joint_2_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_3_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_4_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_5_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_6_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_7_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_8_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_9_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_10_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_11_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_12_front_right_link">           
+            <state_interface name="position" />
+        </joint>
+        
+        <!-- Rear Left Wheel Rollers-->     
+        <joint name="r_joint_1_rear_left_link">           
+            <state_interface name="position" />
+        </joint>        
+        <joint name="r_joint_2_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_3_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_4_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_5_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_6_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_7_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_8_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_9_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_10_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_11_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_12_rear_left_link">           
+            <state_interface name="position" />
+        </joint>
+                
+        
+        <!-- Rear Right Wheel Rollers-->     
+        <joint name="r_joint_1_rear_right_link">           
+            <state_interface name="position" />
+        </joint>        
+        <joint name="r_joint_2_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_3_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_4_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_5_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_6_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_7_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_8_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_9_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_10_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_11_rear_right_link">           
+            <state_interface name="position" />
+        </joint>
+        <joint name="r_joint_12_rear_right_link">           
+            <state_interface name="position" />
+        </joint>                    
+    
+    </ros2_control>
+    
+    <gazebo>
+        <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+            <parameters>$(find gazebo_ros2_control_demos)/config/holonomic_drive_controller.yaml</parameters>
+        </plugin>
+    </gazebo>      
+
+</robot>
