@@ -65,7 +65,8 @@ public:
     rclcpp::Node::SharedPtr & node,
     gazebo::physics::ModelPtr parent_model,
     sdf::ElementPtr sdf)
-  : hardware_interface::ResourceManager(),
+  : hardware_interface::ResourceManager(
+      node->get_node_clock_interface(), node->get_node_logging_interface()),
     gazebo_system_loader_("gazebo_ros2_control",
       "gazebo_ros2_control::GazeboSystemInterface"),
     logger_(node->get_logger().get_child("GazeboResourceManager"))
