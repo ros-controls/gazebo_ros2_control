@@ -89,7 +89,10 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="file:///home/pratham/Desktop/robotics/projects/smash_it/CAD_Models/mec_model/exported/roller_M1-Body001.stl" scale="0.001 0.001 0.001"/>  
+                
+                    <!-- NOTE: When using the relative path using "package://", the mesh are not being loaded in gazebo. The mesh are loaded properly when using absolute path like "file://". -->
+                     
+                    <mesh filename="file:///home/Desktop/roller.stl" scale="0.001 0.001 0.001"/>  
                    
                     <!-- <mesh filename="package://gazebo_ros2_control_demos/urdf/mesh/holonomic_drive/roller.stl" scale="0.001 0.001 0.001"/>                     -->
                 </geometry>
@@ -99,7 +102,7 @@
             <collision>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="file:///home/pratham/Desktop/robotics/projects/smash_it/CAD_Models/mec_model/exported/roller_M1-Body001.stl" scale="0.001 0.001 0.001"/>
+                    <mesh filename="file:///home/Desktop/roller.stl" scale="0.001 0.001 0.001"/>
                     <!-- <mesh filename="package://gazebo_ros2_control_demos/urdf/mesh/holonomic_drive/roller.stl" scale="0.001 0.001 0.001"/> -->
                 </geometry>
             </collision>
