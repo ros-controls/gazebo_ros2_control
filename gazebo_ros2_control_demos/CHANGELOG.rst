@@ -2,6 +2,22 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.2 (2024-07-09)
+------------------
+* Add missing dependency (`#350 <https://github.com/ros-controls/gazebo_ros2_control/issues/350>`_)
+* Remove stamped twist parameter (`#333 <https://github.com/ros-controls/gazebo_ros2_control/issues/333>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Change initial pose of pendulum (`#312 <https://github.com/ros-controls/gazebo_ros2_control/issues/312>`_)
+  Co-authored-by: chameau5050 <54971185+chameau5050@users.noreply.github.com>
+* Change initial pose of pendulum (`#313 <https://github.com/ros-controls/gazebo_ros2_control/issues/313>`_)
+* Add an example with a passive joint (`#172 <https://github.com/ros-controls/gazebo_ros2_control/issues/172>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Rewrite mimic joints (`#297 <https://github.com/ros-controls/gazebo_ros2_control/issues/297>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Fix topic (`#291 <https://github.com/ros-controls/gazebo_ros2_control/issues/291>`_)
+* Cleanup of demos (`#290 <https://github.com/ros-controls/gazebo_ros2_control/issues/290>`_)
+* Contributors: Christoph Fröhlich, mergify[bot]
+
 0.7.1 (2024-01-24)
 ------------------
 
