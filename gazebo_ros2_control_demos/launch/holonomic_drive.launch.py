@@ -12,13 +12,11 @@ import xacro
 
 
 def generate_launch_description():
-
-
     package_name='gazebo_ros2_control_demos' 
 
     # Process the URDF file
     pkg_path = os.path.join(get_package_share_directory(package_name))
-    xacro_file = os.path.join(pkg_path,'urdf','test_holonomic_drive.xacro.urdf')
+    xacro_file = os.path.join(pkg_path, 'urdf', 'test_holonomic_drive.xacro.urdf')
     robot_description_config = xacro.process_file(xacro_file)
 
     # Robot State Publisher
@@ -30,7 +28,6 @@ def generate_launch_description():
         parameters=[params]
     )
 
-
     # Gazebo
     gazebo = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
@@ -41,8 +38,7 @@ def generate_launch_description():
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
                                    '-entity', 'bot'],
-                        output='screen')
-    
+                        output='screen')    
 
     # Holonomic Drive Conroller
     mec_cont_spawner = Node(
@@ -57,7 +53,6 @@ def generate_launch_description():
         executable="spawner",
         arguments=["joint_broad"],
     )
-    
             
     # RVIZ
     rviz = Node(
