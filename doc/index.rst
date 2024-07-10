@@ -8,6 +8,12 @@ gazebo_ros2_control
 
 This is a ROS 2 package for integrating the *ros2_control* controller architecture with the `Gazebo Classic <https://classic.gazebosim.org/>`__ simulator.
 
+.. note::
+
+  Gazebo Classic goes end-of-life in January of 2025. We strongly recommend all users migrate from Gazebo Classic (numbered releases) to modern Gazebo (formerly known as Ignition 3, lettered releases) before January 2025.
+
+  Furthermore, Gazebo Classic is not released to Ubuntu Noble. As a consequence, gazebo_ros2_control won't be released for Jazzy and Rolling anymore.
+
 This package provides a Gazebo plugin which instantiates a *ros2_control* controller manager and connects it to a Gazebo model.
 
 .. image:: img/gazebo_ros2_control_position.gif
@@ -131,6 +137,58 @@ We should include:
   </joint>
 
 
+Using PID control joints
+-----------------------------------------------------------
+
+To use PID control joints in gazebo_ros2_control, you should define their parameters inside the ``<joint>`` tag
+within the ``<ros2_control>`` tag. These PID joints can be controlled either in position or velocity.
+
+- To control a joint with velocity PID, simply set its ``command_interface`` to ``velocity_pid``.
+- To control a joint with position PID, set its ``command_interface`` to ``position_pid``.
+
+.. note::
+    You cannot have both command interfaces set to position and position_pid for the same joint. The same restriction applies to velocity (and velocity_pid).
+
+To create a system with one joint that can be controlled using both position_pid and velocity_pid, follow this example:
+
+.. code-block:: xml
+
+ <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="slider_to_cart">
+
+      <param name="pos_kp">10</param>
+      <param name="pos_ki">1</param>
+      <param name="pos_kd">2</param>
+      <param name="pos_max_integral_error">10000</param>
+
+      <param name="vel_kp">10</param>
+      <param name="vel_ki">5</param>
+      <param name="vel_kd">2</param>
+      <param name="vel_max_integral_error">10000</param>
+
+      <command_interface name="position_pid"/>
+      <command_interface name="velocity_pid"/>
+
+      <state_interface name="position">
+        <param name="initial_value">1.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+  </ros2_control>
+
+Where the parameters are as follows:
+
+- ``pos_kp``: Proportional gain
+- ``pos_ki``: Integral gain
+- ``pos_kd``: Derivative gain
+- ``pos_max_integral_error``: Maximum summation of the error
+
+The same definitions apply to the ``vel_*`` parameters.
+
 Add the gazebo_ros2_control plugin
 ==========================================
 
@@ -154,7 +212,23 @@ The *gazebo_ros2_control* ``<plugin>`` tag also has the following optional child
 
 * ``<robot_param>``: The location of the ``robot_description`` (URDF) on the parameter server, defaults to ``robot_description``
 * ``<robot_param_node>``: Name of the node where the ``robot_param`` is located, defaults to ``robot_state_publisher``
-* ``<parameters>``: YAML file with the configuration of the controllers
+* ``<hold_joints>``: if set to true (default), it will hold the joints' position if their interface was not claimed, e.g., the controller hasn't been activated yet.
+* ``<parameters>``: A YAML file with the configuration of the controllers. This element can be given multiple times to load multiple files.
+* ``<controller_manager_name>``: Set controller manager name (default: ``controller_manager``)
+
+Additionally, one can specify a namespace and remapping rules, which will be forwarded to the controller_manager and loaded controllers. Add the following ``<ros>`` section:
+
+.. code-block:: xml
+
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      ...
+      <ros>
+        <namespace>my_namespace</namespace>
+        <remapping>/robot_description:=/robot_description_full</remapping>
+      </ros>
+    </plugin>
+  </gazebo>
 
 Default gazebo_ros2_control Behavior
 -----------------------------------------------------------
@@ -204,7 +278,7 @@ Use the tag ``<parameters>`` inside ``<plugin>`` to set the YAML file with the c
     <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
       <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller.yaml</parameters>
     </plugin>
-  <gazebo>
+  </gazebo>
 
 The following is a basic configuration of the controllers:
 
@@ -220,7 +294,12 @@ gazebo_ros2_control_demos
 
 This package contains the contents for testing gazebo_ros2_control. It is running Gazebo Classic and some other ROS 2 nodes.
 
-There are some examples in the *Gazebo_ros2_control_demos* package. These examples allow to launch a cart in a 30 meter rail.
+There are some examples in the *Gazebo_ros2_control_demos* package.
+
+Cart on rail
+-----------------------------------------------------------
+
+These examples allow to launch a cart in a 30 meter rail.
 
 .. image:: img/cart.gif
   :alt: Cart
@@ -232,22 +311,41 @@ You can run some of the configuration running the following commands:
   ros2 launch gazebo_ros2_control_demos cart_example_position.launch.py
   ros2 launch gazebo_ros2_control_demos cart_example_velocity.launch.py
   ros2 launch gazebo_ros2_control_demos cart_example_effort.launch.py
-  ros2 launch gazebo_ros2_control_demos diff_drive.launch.py
-  ros2 launch gazebo_ros2_control_demos tricycle_drive.launch.py
-
 
 When the Gazebo world is launched you can run some of the following commands to move the cart.
 
 .. code-block:: shell
 
   ros2 run gazebo_ros2_control_demos example_position
+  ros2 run gazebo_ros2_control_demos example_position_pid
   ros2 run gazebo_ros2_control_demos example_velocity
   ros2 run gazebo_ros2_control_demos example_effort
+
+Mobile robots
+-----------------------------------------------------------
+
+You can run some of the mobile robots running the following commands:
+
+.. code-block:: shell
+
+  ros2 launch gazebo_ros2_control_demos diff_drive.launch.py
+  ros2 launch gazebo_ros2_control_demos tricycle_drive.launch.py
+
+
+When the Gazebo world is launched you can run some of the following commands to move the robots.
+
+.. code-block:: shell
+
   ros2 run gazebo_ros2_control_demos example_diff_drive
   ros2 run gazebo_ros2_control_demos example_tricycle_drive
 
+Gripper
+-----------------------------------------------------------
+The following example shows a parallel gripper with a mimic joint:
 
-The following example shows parallel gripper with mimic joint:
+.. code-block:: shell
+
+  ros2 launch gazebo_ros2_control_demos gripper_mimic_joint_example_position.launch.py
 
 .. image:: img/gripper.gif
   :alt: Cart
@@ -264,3 +362,40 @@ Send example commands:
 .. code-block:: shell
 
   ros2 run gazebo_ros2_control_demos example_gripper
+
+Pendulum with passive joints
+-----------------------------------------------------------
+
+The following example shows a cart with a pendulum arm. This uses the effort command interface for the cart's
+degree of freedom on the rail, and the physics of the passive joint of the pendulum is solved correctly.
+
+.. code-block:: shell
+
+  ros2 launch gazebo_ros2_control_demos pendulum_example_effort.launch.py
+  ros2 run gazebo_ros2_control_demos example_effort
+
+.. note::
+
+  If the position command interface is used instead, the motion of the pendulum is not calculated correctly and does not move at all, see this `PR <https://github.com/ros-controls/gazebo_ros2_control/issues/240>`__. This also holds true if a mimicked joint with position interface is used. To demonstrate this, run
+
+  .. code-block:: shell
+
+    ros2 launch gazebo_ros2_control_demos pendulum_example_position.launch.py
+    ros2 run gazebo_ros2_control_demos example_position
+
+
+
+PID control joints
+-----------------------------------------------------------
+
+The following examples shows a vertical cart control by a PID joint using position and velocity cmd.
+
+.. code-block:: shell
+
+  ros2 launch gazebo_ros2_control_demos vertical_cart_example_position_pid.launch.py
+  ros2 launch gazebo_ros2_control_demos vertical_cart_example_velocity_pid.launch.py
+
+.. code-block:: shell
+
+  ros2 run gazebo_ros2_control_demos example_position_pid
+  ros2 run gazebo_ros2_control_demos example_velocity

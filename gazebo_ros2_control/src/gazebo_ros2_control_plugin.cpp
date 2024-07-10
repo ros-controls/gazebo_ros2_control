@@ -36,6 +36,8 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 #include "gazebo_ros/node.hpp"
 
@@ -182,6 +184,20 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   } else {
     impl_->robot_description_node_ = "robot_state_publisher";  // default
   }
+  // Hold joints if no control mode is active?
+  bool hold_joints = true;  // default
+  if (sdf->HasElement("hold_joints")) {
+    hold_joints =
+      sdf->GetElement("hold_joints")->Get<bool>();
+  }
+
+  // Read urdf from ros parameter server
+  std::string urdf_string;
+  urdf_string = impl_->getURDF(impl_->robot_description_);
+  if (urdf_string.empty()) {
+    RCLCPP_ERROR_STREAM(impl_->model_nh_->get_logger(), "An empty URDF was passed. Exiting.");
+    return;
+  }
 
   // There's currently no direct way to set parameters to the plugin's node
   // So we have to parse the plugin file manually and set it to the node's context.
@@ -201,6 +217,12 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     RCLCPP_ERROR(
       impl_->model_nh_->get_logger(), "No parameter file provided. Configuration might be wrong");
   }
+
+  // set the robot description parameter
+  // to propagate it among controller manager and controllers
+  std::string rb_arg = std::string("robot_description:=") + urdf_string;
+  arguments.push_back(RCL_PARAM_FLAG);
+  arguments.push_back(rb_arg);
 
   if (sdf->HasElement("ros")) {
     sdf = sdf->GetElement("ros");
@@ -244,13 +266,10 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       std::chrono::duration<double>(
         impl_->parent_model_->GetWorld()->Physics()->GetMaxStepSize())));
 
-  // Read urdf from ros parameter server then
   // setup actuators and mechanism control node.
   // This call will block if ROS is not properly initialized.
-  std::string urdf_string;
   std::vector<hardware_interface::HardwareInfo> control_hardware_info;
   try {
-    urdf_string = impl_->getURDF(impl_->robot_description_);
     control_hardware_info = hardware_interface::parse_control_resources_from_urdf(urdf_string);
   } catch (const std::runtime_error & ex) {
     RCLCPP_ERROR_STREAM(
@@ -299,6 +318,23 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
     RCLCPP_DEBUG(
       impl_->model_nh_->get_logger(), "Loaded hardware interface %s!",
       robot_hw_sim_type_str_.c_str());
+    try {
+      node_ros2->declare_parameter("hold_joints", rclcpp::ParameterValue(hold_joints));
+    } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has already been declared, %s",
+        e.what());
+    } catch (const rclcpp::exceptions::InvalidParametersException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' has invalid name, %s", e.what());
+    } catch (const rclcpp::exceptions::InvalidParameterValueException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value is invalid, %s", e.what());
+    } catch (const rclcpp::exceptions::InvalidParameterTypeException & e) {
+      RCLCPP_ERROR(
+        impl_->model_nh_->get_logger(), "Parameter 'hold_joints' value has wrong type, %s",
+        e.what());
+    }
     if (!gazeboSystem->initSim(
         node_ros2,
         impl_->parent_model_,
@@ -421,7 +457,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
       RCLCPP_ERROR(
         model_nh_->get_logger(), "Interrupted while waiting for %s service. Exiting.",
         robot_description_node_.c_str());
-      return 0;
+      return "";
     }
     RCLCPP_ERROR(
       model_nh_->get_logger(), "%s service not available, waiting again...",
@@ -452,7 +488,7 @@ std::string GazeboRosControlPrivate::getURDF(std::string param_name) const
         model_nh_->get_logger(), "gazebo_ros2_control plugin is waiting for model"
         " URDF in parameter [%s] on the ROS param server.", search_param_name.c_str());
     }
-    usleep(100000);
+    std::this_thread::sleep_for(std::chrono::microseconds(100000));
   }
   RCLCPP_INFO(
     model_nh_->get_logger(), "Received urdf from param server, parsing...");
