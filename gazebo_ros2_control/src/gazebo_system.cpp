@@ -116,6 +116,9 @@ public:
 
   /// \brief mapping of mimicked joints to index of joint they mimic
   std::vector<MimicJoint> mimic_joints_;
+
+  // Should hold the joints if no control_mode is active
+  bool hold_joints_ = true;
 };
 
 namespace gazebo_ros2_control
@@ -140,6 +143,30 @@ bool GazeboSystem::initSim(
     RCLCPP_ERROR(this->nh_->get_logger(), "No physics engine configured in Gazebo.");
     return false;
   }
+
+  try {
+    this->dataPtr->hold_joints_ = this->nh_->get_parameter("hold_joints").as_bool();
+  } catch (rclcpp::exceptions::ParameterUninitializedException & ex) {
+    RCLCPP_ERROR(
+      this->nh_->get_logger(),
+      "Parameter 'hold_joints' not initialized, with error %s", ex.what());
+    RCLCPP_WARN_STREAM(
+      this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
+  } catch (rclcpp::exceptions::ParameterNotDeclaredException & ex) {
+    RCLCPP_ERROR(
+      this->nh_->get_logger(),
+      "Parameter 'hold_joints' not declared, with error %s", ex.what());
+    RCLCPP_WARN_STREAM(
+      this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
+  } catch (rclcpp::ParameterTypeException & ex) {
+    RCLCPP_ERROR(
+      this->nh_->get_logger(),
+      "Parameter 'hold_joints' has wrong type: %s", ex.what());
+    RCLCPP_WARN_STREAM(
+      this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
+  }
+  RCLCPP_DEBUG_STREAM(
+    this->nh_->get_logger(), "hold_joints (system): " << this->dataPtr->hold_joints_ << std::endl);
 
   registerJoints(hardware_info, parent_model);
   registerSensors(hardware_info, parent_model);
@@ -739,25 +766,21 @@ hardware_interface::return_type GazeboSystem::write(
         double cmd = this->dataPtr->joint_position_cmd_[j];
         this->dataPtr->sim_joints_[j]->SetPosition(0, cmd, true);
         this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
-
       } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY) {
         this->dataPtr->sim_joints_[j]->SetVelocity(0, this->dataPtr->joint_velocity_cmd_[j]);
-
       } else if (this->dataPtr->joint_control_methods_[j] & EFFORT) {
         this->dataPtr->sim_joints_[j]->SetForce(0, this->dataPtr->joint_effort_cmd_[j]);
-
       } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY_PID) {
         double vel_goal = this->dataPtr->joint_velocity_cmd_[j];
         double vel = this->dataPtr->sim_joints_[j]->GetVelocity(0);
         double cmd = this->dataPtr->vel_pid[j].computeCommand(vel_goal - vel, dt);
         this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
-
       } else if (this->dataPtr->joint_control_methods_[j] & POSITION_PID) {
         double pos_goal = this->dataPtr->joint_position_cmd_[j];
         double pos = this->dataPtr->sim_joints_[j]->Position(0);
         double cmd = this->dataPtr->pos_pid[j].computeCommand(pos_goal - pos, dt);
         this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
-      } else if (this->dataPtr->is_joint_actuated_[j]) {
+      } else if (this->dataPtr->is_joint_actuated_[j] && this->dataPtr->hold_joints_) {
         // Fallback case is a velocity command of zero (only for actuated joints)
         this->dataPtr->sim_joints_[j]->SetVelocity(0, 0.0);
       }

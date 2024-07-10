@@ -2,6 +2,9 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.6.7 (2024-07-02)
+------------------
+
 0.6.6 (2024-05-14)
 ------------------
 * Change initial pose of pendulum (`#313 <https://github.com/ros-controls/gazebo_ros2_control//issues/313>`_) (`#316 <https://github.com/ros-controls/gazebo_ros2_control//issues/316>`_)
