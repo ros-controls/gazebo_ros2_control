@@ -1,4 +1,4 @@
-# Copyright 2022 Stogl Robotics Consulting UG (haftungsbeschränkt)
+# Copyright 2024 ros2_control Development Team
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,75 +11,73 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-# Author: Denis Stogl
+
+import os
+
+from ament_index_python.packages import get_package_share_directory
+
 
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess, IncludeLaunchDescription, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, FindExecutable, PathJoinSubstitution
+
 from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
+
+import xacro
 
 
 def generate_launch_description():
+    gazebo = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
+             )
 
-    robot_description_content = Command(
-        [
-            PathJoinSubstitution([FindExecutable(name='xacro')]),
-            ' ',
-            PathJoinSubstitution(
-                [FindPackageShare(
-                    'gazebo_ros2_control_demos'),
-                    'urdf',
-                    'test_gripper_mimic_joint.xacro.urdf']
-            ),
-        ]
-    )
-    robot_description = {'robot_description': robot_description_content}
+    gazebo_ros2_control_demos_path = os.path.join(
+        get_package_share_directory('gazebo_ros2_control_demos'))
+
+    xacro_file = os.path.join(gazebo_ros2_control_demos_path,
+                              'urdf',
+                              'test_pendulum_effort.xacro.urdf')
+
+    doc = xacro.parse(open(xacro_file))
+    xacro.process_doc(doc)
+    params = {'robot_description': doc.toxml()}
 
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[robot_description]
-    )
-
-    gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            [FindPackageShare('gazebo_ros'), '/launch', '/gazebo.launch.py']
-        ),
+        parameters=[params]
     )
 
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
-                                   '-entity', 'gripper'],
+                                   '-entity', 'cartpole'],
                         output='screen')
 
-    load_joint_state_broadcaster = ExecuteProcess(
+    load_joint_state_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster'],
         output='screen'
     )
 
-    load_gripper_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-             'gripper_controller'],
+    load_joint_trajectory_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'effort_controller'],
         output='screen'
     )
 
     return LaunchDescription([
         RegisterEventHandler(
-          event_handler=OnProcessExit(
+            event_handler=OnProcessExit(
                 target_action=spawn_entity,
-                on_exit=[load_joint_state_broadcaster],
+                on_exit=[load_joint_state_controller],
             )
         ),
         RegisterEventHandler(
             event_handler=OnProcessExit(
-                target_action=load_joint_state_broadcaster,
-                on_exit=[load_gripper_controller],
+                target_action=load_joint_state_controller,
+                on_exit=[load_joint_trajectory_controller],
             )
         ),
         gazebo,

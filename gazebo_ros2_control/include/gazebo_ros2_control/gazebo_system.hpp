@@ -16,12 +16,16 @@
 #ifndef GAZEBO_ROS2_CONTROL__GAZEBO_SYSTEM_HPP_
 #define GAZEBO_ROS2_CONTROL__GAZEBO_SYSTEM_HPP_
 
+#define VELOCITY_PID_PARAMS_PREFIX "vel_"
+#define POSITION_PID_PARAMS_PREFIX "pos_"
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "angles/angles.h"
 
+#include "control_toolbox/pid.hpp"
 #include "gazebo_ros2_control/gazebo_system_interface.hpp"
 
 #include "std_msgs/msg/bool.hpp"
@@ -85,6 +89,10 @@ private:
   void registerSensors(
     const hardware_interface::HardwareInfo & hardware_info,
     gazebo::physics::ModelPtr parent_model);
+
+  control_toolbox::Pid extractPID(
+    std::string prefix,
+    hardware_interface::ComponentInfo joint_info);
 
   /// \brief Private data class
   std::unique_ptr<GazeboSystemPrivate> dataPtr;

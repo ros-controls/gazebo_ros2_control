@@ -2,6 +2,26 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.2 (2024-07-09)
+------------------
+* Propagate the node clock and logging interface to ResourceManager (`#357 <https://github.com/ros-controls/gazebo_ros2_control/issues/357>`_)
+* Simplify access for robot description from CM by overriding RM (`#349 <https://github.com/ros-controls/gazebo_ros2_control/issues/349>`_)
+* Initialize antiwindup variable properly (`#326 <https://github.com/ros-controls/gazebo_ros2_control/issues/326>`_)
+* Change initial pose of pendulum (`#312 <https://github.com/ros-controls/gazebo_ros2_control/issues/312>`_)
+  Co-authored-by: chameau5050 <54971185+chameau5050@users.noreply.github.com>
+* Rewrite mimic joints (`#297 <https://github.com/ros-controls/gazebo_ros2_control/issues/297>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Update precommit config (`#298 <https://github.com/ros-controls/gazebo_ros2_control/issues/298>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Fix incorrect force-torque sensor vec population (`#296 <https://github.com/ros-controls/gazebo_ros2_control/issues/296>`_)
+* Update gazebo_ros2_control_plugin.cpp (`#286 <https://github.com/ros-controls/gazebo_ros2_control/issues/286>`_)
+* set the robot description parameter (`#277 <https://github.com/ros-controls/gazebo_ros2_control/issues/277>`_) (`#285 <https://github.com/ros-controls/gazebo_ros2_control/issues/285>`_)
+  (cherry picked from commit 7f23568a31ec812c3745af89d1f3bc54ac787af0)
+  Co-authored-by: AB <banonran@gmx.de>
+* Fix crashing due to an invalid parameter in the initial value. (`#271 <https://github.com/ros-controls/gazebo_ros2_control/issues/271>`_)
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Contributors: Christoph Fröhlich, Mateus Menezes, Sai Kishor Kothakota, Tobias Fischer, Wiktor Bajor, mergify[bot]
+
 0.7.1 (2024-01-24)
 ------------------
 * Load the URDF to the resource_manager before parsing it to CM  (`#262 <https://github.com/ros-controls/gazebo_ros2_control//issues/262>`_)

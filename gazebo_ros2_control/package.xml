@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>gazebo_ros2_control</name>
-  <version>0.7.1</version>
+  <version>0.7.2</version>
   <description>gazebo_ros2_control</description>
 
   <maintainer email="alejandro@osrfoundation.org">Alejandro Hernandez</maintainer>
@@ -19,9 +19,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>angles</depend>
+  <depend>controller_manager</depend>
+  <depend>control_toolbox</depend>
   <depend>gazebo_dev</depend>
   <depend>gazebo_ros</depend>
-  <depend>controller_manager</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
