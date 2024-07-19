@@ -399,31 +399,27 @@ The following examples shows a vertical cart control by a PID joint using positi
 
   ros2 run gazebo_ros2_control_demos example_position_pid
   ros2 run gazebo_ros2_control_demos example_velocity
-  
-  
+
+
 Holonomic Drive(Mecanum Wheels)
 -----------------------------------------------------------
 
-The following example shows mecanum wheels based cart controlled by a `Holonomic_Drive_Controller <https://github.com/ros-controls/ros2_controllers/pull/512>`__. 
-
+The following example shows mecanum wheels based cart controlled by a `Holonomic_Drive_Controller <https://github.com/ros-controls/ros2_controllers/pull/512>`__.
 
 To launch the setup spawning the mecanum wheel based cart, execute the following comand:
 
-
 .. code-block:: shell
 
-ros2 launch gazebo_ros2_control_demos holonomic_drive.launch.py 
-
+  ros2 launch gazebo_ros2_control_demos holonomic_drive.launch.py
 
 Next to controll the cart excute the following command and read the terminal output on how to control the cart:
 
 .. code-block:: shell
 
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/mec_cont/reference -p stamped:=true
-
+  ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r /cmd_vel:=/mecanum_drive_controller/reference -p stamped:=true
 
 .. note::
 
   Initially the cart would be moving very slowly. Press ``q`` multiple times to increse speed of the cart as per your preference.
-  
+
   The following `link <https://robotics.stackexchange.com/questions/111154/holonomic-drive-in-ros2-using-mecanum-wheels>`__ might help for additional information on how to install the controller.
