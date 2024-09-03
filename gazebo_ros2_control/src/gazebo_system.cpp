@@ -270,7 +270,7 @@ void GazeboSystem::registerJoints(
 
   for (unsigned int j = 0; j < this->dataPtr->n_dof_; j++) {
     auto & joint_info = hardware_info.joints[j];
-    std::string joint_name = this->dataPtr->joint_names_[j] = joint_info.name;
+    const std::string joint_name = this->dataPtr->joint_names_[j] = joint_info.name;
 
     gazebo::physics::JointPtr simjoint = parent_model->GetJoint(joint_name);
     this->dataPtr->sim_joints_.push_back(simjoint);
