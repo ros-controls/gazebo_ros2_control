@@ -203,25 +203,39 @@ bool GazeboSystem::extractPID(
     kd = 0.0;
   }
 
-  if (joint_info.parameters.find(prefix + "max_integral_error") != joint_info.parameters.end()) {
-    max_integral_error = std::stod(joint_info.parameters.at(prefix + "max_integral_error"));
-  } else {
-    max_integral_error = std::numeric_limits<double>::max();
-  }
-
-  if (joint_info.parameters.find(prefix + "min_integral_error") != joint_info.parameters.end()) {
-    min_integral_error = std::stod(joint_info.parameters.at(prefix + "min_integral_error"));
-  } else {
-    min_integral_error = std::numeric_limits<double>::min();
-  }
-
-  if (joint_info.parameters.find(prefix + "antiwindup") != joint_info.parameters.end()) {
-    if (joint_info.parameters.at(prefix + "antiwindup") == "true" ||
-      joint_info.parameters.at(prefix + "antiwindup") == "True")
-    {
-      antiwindup = true;
+  if (are_pids_set) {
+    if (joint_info.parameters.find(prefix + "max_integral_error") != joint_info.parameters.end()) {
+      max_integral_error = std::stod(joint_info.parameters.at(prefix + "max_integral_error"));
+    } else {
+      max_integral_error = std::numeric_limits<double>::max();
     }
+
+    if (joint_info.parameters.find(prefix + "min_integral_error") != joint_info.parameters.end()) {
+      min_integral_error = std::stod(joint_info.parameters.at(prefix + "min_integral_error"));
+    } else {
+      min_integral_error = std::numeric_limits<double>::min();
+    }
+
+    if (joint_info.parameters.find(prefix + "antiwindup") != joint_info.parameters.end()) {
+      if (joint_info.parameters.at(prefix + "antiwindup") == "true" ||
+        joint_info.parameters.at(prefix + "antiwindup") == "True")
+      {
+        antiwindup = true;
+      }
+    }
+
+    RCLCPP_INFO_STREAM(
+      this->nh_->get_logger(),
+      "Setting kp = " << kp << "\t"
+                      << " ki = " << ki << "\t"
+                      << " kd = " << kd << "\t"
+                      << " max_integral_error = " << max_integral_error << "\t"
+                      << "antiwindup =" << std::boolalpha << antiwindup);
+
+    pid.initPid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
   }
+  return are_pids_set;
+}
 
   RCLCPP_INFO_STREAM(
     this->nh_->get_logger(),
