@@ -110,6 +110,12 @@ public:
 
   // Should hold the joints if no control_mode is active
   bool hold_joints_ = true;
+
+  // Current position and velocity control method
+  GazeboSystemInterface::ControlMethod_ position_control_method_ =
+    GazeboSystemInterface::ControlMethod_::POSITION;
+  GazeboSystemInterface::ControlMethod_ velocity_control_method_ =
+    GazeboSystemInterface::ControlMethod_::VELOCITY;
 };
 
 namespace gazebo_ros2_control
@@ -238,14 +244,70 @@ bool GazeboSystem::extractPID(
   return are_pids_set;
 }
 
-  RCLCPP_INFO_STREAM(
-    this->nh_->get_logger(),
-    "Setting kp = " << kp << "\t"
-                    << " ki = " << ki << "\t"
-                    << " kd = " << kd << "\t"
-                    << " max_integral_error = " << max_integral_error);
 
-  pid.initPid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+bool GazeboSystem::extractPIDFromParameters(
+  const std::string & control_mode, const std::string & joint_name,
+  control_toolbox::Pid & pid)
+{
+  const std::string parameter_prefix = "pid_gains." + control_mode + "." + joint_name;
+  auto get_pid_entry = [this, parameter_prefix](const std::string & entry, double & value) -> bool {
+      try {
+        // Check if the parameter is declared, if not, declare the default value NaN
+        if (!this->nh_->has_parameter(parameter_prefix + "." + entry)) {
+          this->nh_->declare_parameter<double>(
+            parameter_prefix + "." + entry,
+            std::numeric_limits<double>::quiet_NaN());
+        }
+        value = this->nh_->get_parameter(parameter_prefix + "." + entry).as_double();
+      } catch (rclcpp::exceptions::ParameterNotDeclaredException & ex) {
+        RCLCPP_ERROR(
+          this->nh_->get_logger(),
+          "Parameter '%s' not declared, with error %s", entry.c_str(), ex.what());
+        return false;
+      } catch (rclcpp::exceptions::InvalidParameterTypeException & ex) {
+        RCLCPP_ERROR(
+          this->nh_->get_logger(),
+          "Parameter '%s' has wrong type: %s", entry.c_str(), ex.what());
+        return false;
+      }
+      return std::isfinite(value);
+    };
+  bool are_pids_set = true;
+  double kp, ki, kd, max_integral_error, min_integral_error;
+  bool antiwindup;
+  are_pids_set &= get_pid_entry("kp", kp);
+  are_pids_set &= get_pid_entry("ki", ki);
+  are_pids_set &= get_pid_entry("kd", kd);
+  if (are_pids_set) {
+    get_pid_entry("max_integral_error", max_integral_error);
+    get_pid_entry("min_integral_error", min_integral_error);
+    const std::string antiwindup_str = "antiwindup";
+    if (!this->nh_->has_parameter(parameter_prefix + "." + antiwindup_str)) {
+      this->nh_->declare_parameter(
+        parameter_prefix + "." + antiwindup_str,
+        false);
+    }
+    try {
+      antiwindup = this->nh_->get_parameter(parameter_prefix + "." + antiwindup_str).as_bool();
+    } catch (rclcpp::exceptions::ParameterNotDeclaredException & ex) {
+      RCLCPP_ERROR(
+        this->nh_->get_logger(),
+        "Parameter '%s' not declared, with error %s", antiwindup_str.c_str(), ex.what());
+    } catch (rclcpp::ParameterTypeException & ex) {
+      RCLCPP_ERROR(
+        this->nh_->get_logger(),
+        "Parameter '%s' has wrong type: %s", antiwindup_str.c_str(), ex.what());
+    }
+    RCLCPP_INFO_STREAM(
+      this->nh_->get_logger(),
+      "Setting kp = " << kp << "\t"
+                      << " ki = " << ki << "\t"
+                      << " kd = " << kd << "\t"
+                      << " max_integral_error = " << max_integral_error << "\t"
+                      << "antiwindup =" << std::boolalpha << antiwindup << " from node parameters");
+    pid.initPid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+  }
+
   return are_pids_set;
 }
 
@@ -381,12 +443,15 @@ void GazeboSystem::registerJoints(
           this->nh_->get_logger(), "\t\t "
             << joint_info.command_interfaces[i].name);
 
-        if (joint_info.command_interfaces[i].name == "position_pid") {
-          this->dataPtr->is_pos_pid[j] = this->extractPID(
-            POSITION_PID_PARAMS_PREFIX, joint_info,
-            this->dataPtr->pos_pid[j]);
-        } else {
-          this->dataPtr->is_pos_pid[j] = false;
+        this->dataPtr->is_pos_pid[j] = this->extractPID(
+          POSITION_PID_PARAMS_PREFIX, joint_info,
+          this->dataPtr->pos_pid[j]) || this->extractPIDFromParameters(
+          joint_info.command_interfaces[i].name, joint_name, this->dataPtr->pos_pid[j]);
+
+        if (this->dataPtr->is_pos_pid[j]) {
+          RCLCPP_INFO_STREAM(
+            this->nh_->get_logger(), "Found position PIDs for joint: " << joint_name << "!");
+          this->dataPtr->position_control_method_ = POSITION_PID;
         }
 
         this->dataPtr->command_interfaces_.emplace_back(
@@ -416,11 +481,17 @@ void GazeboSystem::registerJoints(
           this->nh_->get_logger(), "\t\t "
             << joint_info.command_interfaces[i].name);
 
-        if (joint_info.command_interfaces[i].name == "velocity_pid") {
-          this->dataPtr->is_vel_pid[j] = this->extractPID(
-            VELOCITY_PID_PARAMS_PREFIX, joint_info,
-            this->dataPtr->vel_pid[j]);
+        this->dataPtr->is_vel_pid[j] = this->extractPID(
+          VELOCITY_PID_PARAMS_PREFIX, joint_info,
+          this->dataPtr->vel_pid[j]) || this->extractPIDFromParameters(
+          joint_info.command_interfaces[i].name, joint_name, this->dataPtr->vel_pid[j]);
+
+        if (this->dataPtr->is_vel_pid[j]) {
+          RCLCPP_INFO_STREAM(
+            this->nh_->get_logger(), "Found velocity PIDs for joint: " << joint_name << "!");
+          this->dataPtr->velocity_control_method_ = VELOCITY_PID;
         }
+
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name,
           hardware_interface::HW_IF_VELOCITY,
@@ -663,19 +734,13 @@ GazeboSystem::perform_command_mode_switch(
       if (interface_name ==
         (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_POSITION))
       {
-        if (!this->dataPtr->is_pos_pid[j]) {
-          this->dataPtr->joint_control_methods_[j] |= POSITION;
-        } else {
-          this->dataPtr->joint_control_methods_[j] |= POSITION_PID;
-        }
+        this->dataPtr->joint_control_methods_[j] |=
+          static_cast<ControlMethod_>(this->dataPtr->position_control_method_);
       } else if (interface_name == // NOLINT
         (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_VELOCITY))
       {
-        if (!this->dataPtr->is_vel_pid[j]) {
-          this->dataPtr->joint_control_methods_[j] |= VELOCITY;
-        } else {
-          this->dataPtr->joint_control_methods_[j] |= VELOCITY_PID;
-        }
+        this->dataPtr->joint_control_methods_[j] |=
+          static_cast<ControlMethod_>(this->dataPtr->velocity_control_method_);
       } else if (interface_name == // NOLINT
         (this->dataPtr->joint_names_[j] + "/" + hardware_interface::HW_IF_EFFORT))
       {

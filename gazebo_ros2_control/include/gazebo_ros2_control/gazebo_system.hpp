@@ -94,6 +94,9 @@ private:
     const std::string & prefix,
     const hardware_interface::ComponentInfo & joint_info, control_toolbox::Pid & pid);
 
+  bool extractPIDFromParameters(
+    const std::string & control_mode, const std::string & joint_name, control_toolbox::Pid & pid);
+
   /// \brief Private data class
   std::unique_ptr<GazeboSystemPrivate> dataPtr;
 };
