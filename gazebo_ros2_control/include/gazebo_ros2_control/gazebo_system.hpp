@@ -90,9 +90,9 @@ private:
     const hardware_interface::HardwareInfo & hardware_info,
     gazebo::physics::ModelPtr parent_model);
 
-  control_toolbox::Pid extractPID(
-    std::string prefix,
-    hardware_interface::ComponentInfo joint_info);
+  bool extractPID(
+    const std::string & prefix,
+    const hardware_interface::ComponentInfo & joint_info, control_toolbox::Pid & pid);
 
   /// \brief Private data class
   std::unique_ptr<GazeboSystemPrivate> dataPtr;

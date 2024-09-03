@@ -170,9 +170,9 @@ bool GazeboSystem::initSim(
   return true;
 }
 
-control_toolbox::Pid GazeboSystem::extractPID(
-  std::string prefix,
-  hardware_interface::ComponentInfo joint_info)
+bool GazeboSystem::extractPID(
+  const std::string & prefix,
+  const hardware_interface::ComponentInfo & joint_info, control_toolbox::Pid & pid)
 {
   double kp;
   double ki;
@@ -181,20 +181,24 @@ control_toolbox::Pid GazeboSystem::extractPID(
   double min_integral_error;
   bool antiwindup = false;
 
+  bool are_pids_set = false;
   if (joint_info.parameters.find(prefix + "kp") != joint_info.parameters.end()) {
     kp = std::stod(joint_info.parameters.at(prefix + "kp"));
+    are_pids_set = true;
   } else {
     kp = 0.0;
   }
 
   if (joint_info.parameters.find(prefix + "ki") != joint_info.parameters.end()) {
     ki = std::stod(joint_info.parameters.at(prefix + "ki"));
+    are_pids_set = true;
   } else {
     ki = 0.0;
   }
 
   if (joint_info.parameters.find(prefix + "kd") != joint_info.parameters.end()) {
     kd = std::stod(joint_info.parameters.at(prefix + "kd"));
+    are_pids_set = true;
   } else {
     kd = 0.0;
   }
@@ -226,7 +230,8 @@ control_toolbox::Pid GazeboSystem::extractPID(
                     << " kd = " << kd << "\t"
                     << " max_integral_error = " << max_integral_error);
 
-  return control_toolbox::Pid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+  pid.initPid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+  return are_pids_set;
 }
 
 void GazeboSystem::registerJoints(
@@ -362,8 +367,9 @@ void GazeboSystem::registerJoints(
             << joint_info.command_interfaces[i].name);
 
         if (joint_info.command_interfaces[i].name == "position_pid") {
-          this->dataPtr->is_pos_pid[j] = true;
-          this->dataPtr->pos_pid[j] = this->extractPID(POSITION_PID_PARAMS_PREFIX, joint_info);
+          this->dataPtr->is_pos_pid[j] = this->extractPID(
+            POSITION_PID_PARAMS_PREFIX, joint_info,
+            this->dataPtr->pos_pid[j]);
         } else {
           this->dataPtr->is_pos_pid[j] = false;
         }
@@ -396,8 +402,9 @@ void GazeboSystem::registerJoints(
             << joint_info.command_interfaces[i].name);
 
         if (joint_info.command_interfaces[i].name == "velocity_pid") {
-          this->dataPtr->is_vel_pid[j] = true;
-          this->dataPtr->vel_pid[j] = this->extractPID(VELOCITY_PID_PARAMS_PREFIX, joint_info);
+          this->dataPtr->is_vel_pid[j] = this->extractPID(
+            VELOCITY_PID_PARAMS_PREFIX, joint_info,
+            this->dataPtr->vel_pid[j]);
         }
         this->dataPtr->command_interfaces_.emplace_back(
           joint_name,
