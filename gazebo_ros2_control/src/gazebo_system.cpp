@@ -357,8 +357,8 @@ void GazeboSystem::registerJoints(
         if (has_already_registered_pos) {
           RCLCPP_ERROR_STREAM(
             this->nh_->get_logger(),
-            "can't have position and position"
-              << "pid command_interface at same time !!!");
+            "can't have position and position_pid"
+              << "command_interface at same time !!!");
           continue;
         }
         has_already_registered_pos = true;
