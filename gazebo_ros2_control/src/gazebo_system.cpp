@@ -157,7 +157,8 @@ bool GazeboSystem::initSim(
       this->nh_->get_logger(), "Using default value: " << this->dataPtr->hold_joints_);
   }
   RCLCPP_DEBUG_STREAM(
-    this->nh_->get_logger(), "hold_joints (system): " << this->dataPtr->hold_joints_ << std::endl);
+    this->nh_->get_logger(),
+    "hold_joints (system): " << std::boolalpha << this->dataPtr->hold_joints_ << std::endl);
 
   registerJoints(hardware_info, parent_model);
   registerSensors(hardware_info, parent_model);
