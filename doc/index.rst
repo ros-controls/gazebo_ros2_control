@@ -185,6 +185,39 @@ Where the parameters are as follows:
 
 The same definitions apply to the ``vel_*`` parameters.
 
+The PID parameters can be defined for ``position`` or ``position_pid`` and ``velocity`` or ``velocity_pid`` command interfaces as explained above, or definiting them in a yaml file and loading it in the ``gazebo_ros2_control`` plugin as below:
+
+.. code-block:: yaml
+
+  gazebo_ros2_control:
+  ros__parameters:
+    pid_gains:
+      position:
+        slider_to_cart: {kp:  100.0, kd: 10.0, ki:  1.0, max_integral_error: 10000.0}
+
+
+.. code-block:: yaml
+
+  gazebo_ros2_control:
+  ros__parameters:
+    pid_gains:
+      position_pid:
+        slider_to_cart: {kp:  100.0, kd: 10.0, ki:  1.0, max_integral_error: 10000.0}
+
+.. code-block:: xml
+
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      ...
+      <ros>
+        <argument>--ros-args</argument>
+        <argument>--params-file</argument>
+        <argument><path to the parameter file></argument>
+      </ros>
+    </plugin>
+  </gazebo>
+
+
 Add the gazebo_ros2_control plugin
 ==========================================
 

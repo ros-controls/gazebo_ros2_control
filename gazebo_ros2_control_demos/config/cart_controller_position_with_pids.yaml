@@ -1,0 +1,20 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    position_controller:
+      type: position_controllers/JointGroupPositionController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+position_controller:
+  ros__parameters:
+    joints:
+      - slider_to_cart
+
+gazebo_ros2_control:
+  ros__parameters:
+    pid_gains:
+      position:
+        slider_to_cart: {kp:  100.0, kd: 10.0, ki:  1.0, max_integral_error: 10000.0}
