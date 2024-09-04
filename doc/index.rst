@@ -212,7 +212,7 @@ The PID parameters can be defined for ``position`` or ``position_pid`` and ``vel
       <ros>
         <argument>--ros-args</argument>
         <argument>--params-file</argument>
-        <argument><path to the parameter file></argument>
+        <argument>Path to the configuration file</argument>
       </ros>
     </plugin>
   </gazebo>
