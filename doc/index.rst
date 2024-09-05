@@ -190,19 +190,19 @@ The PID parameters can be defined for ``position`` or ``position_pid`` and ``vel
 .. code-block:: yaml
 
   gazebo_ros2_control:
-  ros__parameters:
-    pid_gains:
-      position:
-        slider_to_cart: {kp:  100.0, kd: 10.0, ki:  1.0, max_integral_error: 10000.0}
+    ros__parameters:
+      pid_gains:
+        position:
+          slider_to_cart: {kp:  100.0, kd: 10.0, ki:  1.0, max_integral_error: 10000.0}
 
 
 .. code-block:: yaml
 
   gazebo_ros2_control:
-  ros__parameters:
-    pid_gains:
-      position_pid:
-        slider_to_cart: {kp:  100.0, kd: 10.0, ki:  1.0, max_integral_error: 10000.0}
+    ros__parameters:
+      pid_gains:
+        position_pid:
+          slider_to_cart: {kp:  100.0, kd: 10.0, ki:  1.0, max_integral_error: 10000.0}
 
 .. code-block:: xml
 
