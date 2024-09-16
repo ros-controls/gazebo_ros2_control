@@ -185,7 +185,7 @@ Where the parameters are as follows:
 
 The same definitions apply to the ``vel_*`` parameters.
 
-The PID parameters can be defined for ``position`` or ``position_pid`` and ``velocity`` or ``velocity_pid`` command interfaces as explained above, or defining them in a yaml file and loading it in the ``gazebo_ros2_control`` plugin as below:
+The PID parameters can be defined for ``position`` or ``position_pid`` and ``velocity`` or ``velocity_pid`` command interfaces as explained above, or defining them in a YAML file and loading it in the ``gazebo_ros2_control`` plugin as below:
 
 .. code-block:: yaml
 
@@ -419,7 +419,7 @@ The following examples shows a vertical cart control by a PID joint using positi
   ros2 run gazebo_ros2_control_demos example_position_pid
   ros2 run gazebo_ros2_control_demos example_velocity
 
-The ``vertical_cart_example_position_pids_in_yaml.launch.py`` example uses a yaml file as following to set the PID gains:
+The ``vertical_cart_example_position_pids_in_yaml.launch.py`` example uses a YAML file as following to set the PID gains:
 
 .. code-block:: yaml
 
