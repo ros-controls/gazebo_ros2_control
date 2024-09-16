@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+<robot name="cart">
+  <link name="world"/>
+
+  <link name="slideBar">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 5"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+      <material name="green">
+        <color rgba="0 0.8 .8 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="100"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+
+  <link name="cart">
+    <visual>
+      <geometry>
+        <box size="0.5 0.5 0.2"/>
+      </geometry>
+      <origin xyz="0 0 0"/>
+      <material name="blue">
+        <color rgba="0 0 .8 1"/>
+      </material>
+    </visual>
+    <inertial>
+      <mass value="1"/>
+      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+    </inertial>
+  </link>
+
+  <joint name="world_to_base" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 2.5"/>
+    <parent link="world"/>
+    <child link="slideBar"/>
+  </joint>
+
+  <joint name="slider_to_cart" type="prismatic">
+    <axis xyz="0 0 1"/>
+    <origin xyz="0.0 0.0 0.0"/>
+    <parent link="slideBar"/>
+    <child link="cart"/>
+    <limit effort="1000.0" lower="-2.5" upper="2.5" velocity="30"/>
+    <dynamics damping="1.0" friction="0.0"/>
+  </joint>
+
+  <ros2_control name="GazeboSystem" type="system">
+    <hardware>
+      <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+    </hardware>
+    <joint name="slider_to_cart">
+      <command_interface name="position"/>
+
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+    </joint>
+
+  </ros2_control>
+
+  <gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <ros>
+        <argument>--ros-args</argument>
+        <argument>--params-file</argument>
+        <argument>$(find gazebo_ros2_control_demos)/config/cart_controller_position_with_pids.yaml</argument>
+      </ros>
+      <parameters>$(find gazebo_ros2_control_demos)/config/cart_controller_position_with_pids.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>
