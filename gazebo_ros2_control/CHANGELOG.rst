@@ -2,6 +2,17 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.10 (2024-09-17)
+-------------------
+* Add support for getting PID parameters from loaded parameters (`#374 <https://github.com/ros-controls/gazebo_ros2_control//issues/374>`_) (`#375 <https://github.com/ros-controls/gazebo_ros2_control//issues/375>`_)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  (cherry picked from commit 6a4cc84344ed1a86807dc77f23f199598a205296)
+  Co-authored-by: Sai Kishor Kothakota <saisastra3@gmail.com>
+* Add `hold_joints` parameter (backport `#251 <https://github.com/ros-controls/gazebo_ros2_control//issues/251>`_) (`#353 <https://github.com/ros-controls/gazebo_ros2_control//issues/353>`_)
+  Co-authored-by: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+* Contributors: mergify[bot]
+
 0.4.9 (2024-07-02)
 ------------------
 * Initialize antiwindup variable properly (`#326 <https://github.com/ros-controls/gazebo_ros2_control/issues/326>`_) (`#327 <https://github.com/ros-controls/gazebo_ros2_control/issues/327>`_)

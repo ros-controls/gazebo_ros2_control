@@ -2,6 +2,18 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.10 (2024-09-17)
+-------------------
+* Add support for getting PID parameters from loaded parameters (`#374 <https://github.com/ros-controls/gazebo_ros2_control//issues/374>`_) (`#375 <https://github.com/ros-controls/gazebo_ros2_control//issues/375>`_)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+  (cherry picked from commit 6a4cc84344ed1a86807dc77f23f199598a205296)
+  Co-authored-by: Sai Kishor Kothakota <saisastra3@gmail.com>
+* Add missing dependency (`#350 <https://github.com/ros-controls/gazebo_ros2_control//issues/350>`_) (`#351 <https://github.com/ros-controls/gazebo_ros2_control//issues/351>`_)
+  (cherry picked from commit 06da0b04fefc0fa8f0bb8d4f57425d0abb261654)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+* Contributors: mergify[bot]
+
 0.4.9 (2024-07-02)
 ------------------
 
