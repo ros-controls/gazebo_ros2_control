@@ -2,6 +2,14 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.3 (2024-09-17)
+------------------
+* Add support for getting PID parameters from loaded parameters (`#374 <https://github.com/ros-controls/gazebo_ros2_control//issues/374>`_)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* propagate gazebo remapping and other arguments to the controller node (`#370 <https://github.com/ros-controls/gazebo_ros2_control//issues/370>`_)
+* Contributors: Sai Kishor Kothakota
+
 0.7.2 (2024-07-09)
 ------------------
 * Propagate the node clock and logging interface to ResourceManager (`#357 <https://github.com/ros-controls/gazebo_ros2_control/issues/357>`_)
