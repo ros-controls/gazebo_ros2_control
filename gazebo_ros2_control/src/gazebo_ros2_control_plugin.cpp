@@ -397,6 +397,8 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
       while (rclcpp::ok() && !impl_->stop_) {
         if (impl_->parent_model_->GetWorld()->IsPaused() == false) {
           impl_->executor_->spin_once();
+        } else {
+          std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
       }
     };
