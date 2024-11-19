@@ -95,8 +95,7 @@
                 </geometry>
             </collision>
 
-            <xacro:inertial_cylinder mass="0.001" length="0.028" radius="0.105">    <!-- Length=28mm radius=10.5 -->
-            <!--  <xacro:inertial_cylinder mass="0.001" length="0.028" radius="0.00525 "> -->  <!-- Actual value but not the best -->
+            <xacro:inertial_cylinder mass="0.2" length="0.028" radius="0.00525"> 
                 <origin xyz="0 0 0" rpy="0 0 0"/>
             </xacro:inertial_cylinder>
 
@@ -451,6 +450,9 @@
     <gazebo>
         <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
             <parameters>$(find gazebo_ros2_control_demos)/config/holonomic_drive_controller.yaml</parameters>
+            <ros>
+                <remapping>~/tf_odometry:=/tf</remapping>
+            </ros>
         </plugin>
     </gazebo>
 
