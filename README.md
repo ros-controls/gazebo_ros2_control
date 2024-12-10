@@ -17,7 +17,12 @@ See the [documentation file](doc/index.rst) or [control.ros.org](https://control
 
 ROS 2 Distro | Branch | Build status | Documentation
 :----------: | :----: | :----------: | :-----------:
+<<<<<<< HEAD
 **Rolling** | [`master`](https://github.com/ros-controls/gazebo_ros2_control/tree/master) | n/a | [Documentation](https://control.ros.org/master/doc/gazebo_ros2_control/doc/index.html)
 **Jazzy** | [`master`](https://github.com/ros-controls/gazebo_ros2_control/tree/master) | n/a | [Documentation](https://control.ros.org/jazzy/doc/gazebo_ros2_control/doc/index.html)
 **Iron** | [`iron`](https://github.com/ros-controls/gazebo_ros2_control/tree/iron) | [![Gazebo ros2 control CI](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-iron.yaml/badge.svg?branch=iron)](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-iron.yaml) | [Documentation](https://control.ros.org/iron/doc/gazebo_ros2_control/doc/index.html)
+=======
+**Rolling** | [`master`](https://github.com/ros-controls/gazebo_ros2_control/tree/master) |  [![Gazebo ros2 control CI](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-rolling.yaml/badge.svg?branch=master)](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-rolling.yaml)  | [Documentation](https://control.ros.org/master/doc/gazebo_ros2_control/doc/index.html)
+**Jazzy** | [`master`](https://github.com/ros-controls/gazebo_ros2_control/tree/master) |  [![Gazebo ros2 control CI](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-rolling.yaml/badge.svg?branch=master)](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-rolling.yaml)  | [Documentation](https://control.ros.org/jazzy/doc/gazebo_ros2_control/doc/index.html)
+>>>>>>> 2e242fb (Remove iron (#386))
 **Humble** | [`humble`](https://github.com/ros-controls/gazebo_ros2_control/tree/humble) | [![Gazebo ros2 control CI](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-humble.yaml/badge.svg?branch=humble)](https://github.com/ros-controls/gazebo_ros2_control/actions/workflows/ci-humble.yaml) | [Documentation](https://control.ros.org/humble/doc/gazebo_ros2_control/doc/index.html)
