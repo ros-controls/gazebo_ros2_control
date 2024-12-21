@@ -345,12 +345,14 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
 
   // Create the controller manager
   RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
+  rclcpp::NodeOptions options = controller_manager::get_cm_node_options();
+  options.arguments(arguments);
   impl_->controller_manager_.reset(
     new controller_manager::ControllerManager(
       std::move(resource_manager_),
       impl_->executor_,
       controllerManagerNodeName,
-      impl_->model_nh_->get_namespace()));
+      impl_->model_nh_->get_namespace(), options));
   impl_->executor_->add_node(impl_->controller_manager_);
 
   auto cm_update_rate = impl_->controller_manager_->get_update_rate();

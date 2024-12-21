@@ -2,6 +2,16 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.3 (2024-09-17)
+------------------
+* Add support for getting PID parameters from loaded parameters (`#374 <https://github.com/ros-controls/gazebo_ros2_control//issues/374>`_)
+  Co-authored-by: Christoph Fröhlich <christophfroehlich@users.noreply.github.com>
+  Co-authored-by: Alejandro Hernández Cordero <ahcorde@gmail.com>
+* Revert "Add namespaced example"
+  This reverts commit 49507137ef6eb4e1a4c8d4352d9a163ddd462d81.
+* Add namespaced example
+* Contributors: Christoph Froehlich, Sai Kishor Kothakota
+
 0.7.2 (2024-07-09)
 ------------------
 * Add missing dependency (`#350 <https://github.com/ros-controls/gazebo_ros2_control/issues/350>`_)
