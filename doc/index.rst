@@ -285,7 +285,7 @@ The following is a basic configuration of the controllers:
 Multiple Namespaces
 -----------------------------------------------------------
 The gazebo_ros2_control plugin can be launched in multiple namespaces. This is useful if it is desired to have multiple robots of the same description running at the same time.
-If the namespace is to be defined in the URDF file, then you can use the ``<namespace>`` tag as detailed below:
+It is possible to directly define the namespace in the URDF file, as shown below:
 
 .. code-block:: xml
 
@@ -301,9 +301,9 @@ If the namespace is to be defined in the URDF file, then you can use the ``<name
     </plugin>
   </gazebo>
 
-Where ``r1`` is the namespace that the plugin nodes will be run in. Please note that the remapping of ``/tf`` and ``/tf_static`` is recommended only if you want to have a separate TF buffer for each namespace, e.g ``/r1/tf``
+Where ``r1`` is the namespace associated to the particular instance of the plugin. Please note that the remapping of ``/tf`` and ``/tf_static`` is recommended only if you want to have a separate TF buffer for each namespace, e.g ``/r1/tf``
 
-A second method for launching in namespaces is by using the Gazebo ``spawn_entity.py`` tool and setting the ``-robot_namespace`` parameter to the script:
+A second method to launch an instance with a particular namespace is by using the Gazebo ``spawn_entity.py`` tool and setting the ``-robot_namespace`` parameter to the script:
 
 .. code-block:: bash
 
