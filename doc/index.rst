@@ -327,6 +327,12 @@ It is possible to directly define the namespace in the URDF file, as shown below
 
 Where ``r1`` is the namespace associated to the particular instance of the plugin. Please note that the remapping of ``/tf`` and ``/tf_static`` is recommended only if you want to have a separate TF buffer for each namespace, e.g ``/r1/tf``
 
+As an example, run the following command to launch the diff_drive example within the namespace ``r1``
+
+.. code-block:: bash
+
+  ros2 launch gazebo_ros2_control_demos diff_drive_namespaced.launch.py
+
 A second method to launch an instance with a particular namespace is by using the Gazebo ``spawn_entity.py`` tool and setting the ``-robot_namespace`` parameter to the script:
 
 .. code-block:: bash
@@ -336,6 +342,16 @@ A second method to launch an instance with a particular namespace is by using th
 The script calls the ``spawn_entity`` service to spawn an entity named ``robot_1`` in the namespace ``r1``.  It is assumed that a robot description is being published by a ``robot_state_publisher`` node on the topic ``robot_description``, this will also be used for the ``gazebo_ros2_control`` plugin.
 
 The ``spawn_entity.py`` script will rewrite the robot description to include a namespace for every plugin tag. Please note that this method will apply a namespace to every plugin in the robot description. It will also overwrite any existing namespaces set in the description file.
+
+As an example, run the following command to spawn two diff_drive robots in the namespaces ``r1`` and ``r2``
+
+.. note::
+
+  The ros2_control settings for the controller_manager and the controller defined in ``diff_drive_controller_namespaced.yaml`` use wildcards to match both namespaces.
+
+.. code-block:: bash
+
+  ros2 launch gazebo_ros2_control_demos diff_drive_pair_namespaced.launch.py
 
 gazebo_ros2_control_demos
 ==========================================
