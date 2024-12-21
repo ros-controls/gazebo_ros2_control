@@ -83,28 +83,28 @@ def generate_launch_description():
     load_joint_state_broadcaster_r1 = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster',
-             '-c', '/r1/controller_manager',],
+             '-c', '/r1/controller_manager'],
         output='screen'
     )
 
     load_diff_drive_base_controller_r1 = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'diff_drive_base_controller',
-             '-c', '/r1/controller_manager',],
+             '-c', '/r1/controller_manager'],
         output='screen'
     )
 
     load_joint_state_broadcaster_r2 = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'joint_state_broadcaster',
-             '-c', '/r2/controller_manager',],
+             '-c', '/r2/controller_manager'],
         output='screen'
     )
 
     load_diff_drive_base_controller_r2 = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
              'diff_drive_base_controller',
-             '-c', '/r2/controller_manager',],
+             '-c', '/r2/controller_manager'],
         output='screen'
     )
 
