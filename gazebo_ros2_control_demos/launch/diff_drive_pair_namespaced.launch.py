@@ -47,7 +47,7 @@ def generate_launch_description():
     node_robot_state_publisher_r1 = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        namespace="r1",
+        namespace='r1',
         output='screen',
         parameters=[params]
     )
@@ -55,7 +55,7 @@ def generate_launch_description():
     node_robot_state_publisher_r2 = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        namespace="r2",
+        namespace='r2',
         output='screen',
         parameters=[params]
     )
