@@ -240,7 +240,7 @@ bool GazeboSystem::extractPID(
                       << " max_integral_error = " << max_integral_error << "\t"
                       << "antiwindup =" << std::boolalpha << antiwindup);
 
-    pid.initPid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+    pid.initialize(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
   }
   return are_pids_set;
 }
@@ -306,7 +306,7 @@ bool GazeboSystem::extractPIDFromParameters(
                       << " kd = " << kd << "\t"
                       << " max_integral_error = " << max_integral_error << "\t"
                       << "antiwindup =" << std::boolalpha << antiwindup << " from node parameters");
-    pid.initPid(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+    pid.initialize(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
   }
 
   return are_pids_set;
@@ -815,8 +815,6 @@ hardware_interface::return_type GazeboSystem::write(
       this->dataPtr->joint_position_[mimic_joint.mimicked_joint_index];
   }
 
-  uint64_t dt = sim_period.nanoseconds();
-
   for (unsigned int j = 0; j < this->dataPtr->joint_names_.size(); j++) {
     if (this->dataPtr->sim_joints_[j]) {
       if (this->dataPtr->joint_control_methods_[j] & POSITION) {
@@ -833,13 +831,13 @@ hardware_interface::return_type GazeboSystem::write(
       } else if (this->dataPtr->joint_control_methods_[j] & VELOCITY_PID) {
         double vel_goal = this->dataPtr->joint_velocity_cmd_[j];
         double vel = this->dataPtr->sim_joints_[j]->GetVelocity(0);
-        double cmd = this->dataPtr->vel_pid[j].computeCommand(vel_goal - vel, dt);
+        double cmd = this->dataPtr->vel_pid[j].compute_command(vel_goal - vel, sim_period);
         this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
 
       } else if (this->dataPtr->joint_control_methods_[j] & POSITION_PID) {
         double pos_goal = this->dataPtr->joint_position_cmd_[j];
         double pos = this->dataPtr->sim_joints_[j]->Position(0);
-        double cmd = this->dataPtr->pos_pid[j].computeCommand(pos_goal - pos, dt);
+        double cmd = this->dataPtr->pos_pid[j].compute_command(pos_goal - pos, sim_period);
         this->dataPtr->sim_joints_[j]->SetForce(0, cmd);
 
       } else if (this->dataPtr->is_joint_actuated_[j] && this->dataPtr->hold_joints_) {
