@@ -12,7 +12,7 @@ This is a ROS 2 package for integrating the *ros2_control* controller architectu
 
   **Gazebo Classic went end-of-life in January of 2025. There won't be any updates to gazebo_ros2_control anymore.**
 
-  We strongly recommend all users migrate from Gazebo Classic (numbered releases) to modern Gazebo (formerly known as Ignition 3, lettered releases). To use ros2_control with newer versions of Gazebo take a look at :ref:`ign_ros2_control <ign_ros2_control>`.
+  We strongly recommend all users migrate from Gazebo Classic (numbered releases) to modern Gazebo (formerly known as Ignition 3, lettered releases). To use ros2_control with newer versions of Gazebo take a look at :ref:`gz_ros2_control <gz_ros2_control>`.
 
   Furthermore, Gazebo Classic is not released to Ubuntu Noble. As a consequence, gazebo_ros2_control never was released to Jazzy and Rolling/Noble.
 
