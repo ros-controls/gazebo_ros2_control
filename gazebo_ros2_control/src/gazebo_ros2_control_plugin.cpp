@@ -346,6 +346,9 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
   // Create the controller manager
   RCLCPP_INFO(impl_->model_nh_->get_logger(), "Loading controller_manager");
   rclcpp::NodeOptions options = controller_manager::get_cm_node_options();
+  // Force setting of use_sime_time parameter
+  arguments.push_back("--param");
+  arguments.push_back("use_sim_time:=True");
   options.arguments(arguments);
   impl_->controller_manager_.reset(
     new controller_manager::ControllerManager(
@@ -373,9 +376,6 @@ void GazeboRosControlPlugin::Load(gazebo::physics::ModelPtr parent, sdf::Element
         " s) is slower than the gazebo simulation period (" <<
         gazebo_period.seconds() << " s).");
   }
-  // Force setting of use_sime_time parameter
-  impl_->controller_manager_->set_parameter(
-    rclcpp::Parameter("use_sim_time", rclcpp::ParameterValue(true)));
 
   impl_->stop_ = false;
   auto spin = [this]()
