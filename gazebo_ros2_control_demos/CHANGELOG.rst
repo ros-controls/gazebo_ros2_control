@@ -2,6 +2,11 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix namespacing for multiple instances of gazebo_ros2_control plugin (`#181 <https://github.com/ros-controls/gazebo_ros2_control/issues/181>`_)
+* Contributors: Ben Holden, Christoph Froehlich
+
 0.7.3 (2024-09-17)
 ------------------
 * Add support for getting PID parameters from loaded parameters (`#374 <https://github.com/ros-controls/gazebo_ros2_control//issues/374>`_)
