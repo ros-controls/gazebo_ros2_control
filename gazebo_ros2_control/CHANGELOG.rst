@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.4 (2025-05-18)
+------------------
 * Set use_sim_time parameter prior to node creation
 * Update upstream PID API (`#395 <https://github.com/ros-controls/gazebo_ros2_control/issues/395>`_)
 * Fix namespacing for multiple instances of gazebo_ros2_control plugin (`#181 <https://github.com/ros-controls/gazebo_ros2_control/issues/181>`_)
