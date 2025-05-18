@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control_demos
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.11 (2025-05-18)
+-------------------
 * Fix namespacing for multiple instances of gazebo_ros2_control plugin (`#181 <https://github.com/ros-controls/gazebo_ros2_control/issues/181>`_) (`#398 <https://github.com/ros-controls/gazebo_ros2_control/issues/398>`_)
 * Contributors: Ben Holden, Alejandro Hernández Cordero, Christoph Froehlich
 
