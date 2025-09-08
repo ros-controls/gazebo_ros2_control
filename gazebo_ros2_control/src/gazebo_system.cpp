@@ -187,7 +187,6 @@ bool GazeboSystem::extractPID(
   double kd;
   double max_integral_error;
   double min_integral_error;
-  bool antiwindup = false;
 
   bool are_pids_set = false;
   if (joint_info.parameters.find(prefix + "kp") != joint_info.parameters.end()) {
@@ -224,23 +223,14 @@ bool GazeboSystem::extractPID(
       min_integral_error = std::numeric_limits<double>::min();
     }
 
-    if (joint_info.parameters.find(prefix + "antiwindup") != joint_info.parameters.end()) {
-      if (joint_info.parameters.at(prefix + "antiwindup") == "true" ||
-        joint_info.parameters.at(prefix + "antiwindup") == "True")
-      {
-        antiwindup = true;
-      }
-    }
-
-    RCLCPP_INFO_STREAM(
-      this->nh_->get_logger(),
-      "Setting kp = " << kp << "\t"
-                      << " ki = " << ki << "\t"
-                      << " kd = " << kd << "\t"
-                      << " max_integral_error = " << max_integral_error << "\t"
-                      << "antiwindup =" << std::boolalpha << antiwindup);
-
-    pid.initialize(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+    control_toolbox::AntiWindupStrategy antiwindup_strat;
+    antiwindup_strat.set_type("none");
+    antiwindup_strat.i_max = max_integral_error;
+    antiwindup_strat.i_min = min_integral_error;
+    pid.initialize(
+      kp, ki, kd,
+      std::numeric_limits<double>::infinity(),
+      -std::numeric_limits<double>::infinity(), antiwindup_strat);
   }
   return are_pids_set;
 }
@@ -275,38 +265,27 @@ bool GazeboSystem::extractPIDFromParameters(
     };
   bool are_pids_set = true;
   double kp, ki, kd, max_integral_error, min_integral_error;
-  bool antiwindup;
   are_pids_set &= get_pid_entry("kp", kp);
   are_pids_set &= get_pid_entry("ki", ki);
   are_pids_set &= get_pid_entry("kd", kd);
   if (are_pids_set) {
     get_pid_entry("max_integral_error", max_integral_error);
     get_pid_entry("min_integral_error", min_integral_error);
-    const std::string antiwindup_str = "antiwindup";
-    if (!this->nh_->has_parameter(parameter_prefix + "." + antiwindup_str)) {
-      this->nh_->declare_parameter(
-        parameter_prefix + "." + antiwindup_str,
-        false);
-    }
-    try {
-      antiwindup = this->nh_->get_parameter(parameter_prefix + "." + antiwindup_str).as_bool();
-    } catch (rclcpp::exceptions::ParameterNotDeclaredException & ex) {
-      RCLCPP_ERROR(
-        this->nh_->get_logger(),
-        "Parameter '%s' not declared, with error %s", antiwindup_str.c_str(), ex.what());
-    } catch (rclcpp::ParameterTypeException & ex) {
-      RCLCPP_ERROR(
-        this->nh_->get_logger(),
-        "Parameter '%s' has wrong type: %s", antiwindup_str.c_str(), ex.what());
-    }
     RCLCPP_INFO_STREAM(
       this->nh_->get_logger(),
       "Setting kp = " << kp << "\t"
                       << " ki = " << ki << "\t"
                       << " kd = " << kd << "\t"
                       << " max_integral_error = " << max_integral_error << "\t"
-                      << "antiwindup =" << std::boolalpha << antiwindup << " from node parameters");
-    pid.initialize(kp, ki, kd, max_integral_error, min_integral_error, antiwindup);
+                      << " min_integral_error = " << min_integral_error << " from node parameters");
+    control_toolbox::AntiWindupStrategy antiwindup_strat;
+    antiwindup_strat.set_type("none");
+    antiwindup_strat.i_max = max_integral_error;
+    antiwindup_strat.i_min = min_integral_error;
+    pid.initialize(
+      kp, ki, kd,
+      std::numeric_limits<double>::infinity(),
+      -std::numeric_limits<double>::infinity(), antiwindup_strat);
   }
 
   return are_pids_set;
