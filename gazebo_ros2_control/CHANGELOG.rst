@@ -2,6 +2,12 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Apply changes from upstream PID class
+* Shift to Struct based Method and Constructors, with Executor passed from CM to on_init()
+* Contributors: Christoph Froehlich
+
 0.7.4 (2025-05-18)
 ------------------
 * Set use_sim_time parameter prior to node creation
