@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.5 (2025-10-02)
+------------------
 * Apply changes from upstream PID class
 * Shift to Struct based Method and Constructors, with Executor passed from CM to on_init()
 * Contributors: Christoph Froehlich
