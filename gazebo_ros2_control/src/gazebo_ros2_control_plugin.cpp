@@ -437,6 +437,11 @@ void GazeboRosControlPrivate::Update()
 }
 
 // Called on world reset
+void GazeboRosControlPlugin::Reset()
+{
+  impl_->Reset();
+}
+
 void GazeboRosControlPrivate::Reset()
 {
   // Reset timing variables to not pass negative update periods to controllers on world reset
