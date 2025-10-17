@@ -57,6 +57,7 @@ public:
 
   // Overloaded Gazebo entry point
   void Load(gazebo::physics::ModelPtr parent, sdf::ElementPtr sdf) override;
+  void Reset() override;
 
 private:
   /// Private data pointer
