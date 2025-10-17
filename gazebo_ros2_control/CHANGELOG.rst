@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.12 (2025-10-17)
+-------------------
 * Override gazebo reset method (`#413 <https://github.com/ros-controls/gazebo_ros2_control/issues/413>`_) (`#414 <https://github.com/ros-controls/gazebo_ros2_control/issues/414>`_)
 * Contributors: mergify[bot]
 
