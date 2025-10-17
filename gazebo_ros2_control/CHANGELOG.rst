@@ -2,8 +2,8 @@
 Changelog for package gazebo_ros2_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.7.6 (2025-10-17)
+------------------
 * Override gazebo reset method (`#413 <https://github.com/ros-controls/gazebo_ros2_control/issues/413>`_)
 * Remove deprecated/removed on_init overload
 * Contributors: Christoph Froehlich, Christoph Fröhlich
